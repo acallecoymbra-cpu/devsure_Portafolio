@@ -9,7 +9,7 @@ describe('API foundation (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule]
+      imports: [AppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -22,9 +22,7 @@ describe('API foundation (e2e)', () => {
   });
 
   it('GET /api/v1/health', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/api/v1/health')
-      .expect(200);
+    const response = await request(app.getHttpServer()).get('/api/v1/health').expect(200);
 
     expect(response.body.status).toBe('ok');
     expect(response.body.service).toBe('devsure-api');
@@ -36,9 +34,7 @@ describe('API foundation (e2e)', () => {
       .set('Origin', 'http://localhost:3000')
       .expect(200);
 
-    expect(response.headers['access-control-allow-origin']).toBe(
-      'http://localhost:3000'
-    );
+    expect(response.headers['access-control-allow-origin']).toBe('http://localhost:3000');
   });
 
   it('serves the OpenAPI document at /docs', async () => {
@@ -55,7 +51,7 @@ describe('API foundation (e2e)', () => {
     expect(response.body).toMatchObject({
       statusCode: 404,
       code: 'HTTP_404',
-      message: 'Not Found'
+      message: 'Not Found',
     });
     expect(response.body).not.toHaveProperty('stack');
   });
@@ -70,7 +66,7 @@ describe('API foundation (e2e)', () => {
     expect(response.body).toMatchObject({
       statusCode: 413,
       code: 'HTTP_413',
-      message: 'Payload Too Large'
+      message: 'Payload Too Large',
     });
     expect(response.body).not.toHaveProperty('stack');
   });

@@ -1,9 +1,9 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 const navigation = [
-  { href: "#principios", label: "Principios" },
-  { href: "#ruta", label: "Ruta" },
-  { href: "#estado", label: "Estado" },
+  { href: '#principios', label: 'Principios' },
+  { href: '#ruta', label: 'Ruta' },
+  { href: '#estado', label: 'Estado' },
 ];
 
 export function SiteHeader() {

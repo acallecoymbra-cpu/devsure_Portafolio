@@ -1,26 +1,22 @@
 const principles = [
   {
-    number: "01",
-    title: "Claridad antes que ruido",
-    text: "Cada decisión visible debe ayudar a orientarse, entender y avanzar.",
+    number: '01',
+    title: 'Claridad antes que ruido',
+    text: 'Cada decisión visible debe ayudar a orientarse, entender y avanzar.',
   },
   {
-    number: "02",
-    title: "Accesible desde el inicio",
-    text: "Contraste, teclado, foco y movimiento reducido forman parte de la base.",
+    number: '02',
+    title: 'Accesible desde el inicio',
+    text: 'Contraste, teclado, foco y movimiento reducido forman parte de la base.',
   },
   {
-    number: "03",
-    title: "Preparado para crecer",
-    text: "La estructura inicial deja espacio para conectar contenido real sin rehacer la experiencia.",
+    number: '03',
+    title: 'Preparado para crecer',
+    text: 'La estructura inicial deja espacio para conectar contenido real sin rehacer la experiencia.',
   },
 ];
 
-const route = [
-  "Explorar el contexto",
-  "Definir una dirección",
-  "Construir con cuidado",
-];
+const route = ['Explorar el contexto', 'Definir una dirección', 'Construir con cuidado'];
 
 export default function HomePage() {
   return (
@@ -33,8 +29,8 @@ export default function HomePage() {
             <span className="accent-text"> bien.</span>
           </h1>
           <p className="hero-description">
-            DevSure nace con una interfaz pequeña, honesta y lista para acompañar
-            decisiones digitales con menos fricción.
+            DevSure nace con una interfaz pequeña, honesta y lista para acompañar decisiones
+            digitales con menos fricción.
           </p>
           <a className="button button-primary" href="#principios">
             Conocer la base <span aria-hidden="true">↓</span>
@@ -84,7 +80,7 @@ export default function HomePage() {
           <ol className="route-list">
             {route.map((step, index) => (
               <li key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
+                <span>{String(index + 1).padStart(2, '0')}</span>
                 <strong>{step}</strong>
               </li>
             ))}
@@ -99,9 +95,8 @@ export default function HomePage() {
             <h2 id="status-title">La interfaz está lista para el siguiente paso.</h2>
           </div>
           <p>
-            Esta Fase 0 no adelanta catálogo ni autenticación: prepara el espacio,
-            la navegación y las decisiones de accesibilidad que sostendrán lo que
-            venga después.
+            Esta Fase 0 no adelanta catálogo ni autenticación: prepara el espacio, la navegación y
+            las decisiones de accesibilidad que sostendrán lo que venga después.
           </p>
         </div>
       </section>

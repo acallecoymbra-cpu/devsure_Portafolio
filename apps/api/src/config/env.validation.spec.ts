@@ -11,7 +11,7 @@ describe('validateEnvironment', () => {
       DATABASE_URL: './.data/devsure.sqlite',
       DATABASE_LOGGING: false,
       SWAGGER_ENABLED: true,
-      BODY_LIMIT: '1mb'
+      BODY_LIMIT: '1mb',
     });
   });
 
@@ -19,8 +19,8 @@ describe('validateEnvironment', () => {
     expect(() =>
       validateEnvironment({
         API_PORT: 'not-a-port',
-        BODY_LIMIT: 'unbounded'
-      })
+        BODY_LIMIT: 'unbounded',
+      }),
     ).toThrow('Invalid environment configuration');
   });
 });

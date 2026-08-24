@@ -13,26 +13,26 @@ export class InitialFoundation1700000000000 implements MigrationInterface {
             type: 'integer',
             isPrimary: true,
             isGenerated: true,
-            generationStrategy: 'increment'
+            generationStrategy: 'increment',
           },
           {
             name: 'key',
             type: 'varchar',
-            isUnique: true
+            isUnique: true,
           },
           {
             name: 'value',
             type: 'text',
-            isNullable: false
+            isNullable: false,
           },
           {
             name: 'created_at',
             type: 'datetime',
-            default: "(datetime('now'))"
-          }
-        ]
+            default: 'CURRENT_TIMESTAMP',
+          },
+        ],
       }),
-      true
+      true,
     );
   }
 

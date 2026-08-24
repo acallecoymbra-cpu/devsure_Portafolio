@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/config";
+import { getApiBaseUrl } from '@/lib/config';
 
 export function SiteFooter() {
   return (

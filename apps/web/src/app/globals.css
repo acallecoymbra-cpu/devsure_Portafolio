@@ -177,7 +177,9 @@ h3 {
   justify-content: center;
   min-height: 3rem;
   padding: 0.7rem 1.3rem;
-  transition: transform 180ms ease, background-color 180ms ease;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease;
 }
 
 .button:hover {

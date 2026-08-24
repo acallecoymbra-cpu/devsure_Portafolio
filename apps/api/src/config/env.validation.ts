@@ -13,11 +13,11 @@ export interface AppEnvironment {
 }
 
 const environmentSchema = Joi.object<AppEnvironment>({
-  NODE_ENV: Joi.string()
-    .valid('development', 'test', 'production')
-    .default('development'),
+  NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
   API_PORT: Joi.number().port().default(3001),
-  API_PREFIX: Joi.string().pattern(/^[a-zA-Z0-9/_-]+$/).default('api/v1'),
+  API_PREFIX: Joi.string()
+    .pattern(/^[a-zA-Z0-9/_-]+$/)
+    .default('api/v1'),
   CORS_ORIGINS: Joi.string().allow('').default('http://localhost:3000'),
   DATABASE_TYPE: Joi.string().valid('sqlite').default('sqlite'),
   DATABASE_URL: Joi.string().min(1).default('./.data/devsure.sqlite'),
@@ -25,12 +25,10 @@ const environmentSchema = Joi.object<AppEnvironment>({
   SWAGGER_ENABLED: Joi.boolean().default(true),
   BODY_LIMIT: Joi.string()
     .pattern(/^\d+(b|kb|mb|gb)$/i)
-    .default('1mb')
+    .default('1mb'),
 }).unknown(false);
 
-export function validateEnvironment(
-  input: Record<string, unknown>
-): AppEnvironment {
+export function validateEnvironment(input: Record<string, unknown>): AppEnvironment {
   const values = {
     NODE_ENV: input.NODE_ENV,
     API_PORT: input.API_PORT,
@@ -40,11 +38,11 @@ export function validateEnvironment(
     DATABASE_URL: input.DATABASE_URL,
     DATABASE_LOGGING: input.DATABASE_LOGGING,
     SWAGGER_ENABLED: input.SWAGGER_ENABLED,
-    BODY_LIMIT: input.BODY_LIMIT
+    BODY_LIMIT: input.BODY_LIMIT,
   };
   const { error, value } = environmentSchema.validate(values, {
     abortEarly: false,
-    convert: true
+    convert: true,
   });
 
   if (error) {

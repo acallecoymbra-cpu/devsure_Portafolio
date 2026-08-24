@@ -20,21 +20,21 @@ export function configureApp(app: INestApplication): void {
     credentials: false,
     origin: (
       origin: string | undefined,
-      callback: (error: Error | null, allow?: boolean) => void
+      callback: (error: Error | null, allow?: boolean) => void,
     ) => {
       if (!origin || corsOrigins.includes(origin)) {
         callback(null, true);
         return;
       }
       callback(null, false);
-    }
+    },
   });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
-      forbidNonWhitelisted: true
-    })
+      forbidNonWhitelisted: true,
+    }),
   );
   app.useGlobalFilters(new SafeExceptionFilter());
 

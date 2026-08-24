@@ -1,23 +1,22 @@
-import type { Metadata, Viewport } from "next";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { SiteFooter } from '@/components/site-footer';
+import { SiteHeader } from '@/components/site-header';
+import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://devsure.example"),
+  metadataBase: new URL('https://devsure.example'),
   title: {
-    default: "DevSure | Fundaciones digitales claras",
-    template: "%s | DevSure",
+    default: 'DevSure | Fundaciones digitales claras',
+    template: '%s | DevSure',
   },
-  description:
-    "Un punto de partida accesible y adaptable para experiencias digitales confiables.",
+  description: 'Un punto de partida accesible y adaptable para experiencias digitales confiables.',
   openGraph: {
-    title: "DevSure | Fundaciones digitales claras",
+    title: 'DevSure | Fundaciones digitales claras',
     description:
-      "Un punto de partida accesible y adaptable para experiencias digitales confiables.",
-    type: "website",
-    siteName: "DevSure",
-    url: "https://devsure.example",
+      'Un punto de partida accesible y adaptable para experiencias digitales confiables.',
+    type: 'website',
+    siteName: 'DevSure',
+    url: 'https://devsure.example',
   },
   robots: {
     index: true,
@@ -26,8 +25,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a1023",
-  colorScheme: "dark",
+  themeColor: '#0a1023',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({

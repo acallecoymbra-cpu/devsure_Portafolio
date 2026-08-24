@@ -1,5 +1,9 @@
 process.env.NODE_ENV = 'test';
-process.env.PORT = '0';
+process.env.API_PORT = '0';
+process.env.API_PREFIX = 'api/v1';
 process.env.CORS_ORIGINS = 'http://localhost:3000';
-process.env.DATABASE_PATH = ':memory:';
+process.env.DATABASE_TYPE = 'sqlite';
+process.env.DATABASE_URL = ':memory:';
+process.env.DATABASE_LOGGING = 'false';
+process.env.SWAGGER_ENABLED = 'true';
 process.env.BODY_LIMIT = '10kb';

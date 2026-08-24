@@ -1,10 +1,4 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 
@@ -30,15 +24,9 @@ export class SafeExceptionFilter implements ExceptionFilter {
     response.status(statusCode).json(this.buildError(statusCode, requestId, request));
   }
 
-  private buildError(
-    statusCode: number,
-    requestId: string,
-    request: Request
-  ): ErrorResponse {
+  private buildError(statusCode: number, requestId: string, request: Request): ErrorResponse {
     const message =
-      statusCode >= 500
-        ? 'Internal server error'
-        : this.httpStatusMessage(statusCode);
+      statusCode >= 500 ? 'Internal server error' : this.httpStatusMessage(statusCode);
 
     return {
       statusCode,
@@ -46,7 +34,7 @@ export class SafeExceptionFilter implements ExceptionFilter {
       message,
       requestId,
       timestamp: new Date().toISOString(),
-      path: request.originalUrl
+      path: request.originalUrl,
     };
   }
 

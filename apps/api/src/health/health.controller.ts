@@ -1,11 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-
-interface HealthResponse {
-  status: 'ok';
-  service: string;
-  timestamp: string;
-}
+import type { HealthResponse } from '@devsure/contracts';
 
 @ApiTags('health')
 @Controller('health')
@@ -18,15 +13,15 @@ export class HealthController {
       example: {
         status: 'ok',
         service: 'devsure-api',
-        timestamp: '2026-08-24T19:25:57.089Z'
-      }
-    }
+        timestamp: '2026-08-24T19:25:57.089Z',
+      },
+    },
   })
   getHealth(): HealthResponse {
     return {
       status: 'ok',
       service: 'devsure-api',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
