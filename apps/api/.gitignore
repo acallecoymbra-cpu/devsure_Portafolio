@@ -1,0 +1,6 @@
+dist/
+coverage/
+*.sqlite
+*.sqlite-journal
+*.tsbuildinfo
+.turbo/

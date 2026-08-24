@@ -1,0 +1,22 @@
+{
+  "name": "@devsure/config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./typescript": "./typescript.json",
+    "./prettier": "./prettier.json",
+    "./eslint": "./eslint.config.mjs"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "eslint": "^9.19.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.22.0"
+  }
+}

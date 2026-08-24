@@ -1,0 +1,26 @@
+{
+  "name": "devsure",
+  "private": true,
+  "packageManager": "pnpm@9.15.5",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "pnpm --filter @devsure/api test:integration",
+    "test:e2e": "pnpm --filter @devsure/web test:e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migration:generate": "pnpm --filter @devsure/api migration:generate",
+    "db:migration:run": "pnpm --filter @devsure/api migration:run",
+    "db:migration:revert": "pnpm --filter @devsure/api migration:revert",
+    "db:migration:show": "pnpm --filter @devsure/api migration:show"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3"
+  }
+}

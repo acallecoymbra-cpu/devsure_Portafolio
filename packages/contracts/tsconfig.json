@@ -1,0 +1,4 @@
+{
+  "extends": "@devsure/config/typescript",
+  "include": ["src"]
+}
