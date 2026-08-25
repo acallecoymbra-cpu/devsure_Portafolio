@@ -41,6 +41,34 @@ Aplicaciones disponibles:
 - Health API: <http://localhost:3001/api/v1/health>
 - Swagger: <http://localhost:3001/docs>
 
+Si `pnpm dev` termina abruptamente en Windows con el código
+`3221226505` (`0xC0000409`), levanta las aplicaciones en terminales separadas:
+
+Terminal 1 (API):
+
+```powershell
+pnpm --filter @devsure/api start:dev
+```
+
+Terminal 2 (web):
+
+```powershell
+pnpm --filter @devsure/web dev
+```
+
+Como alternativa, prueba Turbo sin la opción obsoleta `--parallel`:
+
+```powershell
+pnpm exec turbo run dev
+```
+
+Comprueba que el entorno use Node.js 20 LTS y pnpm 9.15.5:
+
+```powershell
+node --version
+pnpm --version
+```
+
 ## Variables de entorno
 
 La plantilla está en `.env.example`. Las variables reales deben configurarse

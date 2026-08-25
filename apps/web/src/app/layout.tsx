@@ -6,14 +6,18 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://devsure.example'),
   title: {
-    default: 'DevSure | Fundaciones digitales claras',
+    default: 'DevSure | Desarrollo de software confiable',
     template: '%s | DevSure',
   },
-  description: 'Un punto de partida accesible y adaptable para experiencias digitales confiables.',
+  description:
+    'Creamos soluciones digitales mantenibles con una base técnica clara y capacidades verificables.',
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'DevSure | Fundaciones digitales claras',
+    title: 'DevSure | Desarrollo de software confiable',
     description:
-      'Un punto de partida accesible y adaptable para experiencias digitales confiables.',
+      'Creamos soluciones digitales mantenibles con una base técnica clara y capacidades verificables.',
     type: 'website',
     siteName: 'DevSure',
     url: 'https://devsure.example',
@@ -37,8 +41,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
+        <a className="skip-link" href="#contenido-principal">
+          Saltar al contenido
+        </a>
         <SiteHeader />
-        <main>{children}</main>
+        <main id="contenido-principal">{children}</main>
         <SiteFooter />
       </body>
     </html>

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { validateEnvironment } from '../config/env.validation';
+import { Technology } from '../technologies/entities/technology.entity';
 
 const environment = validateEnvironment(process.env);
 
@@ -11,5 +12,5 @@ export default new DataSource({
   synchronize: false,
   migrationsRun: false,
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
-  entities: [],
+  entities: [Technology],
 });

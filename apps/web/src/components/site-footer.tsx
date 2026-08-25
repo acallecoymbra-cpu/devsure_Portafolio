@@ -1,14 +1,9 @@
-import { getApiBaseUrl } from '@/lib/config';
-
 export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="shell footer-inner">
-        <p>Una base tranquila para construir productos digitales.</p>
-        <p className="footer-meta">
-          <span className="status-dot" aria-hidden="true" />
-          API preparada · {getApiBaseUrl()}
-        </p>
+        <p>DevSure · Soluciones digitales construidas para evolucionar.</p>
+        <a href="#contenido-principal">Volver al inicio</a>
       </div>
     </footer>
   );

@@ -21,7 +21,8 @@
     "migration:generate": "npm run typeorm -- migration:generate src/database/migrations/Generated",
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
-    "migration:show": "npm run typeorm -- migration:show"
+    "migration:show": "npm run typeorm -- migration:show",
+    "seed:technologies": "ts-node src/database/seeds/seed-technologies.ts"
   },
   "dependencies": {
     "@devsure/contracts": "workspace:*",

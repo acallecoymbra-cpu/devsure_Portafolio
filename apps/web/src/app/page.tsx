@@ -1,102 +1,72 @@
-const principles = [
-  {
-    number: '01',
-    title: 'Claridad antes que ruido',
-    text: 'Cada decisión visible debe ayudar a orientarse, entender y avanzar.',
-  },
-  {
-    number: '02',
-    title: 'Accesible desde el inicio',
-    text: 'Contraste, teclado, foco y movimiento reducido forman parte de la base.',
-  },
-  {
-    number: '03',
-    title: 'Preparado para crecer',
-    text: 'La estructura inicial deja espacio para conectar contenido real sin rehacer la experiencia.',
-  },
-];
+import { Suspense } from 'react';
+import { TechnologiesSection } from '@/features/technologies/components/technologies-section';
+import { TechnologiesSkeleton } from '@/features/technologies/components/technologies-skeleton';
 
-const route = ['Explorar el contexto', 'Definir una dirección', 'Construir con cuidado'];
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'DevSure',
+  url: 'https://devsure.example',
+  description:
+    'Equipo de desarrollo de software enfocado en crear soluciones digitales confiables.',
+};
 
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+
       <section className="hero shell" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Fase 0 · fundaciones</p>
-          <h1 id="hero-title">
-            Lo esencial para empezar
-            <span className="accent-text"> bien.</span>
-          </h1>
+          <p className="eyebrow">Software con criterio técnico</p>
+          <h1 id="hero-title">Construimos soluciones digitales preparadas para avanzar.</h1>
           <p className="hero-description">
-            DevSure nace con una interfaz pequeña, honesta y lista para acompañar decisiones
-            digitales con menos fricción.
+            Convertimos necesidades de negocio en productos claros, mantenibles y listos para
+            evolucionar junto a tu operación.
           </p>
-          <a className="button button-primary" href="#principios">
-            Conocer la base <span aria-hidden="true">↓</span>
+          <div className="hero-actions">
+            <a className="button button-primary" href="#tecnologias">
+              Explorar tecnologías
+            </a>
+            <a className="button button-secondary" href="#enfoque">
+              Conocer el enfoque
+            </a>
+          </div>
+        </div>
+
+        <div className="hero-proof" aria-labelledby="hero-proof-title">
+          <p className="hero-proof-label">Una base técnica visible</p>
+          <h2 id="hero-proof-title">Capacidad para construir, automatizar y mejorar.</h2>
+          <p>
+            Nuestro catálogo publicado reúne las herramientas y prácticas que respaldan cada
+            decisión de implementación.
+          </p>
+          <a href="#tecnologias">
+            Ver catálogo completo <span aria-hidden="true">↓</span>
           </a>
         </div>
-        <div className="hero-visual" aria-label="Resumen visual del estado inicial">
-          <div className="orbit orbit-large" />
-          <div className="orbit orbit-small" />
-          <div className="hero-card">
-            <div className="card-label">estado del sistema</div>
-            <div className="signal-row">
-              <span className="signal-icon" aria-hidden="true">
-                ✓
-              </span>
-              <strong>Base lista</strong>
-            </div>
-            <p>Una pantalla que puede crecer sin perder su centro.</p>
-            <div className="progress-track" aria-hidden="true">
-              <span />
-            </div>
-          </div>
-        </div>
       </section>
 
-      <section className="section shell" id="principios" aria-labelledby="principles-title">
-        <div className="section-heading">
-          <p className="eyebrow">Una forma de hacer</p>
-          <h2 id="principles-title">Pequeñas decisiones, mejor experiencia.</h2>
-        </div>
-        <div className="principles-grid">
-          {principles.map((principle) => (
-            <article className="principle-card" key={principle.number}>
-              <span className="principle-number">{principle.number}</span>
-              <h3>{principle.title}</h3>
-              <p>{principle.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <Suspense fallback={<TechnologiesSkeleton />}>
+        <TechnologiesSection />
+      </Suspense>
 
-      <section className="section route-section" id="ruta" aria-labelledby="route-title">
-        <div className="shell route-layout">
-          <div className="section-heading">
-            <p className="eyebrow">La ruta</p>
-            <h2 id="route-title">Un recorrido simple para una primera versión.</h2>
-          </div>
-          <ol className="route-list">
-            {route.map((step, index) => (
-              <li key={step}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <strong>{step}</strong>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="section shell status-section" id="estado" aria-labelledby="status-title">
-        <div className="status-panel">
+      <section className="section approach-section" id="enfoque" aria-labelledby="approach-title">
+        <div className="shell approach-layout">
           <div>
-            <p className="eyebrow">Ahora mismo</p>
-            <h2 id="status-title">La interfaz está lista para el siguiente paso.</h2>
+            <p className="eyebrow">Cómo trabajamos</p>
+            <h2 id="approach-title">
+              Decisiones que siguen siendo útiles después del lanzamiento.
+            </h2>
           </div>
           <p>
-            Esta Fase 0 no adelanta catálogo ni autenticación: prepara el espacio, la navegación y
-            las decisiones de accesibilidad que sostendrán lo que venga después.
+            Priorizamos claridad, calidad verificable y una arquitectura proporcional al problema.
+            Así cada entrega puede mantenerse, probarse y crecer sin perder de vista el objetivo.
           </p>
         </div>
       </section>

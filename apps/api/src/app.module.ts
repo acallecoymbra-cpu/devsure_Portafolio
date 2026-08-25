@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
 import { validateEnvironment } from './config/env.validation';
 import { HealthModule } from './health/health.module';
+import { Technology } from './technologies/entities/technology.entity';
+import { TechnologiesModule } from './technologies/technologies.module';
 
 @Module({
   imports: [
@@ -22,10 +24,11 @@ import { HealthModule } from './health/health.module';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [],
+        entities: [Technology],
       }),
     }),
     HealthModule,
+    TechnologiesModule,
   ],
 })
 export class AppModule {}

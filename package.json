@@ -16,7 +16,8 @@
     "db:migration:generate": "pnpm --filter @devsure/api migration:generate",
     "db:migration:run": "pnpm --filter @devsure/api migration:run",
     "db:migration:revert": "pnpm --filter @devsure/api migration:revert",
-    "db:migration:show": "pnpm --filter @devsure/api migration:show"
+    "db:migration:show": "pnpm --filter @devsure/api migration:show",
+    "db:seed:technologies": "pnpm --filter @devsure/api seed:technologies"
   },
   "devDependencies": {
     "prettier": "^3.5.3",
