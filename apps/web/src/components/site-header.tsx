@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const navigation = [
   { href: '/', label: 'Inicio' },
+  { href: '/#trabajos-realizados', label: 'Trabajos realizados' },
   { href: '/#tecnologias', label: 'Tecnologías' },
   { href: '/#enfoque', label: 'Enfoque' },
 ];

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { CaseStudiesSection } from '@/features/case-studies/components/case-studies-section';
 import { TechnologiesSection } from '@/features/technologies/components/technologies-section';
 import { TechnologiesSkeleton } from '@/features/technologies/components/technologies-skeleton';
 
@@ -22,6 +23,11 @@ export default function HomePage() {
       />
 
       <section className="hero shell" aria-labelledby="hero-title">
+        <div className="hero-background" aria-hidden="true">
+          <video autoPlay muted loop playsInline poster="/hero/hero-poster.jpg">
+            <source src="/hero/tron-ares.mkv" type="video/x-matroska" />
+          </video>
+        </div>
         <div className="hero-copy">
           <p className="eyebrow">Software con criterio técnico</p>
           <h1 id="hero-title">Construimos soluciones digitales preparadas para avanzar.</h1>
@@ -51,6 +57,8 @@ export default function HomePage() {
           </a>
         </div>
       </section>
+
+      <CaseStudiesSection />
 
       <Suspense fallback={<TechnologiesSkeleton />}>
         <TechnologiesSection />

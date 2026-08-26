@@ -10,5 +10,6 @@ test-results/
 .data/
 .turbo/
 *.tsbuildinfo
+apps/web/public/hero/*.mkv
 !.env.example
 pnpm-debug.log*
