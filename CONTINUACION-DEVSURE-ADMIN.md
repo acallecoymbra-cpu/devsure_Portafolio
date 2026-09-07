@@ -602,6 +602,141 @@ Con la Fase 1 completa y el build verde, continuar con **Experiences**
 traducible), CRUD `owner_id`-scoped, y reutilizar `<FileUploadField>` para
 `logo` (carpeta `experiences-logos`, ya soportada en `upload-folders.ts`).
 
+### Sesión 2026-09-07 (6) — Módulo Experiences (primer contenido "core", Fase 2)
+
+**Objetivo de la sesión:** implementar el CRUD completo de `Experiences`
+(spec §5.3, §6.3) con `owner_id`-scoping real, `levels[]` (repeater anidado
+con descripción e `highlights` traducibles), `tech_stack` y `logo`. Es el
+primer módulo de Fase 2 y el primer contenido con múltiples registros por
+owner (a diferencia de Profile/Translations, que son una fila por owner).
+
+**Decisiones de diseño:**
+
+- `Experience.slug` es único **globalmente** (no compuesto con `owner_id`),
+  igual que `Technology.slug` — consistente con el patrón ya existente en el
+  proyecto y con la redacción literal de la spec ("string unique").
+- `levels`/`summary`/`techStack` se guardan como `simple-json` en la entidad
+  (mismo patrón que `Profile`). `levels` es la primera estructura JSON
+  **anidada** del proyecto (objetos con un array de objetos traducibles
+  dentro) — se validó con `@ValidateNested({ each: true }) @Type(() =>
+  ExperienceLevelDto)` más el validador `IsTranslatableString` ya existente,
+  reutilizado también para `highlights` gracias a la opción `each: true` que
+  `class-validator` aplica automáticamente a elementos de array.
+- **El formulario de admin es controlado (state de React), no
+  `FormData`/no controlado como Profile-Translations-Technologies.** Es la
+  primera vez que se necesita: `levels[]` tiene longitud dinámica y cada
+  nivel tiene a su vez un array `highlights[]` de longitud dinámica con
+  objetos traducibles — no hay forma limpia de representar eso con nombres de
+  campo planos en `FormData`. Se construyeron dos componentes reutilizables
+  nuevos exigidos por la spec §11.2 para esto: `<RepeaterField>` (genérico,
+  add/remove, usado tanto para `levels` como para `highlights` dentro de cada
+  nivel) y `<TagsInput>` (para `tech_stack`). `<LocaleTabs>` (de la sesión de
+  Profile) se reutilizó sin cambios. `<FileUploadField>` se extendió con un
+  callback `onUploaded` opcional para poder usarse en un formulario
+  controlado (antes solo soportaba `hiddenName` para formularios con
+  `FormData`); `ProfileForm` sigue funcionando igual, sin cambios de
+  comportamiento.
+- Se extrajo `apps/api/src/common/slugify.ts` (con tests) como utilidad
+  compartida — la reutilizarán Projects/Posts/Networks cuando lleguen (regla
+  de negocio #3 de la spec: slug auto-generado si viene vacío).
+- **No se implementó bulk delete** (`DELETE /api/admin/{entity}` con
+  `{ids:[]}`, spec §10.3): Technologies, el módulo de referencia existente,
+  tampoco lo tiene. Se mantuvo la paridad con el patrón ya establecido en vez
+  de introducir uno nuevo solo para Experiences.
+- **No se implementó el endpoint público** (`GET /api/public/experiences/:slug`):
+  la propia spec lo ubica después de todo el contenido "core" (Experiences +
+  Projects + Studies + Skills + Services), no como parte de Experiences en
+  solitario.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/common/slugify.ts                                        (nuevo)
+apps/api/src/common/slugify.spec.ts                                    (nuevo)
+apps/api/src/experiences/entities/experience.entity.ts                (nuevo)
+apps/api/src/experiences/dto/experience-level.dto.ts                  (nuevo)
+apps/api/src/experiences/dto/experience.dto.ts                        (nuevo)
+apps/api/src/experiences/dto/list-experiences-query.dto.ts            (nuevo)
+apps/api/src/experiences/experiences.service.ts                       (nuevo)
+apps/api/src/experiences/experiences.service.spec.ts                  (nuevo)
+apps/api/src/experiences/admin-experiences.controller.ts              (nuevo)
+apps/api/src/experiences/experiences.module.ts                        (nuevo)
+apps/api/src/database/migrations/1789084800000-CreateExperiences.ts   (nuevo)
+apps/api/src/database/migrations/__tests__/1789084800000-CreateExperiences.spec.ts (nuevo)
+apps/api/test/experiences.e2e-spec.ts                                 (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (Experience, ExperienceInput,
+                                            ExperienceLevel)
+apps/web/src/app/admin/(protected)/experiences/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/experience-list.tsx            (nuevo)
+apps/web/src/features/admin/components/experience-form.tsx            (nuevo)
+apps/web/src/features/admin/components/repeater-field.tsx             (nuevo)
+apps/web/src/features/admin/components/tags-input.tsx                 (nuevo)
+apps/web/src/features/admin/components/file-upload-field.tsx (+onUploaded)
+apps/web/src/features/admin/components/admin-shell.tsx    (nav Experiencias)
+apps/web/src/features/admin/api/admin-api.ts (listExperiences/getExperience/
+                                               createExperience/updateExperience/
+                                               deleteExperience)
+apps/web/src/features/admin/types.ts       (Experience*, ExperiencePage)
+apps/web/src/features/admin/admin.module.css (.tagsInput, .tag, .repeater*,
+                                               .highlightsLabel)
+apps/web/tests/admin-experiences-structure.test.mjs                   (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (53 tests: incluye
+                                               slugify.spec.ts,
+                                               experiences.service.spec.ts —
+                                               auto-slug, slug explícito,
+                                               conflicto de slug entre owners,
+                                               round-trip de levels/highlights
+                                               por JSON, scoping por owner en
+                                               list/get/update/delete — y la
+                                               migración up/down/up + cascada)
+pnpm --filter @devsure/api test:integration  (48 tests: incluye
+                                               experiences.e2e-spec.ts — 401,
+                                               400 sin levels, 400 locale no
+                                               soportado en description, 201
+                                               con auto-slug, 409 slug
+                                               duplicado, list/update/delete
+                                               end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas
+                                               de experiences)
+pnpm --filter @devsure/web test              (falla 1/8, la misma preexistente
+                                               ya documentada, nada nuevo roto)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Pendientes detectados:**
+
+- Mismo hueco preexistente de siempre en `admin-structure.test.mjs`
+  (Playwright de technologies nunca creado).
+- `pnpm format:check` sigue con el mismo hueco preexistente amplio ya
+  documentado (no se agrandó: los archivos nuevos de esta sesión también
+  saldrían sin formatear si se corriera `prettier --write` sobre todo el
+  repo, pero es el mismo problema de fondo, no uno nuevo).
+- Falta el endpoint público de portfolio (a propósito, ver spec §14 Fase 2).
+- No hay reordenamiento drag-and-drop de `levels`/`highlights` en
+  `<RepeaterField>` — solo añadir al final y eliminar. La spec no lo exige
+  explícitamente; `sort_order` a nivel de Experience sí existe y se respeta.
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Con Experiences funcionando de punta a punta, seguir con **Projects**
+(spec §5.4, §6.4) — es más grande que Experiences (`apps`, `gallery`,
+`experience_id` opcional, `featured` con tope de 3, `published_at` draft) y
+puede reutilizar directamente `<RepeaterField>` (para `apps`),
+`<TagsInput>` (`tech_stack`) y `<FileUploadField>` (`projects-covers`,
+`projects-gallery` — esta última necesitará soporte de **múltiples**
+archivos, hoy `<FileUploadField>` solo maneja uno; revisar si conviene
+extenderlo o crear una variante antes de construir el formulario de
+Projects).
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del

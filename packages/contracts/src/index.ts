@@ -162,6 +162,39 @@ export interface UploadResult {
   url: string;
 }
 
+/** One role held at a company; `experiences.levels[]` in spec §5.3. */
+export interface ExperienceLevel {
+  role: string;
+  startDate?: string;
+  endDate?: string | null;
+  inProgress?: boolean;
+  description?: TranslatableString;
+  highlights?: TranslatableString[];
+}
+
+export interface Experience {
+  id: string;
+  company: string;
+  slug: string;
+  logo?: string;
+  summary: TranslatableString;
+  techStack: string[];
+  levels: ExperienceLevel[];
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExperienceInput {
+  company: string;
+  slug?: string;
+  logo?: string;
+  summary?: TranslatableString;
+  techStack?: string[];
+  levels: ExperienceLevel[];
+  sortOrder?: number;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

@@ -3,6 +3,9 @@ import type {
   AdminTechnology,
   AdminTechnologyPage,
   AuthSession,
+  Experience,
+  ExperienceInput,
+  ExperiencePage,
   Profile,
   TechnologyInput,
   Translations,
@@ -133,6 +136,34 @@ export function uploadFile(file: File, folder: UploadFolder): Promise<UploadResu
   return request<UploadResult>('/admin/uploads', {
     method: 'POST',
     body: formData,
+  });
+}
+
+export function listExperiences(page = 1, limit = 50): Promise<ExperiencePage> {
+  return request<ExperiencePage>(`/admin/experiences?page=${page}&limit=${limit}`);
+}
+
+export function getExperience(id: string): Promise<Experience> {
+  return request<Experience>(`/admin/experiences/${encodeURIComponent(id)}`);
+}
+
+export function createExperience(input: ExperienceInput): Promise<Experience> {
+  return request<Experience>('/admin/experiences', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateExperience(id: string, input: Partial<ExperienceInput>): Promise<Experience> {
+  return request<Experience>(`/admin/experiences/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteExperience(id: string): Promise<void> {
+  return request<void>(`/admin/experiences/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
   });
 }
 

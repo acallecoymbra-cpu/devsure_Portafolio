@@ -9,18 +9,21 @@ interface FileUploadFieldProps {
   label: string;
   folder: UploadFolder;
   accept: string;
-  hiddenName: string;
+  /** Renders a hidden input under this name, for uncontrolled `FormData` forms (e.g. ProfileForm). */
+  hiddenName?: string;
+  /** Called with the uploaded path, for controlled forms (e.g. ExperienceForm). */
+  onUploaded?: (path: string) => void;
   value?: string;
   helpText?: string;
 }
 
 /**
  * Reusable `<FileUploadField>` (spec §11.2): uploads immediately on selection
- * via `POST /admin/uploads` and keeps the returned relative path in a hidden
- * input, so the surrounding uncontrolled `<form>` submits it like any other
- * field once the parent's `FormData` is read.
+ * via `POST /admin/uploads`. Supports two integration styles: an
+ * uncontrolled `<form>` reads the path back from the rendered hidden input
+ * (`hiddenName`), while a controlled form reads it from `onUploaded`.
  */
-export function FileUploadField({ label, folder, accept, hiddenName, value, helpText }: FileUploadFieldProps) {
+export function FileUploadField({ label, folder, accept, hiddenName, onUploaded, value, helpText }: FileUploadFieldProps) {
   const [path, setPath] = useState(value ?? '');
   const [status, setStatus] = useState<'idle' | 'uploading' | 'error'>('idle');
   const [error, setError] = useState('');
@@ -37,6 +40,7 @@ export function FileUploadField({ label, folder, accept, hiddenName, value, help
     try {
       const result = await uploadFile(file, folder);
       setPath(result.path);
+      onUploaded?.(result.path);
       setStatus('idle');
     } catch (caught) {
       setStatus('error');
@@ -54,7 +58,7 @@ export function FileUploadField({ label, folder, accept, hiddenName, value, help
     <label className={styles.field}>
       <span>{label}</span>
       <input type="file" accept={accept} onChange={handleChange} disabled={status === 'uploading'} />
-      <input type="hidden" name={hiddenName} value={path} />
+      {hiddenName ? <input type="hidden" name={hiddenName} value={path} /> : null}
       {status === 'uploading' ? <small>Subiendo…</small> : null}
       {status === 'error' ? (
         <small role="alert" className={styles.uploadError}>
