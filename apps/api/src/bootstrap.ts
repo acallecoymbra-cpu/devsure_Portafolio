@@ -17,7 +17,7 @@ export function configureApp(app: INestApplication): void {
   app.use(json({ limit: bodyLimit }));
   app.use(urlencoded({ extended: true, limit: bodyLimit }));
   app.enableCors({
-    credentials: false,
+    credentials: true,
     origin: (
       origin: string | undefined,
       callback: (error: Error | null, allow?: boolean) => void,
@@ -43,6 +43,7 @@ export function configureApp(app: INestApplication): void {
       .setTitle('DevSure API')
       .setDescription('Versioned REST API for DevSure')
       .setVersion('0.1.0')
+      .addCookieAuth('devsure_session')
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);

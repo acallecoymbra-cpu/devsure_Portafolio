@@ -1,5 +1,6 @@
 node_modules/
 .next/
+apps/web/.next-*/
 dist/
 coverage/
 playwright-report/
@@ -11,5 +12,6 @@ test-results/
 .turbo/
 *.tsbuildinfo
 apps/web/public/hero/*.mkv
+imagenes/*.mkv
 !.env.example
 pnpm-debug.log*

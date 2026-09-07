@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { CaseStudiesSection } from '@/features/case-studies/components/case-studies-section';
+import { HomeHero } from '@/features/home/components/home-hero';
 import { TechnologiesSection } from '@/features/technologies/components/technologies-section';
 import { TechnologiesSkeleton } from '@/features/technologies/components/technologies-skeleton';
 
@@ -22,41 +23,7 @@ export default function HomePage() {
         }}
       />
 
-      <section className="hero shell" aria-labelledby="hero-title">
-        <div className="hero-background" aria-hidden="true">
-          <video autoPlay muted loop playsInline poster="/hero/hero-poster.jpg">
-            <source src="/hero/tron-ares.mkv" type="video/x-matroska" />
-          </video>
-        </div>
-        <div className="hero-copy">
-          <p className="eyebrow">Software con criterio técnico</p>
-          <h1 id="hero-title">Construimos soluciones digitales preparadas para avanzar.</h1>
-          <p className="hero-description">
-            Convertimos necesidades de negocio en productos claros, mantenibles y listos para
-            evolucionar junto a tu operación.
-          </p>
-          <div className="hero-actions">
-            <a className="button button-primary" href="#tecnologias">
-              Explorar tecnologías
-            </a>
-            <a className="button button-secondary" href="#enfoque">
-              Conocer el enfoque
-            </a>
-          </div>
-        </div>
-
-        <div className="hero-proof" aria-labelledby="hero-proof-title">
-          <p className="hero-proof-label">Una base técnica visible</p>
-          <h2 id="hero-proof-title">Capacidad para construir, automatizar y mejorar.</h2>
-          <p>
-            Nuestro catálogo publicado reúne las herramientas y prácticas que respaldan cada
-            decisión de implementación.
-          </p>
-          <a href="#tecnologias">
-            Ver catálogo completo <span aria-hidden="true">↓</span>
-          </a>
-        </div>
-      </section>
+      <HomeHero />
 
       <CaseStudiesSection />
 

@@ -21,7 +21,12 @@ export class SafeExceptionFilter implements ExceptionFilter {
     const statusCode = this.getStatusCode(exception);
 
     response.header('x-request-id', requestId);
-    response.status(statusCode).json(this.buildError(statusCode, requestId, request));
+    const body = this.buildError(statusCode, requestId, request);
+    const detail = exception instanceof HttpException ? exception.getResponse() : undefined;
+    if (statusCode === 403 && typeof detail === 'object' && detail !== null && 'code' in detail && detail.code === 'PASSWORD_CHANGE_REQUIRED') {
+      body.code = 'PASSWORD_CHANGE_REQUIRED';
+    }
+    response.status(statusCode).json(body);
   }
 
   private buildError(statusCode: number, requestId: string, request: Request): ErrorResponse {

@@ -1,0 +1,457 @@
+.hero {
+  background:
+    radial-gradient(circle at 78% 28%, rgba(169, 152, 255, 0.22), transparent 25rem),
+    linear-gradient(180deg, rgba(20, 27, 54, 0.82), rgba(7, 11, 23, 0));
+  border-bottom: 1px solid var(--line);
+  min-height: min(43rem, calc(100vh - 4.25rem));
+  padding-block: clamp(5rem, 12vw, 9rem) 4rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.8rem, 9vw, 7rem);
+  margin-bottom: clamp(3rem, 8vw, 6rem);
+  max-width: 13ch;
+}
+
+.heroFooter {
+  align-items: flex-end;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.heroFooter > p,
+.heroFooter > a,
+.sectionHeading > p,
+.principlesGrid p,
+.companyCopy > p:last-child {
+  color: var(--muted);
+}
+
+.heroFooter > p {
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  margin-bottom: 0;
+  max-width: 42rem;
+}
+
+.heroFooter > a {
+  align-items: center;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 0.8rem;
+  min-height: 2.75rem;
+}
+
+.storiesSection,
+.principlesSection,
+.companiesSection,
+.closingSection {
+  padding-block: clamp(5rem, 10vw, 8rem);
+}
+
+.storiesSection {
+  scroll-margin-top: 5rem;
+}
+
+.sectionHeading {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.sectionHeading h2,
+.principlesIntro h2 {
+  margin-bottom: 0;
+}
+
+.sectionHeading > p {
+  margin-bottom: 0;
+  max-width: 38rem;
+}
+
+.carousel,
+.companyCarousel {
+  min-width: 0;
+}
+
+.storySlide {
+  background: rgba(16, 24, 43, 0.86);
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.storyMedia {
+  aspect-ratio: 16 / 10;
+  background: #0b1122;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.storyMedia::after {
+  background: linear-gradient(180deg, transparent 62%, rgba(6, 10, 20, 0.58));
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.storyMedia img {
+  object-fit: cover;
+}
+
+.imageLabel {
+  bottom: 1rem;
+  color: rgba(247, 248, 255, 0.8);
+  font-size: 0.68rem;
+  left: 1rem;
+  letter-spacing: 0.1em;
+  position: absolute;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.mediaFallback {
+  align-items: center;
+  background: linear-gradient(135deg, #10182b, #211b49);
+  color: var(--muted);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  width: 100%;
+}
+
+.storyCopy {
+  align-content: end;
+  display: grid;
+  min-height: 18rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  position: relative;
+}
+
+.storyCopy > p:first-child,
+.companyCopy > p:first-child {
+  color: var(--accent-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.storyCopy h3 {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  max-width: 11ch;
+}
+
+.storyCopy > p:last-of-type {
+  color: var(--muted);
+  margin-bottom: 0;
+  max-width: 34rem;
+}
+
+.storyCount {
+  color: rgba(201, 193, 255, 0.56);
+  font-size: 0.78rem;
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+}
+
+.carouselToolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
+  padding-top: 1rem;
+}
+
+.arrowControls,
+.indicators,
+.companyControls {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+}
+
+.arrowControls button,
+.companyControls button {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.1rem;
+  height: 2.75rem;
+  justify-content: center;
+  transition:
+    border-color 180ms ease,
+    transform 160ms var(--ease-out);
+  width: 2.75rem;
+}
+
+.arrowControls button:active,
+.companyControls button:active,
+.playControl:active,
+.indicators button:active {
+  transform: scale(0.94);
+}
+
+.arrowControls button:hover,
+.companyControls button:hover,
+.playControl:hover {
+  border-color: rgba(201, 193, 255, 0.62);
+}
+
+.indicators button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.75rem;
+}
+
+.indicators button::after {
+  background: #918ab9;
+  border-radius: 999px;
+  content: '';
+  height: 0.55rem;
+  transition:
+    background-color 180ms ease,
+    width 180ms ease;
+  width: 1.4rem;
+}
+
+.indicators button[aria-current='true']::after {
+  background: var(--accent);
+  width: 2.1rem;
+}
+
+.playControl {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.78rem;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.9rem;
+}
+
+.principlesSection {
+  background: rgba(13, 20, 38, 0.7);
+  border-block: 1px solid var(--line);
+}
+
+.principlesIntro {
+  margin-bottom: 2.5rem;
+}
+
+.principlesGrid {
+  display: grid;
+  gap: 0.85rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.principlesGrid li {
+  background: rgba(16, 24, 43, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  min-height: 18rem;
+  padding: 1.5rem;
+}
+
+.principlesGrid li > span {
+  color: var(--accent-soft);
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 5rem;
+}
+
+.principlesGrid h3 {
+  font-size: 1.55rem;
+}
+
+.principlesGrid p {
+  margin-bottom: 0;
+}
+
+.manifestoSection {
+  align-items: center;
+  display: flex;
+  min-height: 75vh;
+  padding-block: 6rem;
+}
+
+.manifestoSection blockquote {
+  margin: 0;
+}
+
+.manifestoSection blockquote p {
+  font-size: clamp(2.4rem, 7vw, 6.2rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+  margin-bottom: 0;
+  max-width: 17ch;
+}
+
+.companiesSection {
+  background: linear-gradient(180deg, rgba(25, 20, 61, 0.32), transparent);
+  border-top: 1px solid var(--line);
+}
+
+.companyCard {
+  background: rgba(16, 24, 43, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  display: grid;
+  min-height: 18rem;
+  overflow: hidden;
+}
+
+.companyLogo {
+  align-items: center;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 2rem;
+}
+
+.companyLogo img {
+  height: auto;
+  max-height: 8rem;
+  object-fit: contain;
+  width: min(100%, 24rem);
+}
+
+.companyLogo strong {
+  color: #080d1d;
+  font-size: clamp(2rem, 8vw, 4rem);
+}
+
+.companyCopy {
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+.companyCopy h3 {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+}
+
+.companyCopy > p:last-child {
+  margin-bottom: 0;
+  max-width: 34rem;
+}
+
+.companyControls {
+  justify-content: flex-end;
+  padding-top: 1rem;
+}
+
+.companyControls p {
+  color: var(--muted);
+  margin: 0;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.emptyState {
+  background: rgba(16, 24, 43, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  color: var(--muted);
+  margin: 0;
+  padding: 2rem;
+}
+
+.closingSection {
+  padding-top: 0;
+}
+
+.closingPanel {
+  align-items: center;
+  background: linear-gradient(120deg, rgba(86, 70, 190, 0.55), rgba(20, 32, 65, 0.94));
+  border: 1px solid rgba(185, 173, 255, 0.28);
+  border-radius: 1rem;
+  display: grid;
+  gap: 2rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.closingPanel h2 {
+  margin-bottom: 0;
+}
+
+.closingPanel a {
+  justify-self: start;
+}
+
+@media (min-width: 48rem) {
+  .heroFooter,
+  .sectionHeading,
+  .closingPanel {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.68fr);
+  }
+
+  .principlesGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .companyCard {
+    grid-template-columns: minmax(18rem, 0.7fr) minmax(0, 1fr);
+  }
+
+  .closingPanel a {
+    justify-self: end;
+  }
+}
+
+@media (min-width: 64rem) {
+  .storySlide {
+    grid-template-columns: minmax(0, 1.55fr) minmax(20rem, 0.72fr);
+  }
+
+  .storyMedia {
+    aspect-ratio: 16 / 10;
+  }
+
+  .storyCopy {
+    min-height: 34rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicators button::after {
+    transition: none;
+  }
+
+  .arrowControls button,
+  .companyControls button {
+    transition: none;
+  }
+
+  .arrowControls button:active,
+  .companyControls button:active,
+  .playControl:active,
+  .indicators button:active {
+    transform: none;
+  }
+}

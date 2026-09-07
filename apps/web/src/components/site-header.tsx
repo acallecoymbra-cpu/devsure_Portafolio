@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 const navigation = [
@@ -8,9 +9,11 @@ const navigation = [
   { href: '/#trabajos-realizados', label: 'Trabajos realizados' },
   { href: '/#tecnologias', label: 'Tecnologías' },
   { href: '/#enfoque', label: 'Enfoque' },
+  { href: '/cultura', label: 'CULTURA', emphasized: true },
 ];
 
 export function SiteHeader() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
@@ -54,17 +57,23 @@ export function SiteHeader() {
           }}
         >
           <ul className="nav-list">
-            {navigation.map((item, index) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => closeMenu()}
-                  ref={index === 0 ? firstLinkRef : undefined}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+            {navigation.map((item, index) => {
+              const isCurrentPage = item.href === '/cultura' && pathname === item.href;
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={item.emphasized ? 'nav-culture-link' : undefined}
+                    aria-current={isCurrentPage ? 'page' : undefined}
+                    onClick={() => closeMenu()}
+                    ref={index === 0 ? firstLinkRef : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>

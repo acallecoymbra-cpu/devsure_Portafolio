@@ -21,5 +21,11 @@ export default () => {
     swagger: {
       enabled: environment.SWAGGER_ENABLED,
     },
+    auth: {
+      sessionTtlSeconds: environment.AUTH_SESSION_TTL_SECONDS,
+      loginWindowSeconds: environment.AUTH_LOGIN_WINDOW_SECONDS,
+      loginMaxAttempts: environment.AUTH_LOGIN_MAX_ATTEMPTS,
+      secureCookies: environment.NODE_ENV === 'production',
+    },
   };
 };

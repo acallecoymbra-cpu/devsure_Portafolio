@@ -1,0 +1,350 @@
+.hero {
+  isolation: isolate;
+  min-height: min(48rem, calc(100svh - 4.25rem));
+  overflow: hidden;
+  padding-block: clamp(4.5rem, 10vw, 7.5rem);
+  position: relative;
+}
+
+.environment {
+  background:
+    radial-gradient(circle at 77% 42%, rgba(108, 89, 235, 0.22), transparent 24rem),
+    linear-gradient(135deg, rgba(13, 21, 43, 0.86), rgba(7, 11, 23, 0.5));
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.environment::after {
+  background: linear-gradient(180deg, transparent 72%, var(--background));
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+
+.environmentGrid {
+  background-image:
+    linear-gradient(rgba(201, 193, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201, 193, 255, 0.055) 1px, transparent 1px);
+  background-size: 3.5rem 3.5rem;
+  inset: 0;
+  mask-image: linear-gradient(90deg, transparent, #000 42%, #000 85%, transparent);
+  opacity: 0.72;
+  position: absolute;
+}
+
+.environmentGlow {
+  animation: signal-drift 12s var(--ease-in-out) infinite alternate;
+  background: radial-gradient(circle, rgba(169, 152, 255, 0.3), transparent 66%);
+  border-radius: 50%;
+  height: 24rem;
+  opacity: 0.45;
+  position: absolute;
+  right: -6rem;
+  top: 8%;
+  transform: translate3d(0, 0, 0) scale(0.96);
+  width: 24rem;
+}
+
+.layout {
+  align-items: center;
+  display: grid;
+  gap: clamp(3rem, 8vw, 6.5rem);
+}
+
+.copy {
+  animation: hero-enter 620ms var(--ease-out) both;
+  max-width: 43rem;
+}
+
+.copy h1 {
+  font-size: clamp(2.9rem, 11vw, 6.4rem);
+  margin-bottom: 1.5rem;
+  max-width: 10.5ch;
+}
+
+.description {
+  color: var(--muted);
+  font-size: clamp(1.02rem, 2vw, 1.2rem);
+  margin-bottom: 2rem;
+  max-width: 37rem;
+}
+
+.actions {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.secondaryLink {
+  align-items: center;
+  color: var(--text);
+  display: inline-flex;
+  font-size: 0.92rem;
+  font-weight: 700;
+  gap: 0.65rem;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding-inline: 0.25rem;
+}
+
+.secondaryLink span {
+  color: var(--accent-soft);
+  transition: transform 180ms var(--ease-out);
+}
+
+.signalCard {
+  animation: hero-enter 620ms 100ms var(--ease-out) both;
+  background:
+    linear-gradient(145deg, rgba(30, 41, 79, 0.92), rgba(12, 19, 38, 0.96)), var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  box-shadow: 0 2rem 5rem rgba(1, 4, 14, 0.34);
+  overflow: hidden;
+  padding: clamp(1.35rem, 4vw, 2rem);
+  position: relative;
+}
+
+.signalCard::before {
+  background: linear-gradient(90deg, transparent, rgba(169, 152, 255, 0.72), transparent);
+  content: '';
+  height: 1px;
+  left: 8%;
+  opacity: 0.78;
+  position: absolute;
+  right: 8%;
+  top: 0;
+}
+
+.signalHeader {
+  align-items: baseline;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.6rem;
+}
+
+.signalHeader p,
+.signalHeader span,
+.stepNumber,
+.signalResult {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.signalHeader p {
+  color: var(--accent-soft);
+  margin: 0;
+}
+
+.signalHeader span {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 0.5rem;
+  letter-spacing: 0.06em;
+}
+
+.signalHeader i {
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 0.8rem rgba(110, 231, 183, 0.58);
+  display: block;
+  height: 0.45rem;
+  width: 0.45rem;
+}
+
+.signalCard > h2 {
+  font-size: clamp(1.85rem, 7vw, 3rem);
+  margin-bottom: 2rem;
+  max-width: 12ch;
+}
+
+.signalSteps {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.signalSteps::before {
+  background: linear-gradient(var(--accent), rgba(169, 152, 255, 0.12));
+  bottom: 1.45rem;
+  content: '';
+  left: 1rem;
+  opacity: 0.72;
+  position: absolute;
+  top: 1.45rem;
+  width: 1px;
+}
+
+.signalSteps li {
+  align-items: flex-start;
+  animation: step-enter 460ms var(--ease-out) both;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  padding-block: 0.85rem;
+  position: relative;
+}
+
+.signalSteps li:nth-child(2) {
+  animation-delay: 160ms;
+}
+
+.signalSteps li:nth-child(3) {
+  animation-delay: 220ms;
+}
+
+.stepNumber {
+  align-items: center;
+  background: #151d36;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--accent-soft);
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  letter-spacing: 0;
+  position: relative;
+  width: 2rem;
+  z-index: 1;
+}
+
+.signalSteps h3 {
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.2rem;
+}
+
+.signalSteps p {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+.signalResult {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  color: var(--text);
+  display: flex;
+  gap: 0.7rem;
+  margin: 1.3rem 0 0;
+  padding-top: 1.25rem;
+}
+
+.signalResult span {
+  background: var(--success);
+  border-radius: 999px;
+  height: 0.5rem;
+  position: relative;
+  width: 0.5rem;
+}
+
+.signalResult span::after {
+  animation: status-pulse 2.8s var(--ease-in-out) infinite;
+  border: 1px solid var(--success);
+  border-radius: inherit;
+  content: '';
+  inset: -0.35rem;
+  opacity: 0;
+  position: absolute;
+  transform: scale(0.78);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .secondaryLink:hover span {
+    transform: translateY(0.2rem);
+  }
+}
+
+@media (min-width: 40rem) {
+  .actions {
+    align-items: center;
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 64rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.72fr);
+  }
+
+  .signalCard {
+    justify-self: end;
+    width: min(100%, 30rem);
+  }
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateX(0.65rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes signal-drift {
+  from {
+    opacity: 0.35;
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+
+  to {
+    opacity: 0.55;
+    transform: translate3d(-2rem, 1rem, 0) scale(1.04);
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  45% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+
+  75% {
+    opacity: 0.55;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy,
+  .environmentGlow,
+  .signalCard,
+  .signalResult span::after,
+  .signalSteps li {
+    animation: none;
+  }
+
+  .secondaryLink span {
+    transition: none;
+  }
+}

@@ -221,12 +221,19 @@ h3 {
   min-height: 3rem;
   padding: 0.7rem 1.3rem;
   transition:
-    transform 180ms ease,
-    background-color 180ms ease;
+    transform 160ms var(--ease-out),
+    background-color 180ms ease,
+    border-color 180ms ease;
 }
 
-.button:hover {
-  transform: translateY(-2px);
+.button:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .button-primary {
@@ -532,6 +539,10 @@ h3 {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+
+  .button:active {
+    transform: none;
+  }
 }
 
 /* Slice 1: portada comercial y catálogo de tecnologías */
@@ -545,6 +556,10 @@ h3 {
   --line: rgba(204, 214, 255, 0.16);
   --accent: #a998ff;
   --accent-soft: #c9c1ff;
+  --line-strong: rgba(220, 226, 255, 0.48);
+  --success: #6ee7b7;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --max-width: 76.25rem;
 }
 
@@ -552,6 +567,7 @@ body {
   background:
     radial-gradient(circle at 82% 4%, rgba(112, 91, 255, 0.15), transparent 30rem),
     linear-gradient(180deg, rgba(13, 20, 39, 0.48), transparent 38rem), var(--background);
+  overflow-x: hidden;
   overflow-x: clip;
 }
 
@@ -608,7 +624,7 @@ input {
 .menu-button {
   align-items: center;
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   color: var(--text);
   cursor: pointer;
@@ -674,6 +690,22 @@ input {
   background: var(--surface-raised);
 }
 
+.nav-list .nav-culture-link {
+  border: 1px solid rgba(201, 193, 255, 0.42);
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding-inline: 0.95rem;
+}
+
+.nav-list .nav-culture-link:hover,
+.nav-list .nav-culture-link[aria-current='page'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #080b17;
+}
+
 .hero {
   align-items: flex-end;
   gap: 2.5rem;
@@ -699,7 +731,7 @@ input {
 
 .button-secondary {
   background: rgba(17, 26, 50, 0.56);
-  border-color: var(--line);
+  border-color: var(--line-strong);
   color: var(--text);
 }
 
@@ -789,7 +821,7 @@ input {
 .search-control {
   align-items: center;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 0.6rem;
   display: flex;
   min-height: 2.75rem;
@@ -834,7 +866,7 @@ input {
 
 .filter-chip {
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   color: var(--muted);
   cursor: pointer;
@@ -933,8 +965,10 @@ input {
 }
 
 .technology-image img {
+  background: #f7f8fb;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 0.65rem;
   transition: transform 220ms ease;
   width: 100%;
 }
@@ -1009,7 +1043,7 @@ input {
 
 .case-study-card {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 1rem;
   color: inherit;
   cursor: pointer;
@@ -1244,6 +1278,25 @@ input {
   animation: skeleton-pulse 1.4s ease-in-out infinite;
 }
 
+.route-loading {
+  color: var(--muted);
+}
+
+.route-loading h1 {
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.route-loading .loader {
+  animation: loader-spin 720ms linear infinite;
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 @media (min-width: 40rem) {
   .hero-actions {
     align-items: center;
@@ -1355,6 +1408,10 @@ input {
 
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer {
+    animation: none;
+  }
+
+  .route-loading .loader {
     animation: none;
   }
 }

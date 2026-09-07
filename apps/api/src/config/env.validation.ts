@@ -10,6 +10,9 @@ export interface AppEnvironment {
   DATABASE_LOGGING: boolean;
   SWAGGER_ENABLED: boolean;
   BODY_LIMIT: string;
+  AUTH_SESSION_TTL_SECONDS: number;
+  AUTH_LOGIN_WINDOW_SECONDS: number;
+  AUTH_LOGIN_MAX_ATTEMPTS: number;
 }
 
 const environmentSchema = Joi.object<AppEnvironment>({
@@ -26,6 +29,9 @@ const environmentSchema = Joi.object<AppEnvironment>({
   BODY_LIMIT: Joi.string()
     .pattern(/^\d+(b|kb|mb|gb)$/i)
     .default('1mb'),
+  AUTH_SESSION_TTL_SECONDS: Joi.number().integer().min(300).max(2592000).default(28800),
+  AUTH_LOGIN_WINDOW_SECONDS: Joi.number().integer().min(1).max(3600).default(60),
+  AUTH_LOGIN_MAX_ATTEMPTS: Joi.number().integer().min(1).max(100).default(5),
 }).unknown(false);
 
 export function validateEnvironment(input: Record<string, unknown>): AppEnvironment {
@@ -39,6 +45,9 @@ export function validateEnvironment(input: Record<string, unknown>): AppEnvironm
     DATABASE_LOGGING: input.DATABASE_LOGGING,
     SWAGGER_ENABLED: input.SWAGGER_ENABLED,
     BODY_LIMIT: input.BODY_LIMIT,
+    AUTH_SESSION_TTL_SECONDS: input.AUTH_SESSION_TTL_SECONDS,
+    AUTH_LOGIN_WINDOW_SECONDS: input.AUTH_LOGIN_WINDOW_SECONDS,
+    AUTH_LOGIN_MAX_ATTEMPTS: input.AUTH_LOGIN_MAX_ATTEMPTS,
   };
   const { error, value } = environmentSchema.validate(values, {
     abortEarly: false,

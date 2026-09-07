@@ -51,8 +51,19 @@ function runPnpm(args) {
 
 function startPnpm(args) {
   const pnpmCli = process.env.npm_execpath;
-  const command = pnpmCli ? process.execPath : process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-  const commandArgs = pnpmCli ? [pnpmCli, ...args] : args;
+  let command;
+  let commandArgs;
+
+  if (pnpmCli) {
+    command = process.execPath;
+    commandArgs = [pnpmCli, ...args];
+  } else if (process.platform === 'win32') {
+    command = process.env.ComSpec ?? process.env.COMSPEC ?? 'cmd.exe';
+    commandArgs = ['/d', '/s', '/c', 'pnpm.cmd', ...args];
+  } else {
+    command = 'pnpm';
+    commandArgs = args;
+  }
 
   return spawn(command, commandArgs, {
     cwd: workspaceRoot,

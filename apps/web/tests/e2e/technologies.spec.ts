@@ -27,6 +27,22 @@ test('publishes the 41 technologies exactly once and filters with the keyboard',
   expect(new Set(ids).size).toBe(41);
   expect(ids.every(Boolean)).toBe(true);
 
+  const availableImages = page.locator('[data-image-status="available"] img');
+  await expect(availableImages).toHaveCount(41);
+  for (const image of await availableImages.all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() =>
+        image.evaluate((element) => {
+          const imageElement = element as HTMLImageElement;
+          return imageElement.complete && imageElement.naturalWidth > 0;
+        }),
+      )
+      .toBe(true);
+  }
+  const fallbackCards = page.locator('[data-testid="technology-card"]:has(.technology-icon)');
+  await expect(fallbackCards).toHaveCount(0);
+
   const automationFilter = page.getByRole('button', {
     name: 'Automatización de pruebas web y mobile',
   });
@@ -59,6 +75,19 @@ test('publishes the 41 technologies exactly once and filters with the keyboard',
   expect(controlHeights.every((height) => height >= 44)).toBe(true);
 });
 
+test('uses the technology icon when a mapped image cannot load', async ({ page }) => {
+  await page.route(/\/_next\/image\?.*typescript\.png/i, (route) => route.abort());
+  await page.route('**/technologies/typescript.png', (route) => route.abort());
+
+  await page.goto('/');
+  const typescriptCard = page.locator(
+    '[data-testid="technology-card"][data-technology-id="00000000-0000-4000-8000-000000000006"]',
+  );
+  await typescriptCard.scrollIntoViewIfNeeded();
+  await expect(typescriptCard.locator('[data-image-status="fallback"]')).toBeVisible();
+  await expect(typescriptCard.locator('.technology-icon')).toHaveCount(1);
+});
+
 test('loads every API page when the catalog grows beyond 50 records', async ({ page }) => {
   applyDatabaseFixture('insert-extra');
 
@@ -89,16 +118,18 @@ test('shows the real empty state when the API has no published technologies', as
   }
 });
 
-test('uses the neutral fallback for an unknown icon key', async ({ page }) => {
+test('uses the neutral fallback when a technology has no image and an unknown icon key', async ({
+  page,
+}) => {
   applyDatabaseFixture('unknown-icon');
 
   try {
     await page.goto('/');
-    const javaCard = page.locator(
-      '[data-testid="technology-card"][data-technology-id="00000000-0000-4000-8000-000000000001"]',
+    const postmanCard = page.locator(
+      '[data-testid="technology-card"][data-technology-id="00000000-0000-4000-8000-000000000041"]',
     );
-    await expect(javaCard).toBeVisible();
-    await expect(javaCard.locator('.technology-icon svg > rect[width="16"]')).toHaveCount(1);
+    await expect(postmanCard).toBeVisible();
+    await expect(postmanCard.locator('.technology-icon svg > rect[width="16"]')).toHaveCount(1);
   } finally {
     applyDatabaseFixture('restore-icon');
   }

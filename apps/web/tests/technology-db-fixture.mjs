@@ -23,11 +23,17 @@ try {
       break;
     case 'unknown-icon':
       database
-        .prepare("UPDATE technologies SET icon_key = 'unknown-key' WHERE slug = 'java'")
+        .prepare(
+          "UPDATE technologies SET slug = 'qa-unknown-image', icon_key = 'unknown-key' WHERE id = '00000000-0000-4000-8000-000000000041'",
+        )
         .run();
       break;
     case 'restore-icon':
-      database.prepare("UPDATE technologies SET icon_key = 'code' WHERE slug = 'java'").run();
+      database
+        .prepare(
+          "UPDATE technologies SET slug = 'postman', icon_key = 'collaboration' WHERE id = '00000000-0000-4000-8000-000000000041'",
+        )
+        .run();
       break;
     case 'hide-table':
       database.exec('ALTER TABLE technologies RENAME TO technologies_unavailable');

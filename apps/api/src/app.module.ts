@@ -6,6 +6,9 @@ import { validateEnvironment } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { Technology } from './technologies/entities/technology.entity';
 import { TechnologiesModule } from './technologies/technologies.module';
+import { AuthModule } from './auth/auth.module';
+import { AdminUser } from './auth/entities/admin-user.entity';
+import { AdminSession } from './auth/entities/admin-session.entity';
 
 @Module({
   imports: [
@@ -24,10 +27,11 @@ import { TechnologiesModule } from './technologies/technologies.module';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology],
+        entities: [Technology, AdminUser, AdminSession],
       }),
     }),
     HealthModule,
+    AuthModule,
     TechnologiesModule,
   ],
 })

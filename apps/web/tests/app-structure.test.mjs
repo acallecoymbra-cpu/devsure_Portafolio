@@ -11,6 +11,8 @@ test('the App Router foundation includes global states and metadata', async () =
     'src/app/loading.tsx',
     'src/app/error.tsx',
     'src/app/not-found.tsx',
+    'src/features/home/components/home-hero.tsx',
+    'src/features/home/home-hero.module.css',
     'src/lib/config.ts',
   ];
 
@@ -18,12 +20,32 @@ test('the App Router foundation includes global states and metadata', async () =
 
   const layout = await readFile(new URL('src/app/layout.tsx', root), 'utf8');
   const config = await readFile(new URL('src/lib/config.ts', root), 'utf8');
+  const page = await readFile(new URL('src/app/page.tsx', root), 'utf8');
+  const loading = await readFile(new URL('src/app/loading.tsx', root), 'utf8');
+  const homeHero = await readFile(
+    new URL('src/features/home/components/home-hero.tsx', root),
+    'utf8',
+  );
+  const homeHeroStyles = await readFile(
+    new URL('src/features/home/home-hero.module.css', root),
+    'utf8',
+  );
 
   assert.match(layout, /export const metadata/);
   assert.match(layout, /metadataBase/);
   assert.match(config, /NEXT_PUBLIC_API_BASE_URL/);
   assert.match(layout, /Saltar al contenido/);
   assert.match(layout, /canonical/);
+  assert.match(page, /<HomeHero \/>/);
+  assert.doesNotMatch(page, /<video|\.mkv|hero-poster\.jpg/);
+  assert.doesNotMatch(loading, /TechnologiesSkeleton|skeleton-shimmer/);
+  assert.equal((page.match(/<TechnologiesSkeleton \/>/g) ?? []).length, 1);
+  assert.match(homeHero, /data-testid="home-hero-signal"/);
+  assert.equal((homeHero.match(/<a /g) ?? []).length, 2);
+  assert.equal((homeHero.match(/button button-primary/g) ?? []).length, 1);
+  assert.match(homeHeroStyles, /prefers-reduced-motion: reduce/);
+  assert.match(homeHeroStyles, /animation: none/);
+  assert.doesNotMatch(homeHeroStyles, /@keyframes[^}]+(?:width|height|margin|padding):/s);
 });
 
 test('the technologies slice consumes the shared contract and models every public state', async () => {
@@ -34,6 +56,7 @@ test('the technologies slice consumes the shared contract and models every publi
     'src/features/technologies/components/technologies-section.tsx',
     'src/features/technologies/components/technologies-skeleton.tsx',
     'src/features/technologies/components/technologies-error-boundary.tsx',
+    'src/features/technologies/components/technology-image.tsx',
     'playwright.config.ts',
     'tests/e2e/technologies.spec.ts',
   ];
@@ -56,6 +79,22 @@ test('the technologies slice consumes the shared contract and models every publi
     new URL('src/features/technologies/components/technologies-section.tsx', root),
     'utf8',
   );
+  const imageComponent = await readFile(
+    new URL('src/features/technologies/components/technology-image.tsx', root),
+    'utf8',
+  );
+  const seed = await readFile(
+    new URL('../api/src/database/seeds/technology.seed-data.ts', root),
+    'utf8',
+  );
+  const imageMappings = [
+    ...imageComponent.matchAll(/^\s{2}(?:'([^']+)'|([a-z0-9]+)):\s*'\/technologies\/([^']+)'/gm),
+  ];
+  const imageSlugs = imageMappings.map((match) => match[1] ?? match[2]);
+  const imageAssets = imageMappings.map((match) => match[3]);
+  const seedSlugs = [...seed.matchAll(/^\s{2}\[\s*'[^']*',\s*'([^']+)',/gm)].map(
+    (match) => match[1],
+  );
 
   assert.match(apiClient, /PaginatedResponse<TechnologyCard>/);
   assert.match(apiClient, /limit=\$\{PAGE_LIMIT\}/);
@@ -65,4 +104,16 @@ test('the technologies slice consumes the shared contract and models every publi
   assert.match(icons, /fallbackIcon/);
   assert.match(section, /technologies.length > 0/);
   assert.match(section, /TechnologyExplorer/);
+  assert.equal(imageAssets.length, 41);
+  assert.equal(new Set(imageAssets).size, imageAssets.length);
+  assert.equal(new Set(imageSlugs).size, imageSlugs.length);
+  assert.equal(seedSlugs.length, 41);
+  assert.deepEqual(imageSlugs.toSorted(), seedSlugs.toSorted());
+  await Promise.all(
+    imageAssets.map((asset) => access(new URL(`public/technologies/${asset}`, root))),
+  );
+  assert.match(imageComponent, /import Image from 'next\/image'/);
+  assert.match(imageComponent, /onError/);
+  assert.match(imageComponent, /woocommerce: '\/technologies\/woocommerce\.png'/);
+  assert.match(imageComponent, /postman: '\/technologies\/postman\.png'/);
 });
