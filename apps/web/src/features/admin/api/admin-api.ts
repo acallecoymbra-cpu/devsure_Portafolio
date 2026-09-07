@@ -5,7 +5,9 @@ import type {
   AuthSession,
   Profile,
   TechnologyInput,
+  Translations,
   UpdateProfileInput,
+  UpdateTranslationsInput,
 } from '../types';
 
 export class AdminApiError extends Error {
@@ -106,6 +108,17 @@ export function getProfile(): Promise<Profile> {
 
 export function updateProfile(input: Partial<UpdateProfileInput>): Promise<Profile> {
   return request<Profile>('/admin/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function getTranslations(): Promise<Translations> {
+  return request<Translations>('/admin/translations');
+}
+
+export function updateTranslations(input: Partial<UpdateTranslationsInput>): Promise<Translations> {
+  return request<Translations>('/admin/translations', {
     method: 'PATCH',
     body: JSON.stringify(input),
   });

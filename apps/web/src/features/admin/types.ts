@@ -9,6 +9,8 @@ export type {
   PaginationMeta,
   Profile,
   UpdateProfileInput,
+  Translations,
+  UpdateTranslationsInput,
   TranslatableString,
   SupportedLocale,
 } from '@devsure/contracts';

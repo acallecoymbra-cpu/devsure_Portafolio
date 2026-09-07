@@ -137,6 +137,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Profile
           </Link>
           <Link
+            href="/admin/translations"
+            aria-current={pathname.startsWith('/admin/translations') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">✎</span>
+            Translations
+          </Link>
+          <Link
             href="/admin/technologies"
             aria-current={pathname.startsWith('/admin/technologies') ? 'page' : undefined}
           >

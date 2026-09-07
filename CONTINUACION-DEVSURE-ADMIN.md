@@ -240,6 +240,132 @@ controller/DTO ya usado en Profile. Reutilizar `IsTranslatableString` y
 Después de Translations, sigue **Uploads** (`POST /api/admin/uploads`) para
 poder reemplazar los campos de texto de `avatar`/`resume` por una carga real.
 
+### Sesión 2026-09-07 (3) — Módulo Translations
+
+**Objetivo de la sesión:** implementar `GET/PATCH /api/admin/translations`
+(spec §6.2): los 12 bloques de headings/intros editoriales del home
+(Hero, About, Strengths, Experience, Education, Portfolio, Skills, Work
+style, Testimonials, FAQ, Blog, Contact), reutilizando `Profile` y el
+validador `IsTranslatableString` creados en la sesión de Profile.
+
+**Decisión de diseño:** las 22 columnas de headings/intros se añadieron a la
+**misma entidad y tabla `profiles`** (no una tabla nueva), porque
+`GET/PATCH /admin/translations` es solo otra vista/otro DTO sobre el mismo
+registro por owner que ya gestiona Profile (igual que en el `users` original
+de la spec, donde todo vive en una sola fila). `TranslationsService` es un
+servicio nuevo (no mezclado con `ProfileService`) dentro del mismo
+`profile.module.ts`, con su propio `getOrCreate` — se extrajo
+`profileDefaults()` a `profile.defaults.ts` para que ambos servicios no
+dupliquen los valores por defecto de una fila nueva.
+
+**Cambios realizados:**
+
+- Backend: 22 columnas nuevas en `Profile` (`heroTag` string simple +
+  21 campos `TranslatableString`), migración `AddProfileTranslations`,
+  `UpdateTranslationsDto`/`TranslationsDto` (reutilizan
+  `IsTranslatableString`), `TranslationsService`, `AdminTranslationsController`
+  (`GET/PATCH /api/admin/translations`, mismos guards que Profile/auth).
+- Contratos compartidos: `Translations`, `UpdateTranslationsInput`.
+- Frontend: página `/admin/translations`, `TranslationsForm` con 12
+  secciones colapsables (`<details>/<summary>` nativos, sin JS adicional),
+  cada una con `<LocaleTabs>` para sus campos traducibles; los tabs usan los
+  `activeLocales` del Profile (se pide también `getProfile()` solo para
+  leerlos, esa página no los edita). Nav lateral: enlace "Translations"
+  entre Profile y Tecnologías. Se extrajo `collectTranslatable()` a
+  `lib/translatable-form.ts` para que Profile y Translations no dupliquen
+  esa lógica de lectura de FormData.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/profile/entities/profile.entity.ts        (+22 columnas)
+apps/api/src/profile/profile.defaults.ts                              (nuevo)
+apps/api/src/profile/profile.service.ts                 (usa profileDefaults)
+apps/api/src/profile/dto/translations.dto.ts                          (nuevo)
+apps/api/src/profile/translations.service.ts                          (nuevo)
+apps/api/src/profile/translations.service.spec.ts                     (nuevo)
+apps/api/src/profile/admin-translations.controller.ts                 (nuevo)
+apps/api/src/profile/profile.module.ts                  (registra Translations*)
+apps/api/src/database/migrations/1788998400000-AddProfileTranslations.ts (nuevo)
+apps/api/src/database/migrations/__tests__/1788998400000-AddProfileTranslations.spec.ts (nuevo)
+apps/api/src/database/migrations/__tests__/1788912000000-CreateProfiles.spec.ts
+  (dividido en 2 describe: uno solo con CreateProfiles para el up/down/up,
+  otro con la migración de translations aplicada para el test de cascada —
+  ver nota debajo)
+apps/api/test/translations.e2e-spec.ts                                (nuevo)
+packages/contracts/src/index.ts                          (Translations,
+                                                            UpdateTranslationsInput)
+apps/web/src/app/admin/(protected)/translations/page.tsx              (nuevo)
+apps/web/src/features/admin/components/translations-form.tsx          (nuevo)
+apps/web/src/features/admin/lib/translatable-form.ts                  (nuevo,
+  compartido con profile-form.tsx)
+apps/web/src/features/admin/components/profile-form.tsx  (usa el helper compartido)
+apps/web/src/features/admin/components/admin-shell.tsx   (nav Translations)
+apps/web/src/features/admin/admin.module.css              (.collapsible)
+apps/web/src/features/admin/types.ts / api/admin-api.ts   (Translations,
+  getTranslations/updateTranslations)
+apps/web/tests/admin-translations-structure.test.mjs                  (nuevo)
+```
+
+**Nota sobre el test de migración dividido:** al añadir las 22 columnas
+nuevas a la entidad `Profile`, el test de `CreateProfiles` que hacía
+`profiles.save(...)` con un `DataSource` que **no** incluía
+`AddProfileTranslations` empezó a fallar con
+`SqliteError: table profiles has no column named hero_tag` (TypeORM incluye
+todas las columnas de la metadata de la entidad en el INSERT, tengan valor o
+no). Se separó en dos `describe`: uno minimalista (solo hasta
+`CreateProfiles`) para el ciclo up/down/up de la tabla, y otro con
+`AddProfileTranslations` aplicada para las pruebas de integridad de datos.
+**Regla para la próxima migración que añada columnas a `profiles`:**
+cualquier test que use el `Profile` de TypeORM para guardar/leer filas reales
+necesita **todas** las migraciones de `profiles` aplicadas en su
+`DataSource`, no solo `CreateProfiles`.
+
+**Pruebas ejecutadas (todas verdes):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (30 tests: incluye
+                                               translations.service.spec.ts y el
+                                               nuevo spec de la migración de
+                                               translations)
+pnpm --filter @devsure/api test:integration  (35 tests: incluye
+                                               translations.e2e-spec.ts — 401 sin
+                                               sesión, default vacío, 403 sin CSRF,
+                                               400 por locale no soportado, 400 por
+                                               exceder maxLength, update parcial que
+                                               no pisa otras secciones, persistencia)
+pnpm --filter @devsure/web lint / typecheck
+pnpm --filter @devsure/web test              (falla 1/6, la misma preexistente ya
+                                               documentada — no relacionada)
+```
+
+No se ejecutó `pnpm test:e2e` (Playwright): mismo motivo que en las sesiones
+anteriores (sin spec de Playwright para `/admin/*` más allá del hueco
+preexistente de technologies).
+
+**Pendientes detectados (no corregidos, fuera de alcance de esta sesión):**
+
+- `apps/web/tests/admin-structure.test.mjs` sigue fallando por el mismo
+  motivo preexistente (falta `tests/e2e/admin-technologies.spec.ts`).
+- `translateValue()` (contracts) sigue sin consumidor real: lo usará
+  `GET /api/public/portfolio` cuando se implemente (Fase 2).
+- El campo `heroTag` no es traducible por diseño (así lo define la spec);
+  si en el futuro se decide traducirlo, requiere migración + DTO nuevos.
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Con Fase 1 (Fundamentos administrativos) esencialmente completa (auth por
+username, Profile, Translations; falta solo Uploads), el orden sugerido por
+la spec es continuar con **Uploads** (`POST /api/admin/uploads`, spec §8)
+para poder reemplazar los campos de texto de `avatar`/`resume` en Profile por
+una carga real de archivos — o, alternativamente, saltar directo a
+**Experiences** (Fase 2, primer contenido "core") si se prefiere posponer
+Uploads hasta que Projects lo necesite también (galerías, covers). Cualquiera
+de las dos es un módulo autocontenido válido; recomendamos Uploads primero
+porque Profile ya tiene los campos esperando la integración.
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del

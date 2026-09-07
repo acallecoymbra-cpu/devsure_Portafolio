@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { AdminApiError, getProfile, updateProfile } from '../api/admin-api';
 import { SUPPORTED_LOCALES } from '../types';
-import type { Profile, TranslatableString, UpdateProfileInput } from '../types';
+import type { Profile, UpdateProfileInput } from '../types';
+import { collectTranslatable } from '../lib/translatable-form';
 import { LOCALE_LABELS, LocaleTabs } from './locale-tabs';
 import styles from '../admin.module.css';
 
@@ -276,13 +277,4 @@ function formDataToInput(
     activeLocales,
     defaultLocale,
   };
-}
-
-function collectTranslatable(data: FormData, prefix: string, locales: string[]): TranslatableString {
-  const result: TranslatableString = {};
-  for (const locale of locales) {
-    const value = String(data.get(`${prefix}.${locale}`) ?? '').trim();
-    if (value) result[locale] = value;
-  }
-  return result;
 }

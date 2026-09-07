@@ -6,9 +6,10 @@ import { CreateAdminAuth1788480000000 } from '../1788480000000-CreateAdminAuth';
 import { RequireAdminPasswordChange1788739200000 } from '../1788739200000-RequireAdminPasswordChange';
 import { AddAdminUsername1788825600000 } from '../1788825600000-AddAdminUsername';
 import { CreateProfiles1788912000000 } from '../1788912000000-CreateProfiles';
+import { AddProfileTranslations1788998400000 } from '../1788998400000-AddProfileTranslations';
 import { seedAdmin } from '../../seeds/seed-admin';
 
-describe('profiles migration', () => {
+describe('profiles migration (table lifecycle)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -41,9 +42,34 @@ describe('profiles migration', () => {
     await dataSource.runMigrations();
     await expect(tableExists(dataSource, 'profiles')).resolves.toBe(true);
   });
+});
+
+describe('profiles migration (data integrity, with translation columns applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [AdminUser, AdminSession, Profile],
+      migrations: [
+        CreateAdminAuth1788480000000,
+        RequireAdminPasswordChange1788739200000,
+        AddAdminUsername1788825600000,
+        CreateProfiles1788912000000,
+        AddProfileTranslations1788998400000,
+      ],
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
+  });
 
   it('cascades the delete of the owning admin user and enforces one profile per owner', async () => {
-    await dataSource.runMigrations();
     const { id } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',
