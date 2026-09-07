@@ -710,6 +710,35 @@
   gap: 0.2rem;
 }
 
+.localeTabs {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.localeTabList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.localeTab {
+  background: var(--admin-panel-soft);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  color: var(--admin-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-height: 2.2rem;
+  padding: 0.4rem 0.9rem;
+}
+
+.localeTab[aria-selected='true'] {
+  background: rgba(169, 156, 255, 0.16);
+  border-color: var(--admin-accent);
+  color: var(--admin-accent-strong);
+}
+
 .formActions {
   align-items: stretch;
   background: rgba(5, 13, 25, 0.42);

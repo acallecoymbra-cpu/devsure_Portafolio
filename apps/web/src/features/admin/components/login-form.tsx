@@ -16,7 +16,7 @@ export function LoginForm() {
     let active = true;
 
     getSession()
-      .then(() => router.replace('/admin/technologies'))
+      .then(() => router.replace('/admin/profile'))
       .catch(() => {
         if (active) setChecking(false);
       });
@@ -34,7 +34,7 @@ export function LoginForm() {
     const data = new FormData(event.currentTarget);
     try {
       await login(String(data.get('username') ?? ''), String(data.get('password') ?? ''));
-      router.replace('/admin/technologies');
+      router.replace('/admin/profile');
       router.refresh();
     } catch (caught) {
       const message =

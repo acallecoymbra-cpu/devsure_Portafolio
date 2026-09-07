@@ -3,7 +3,9 @@ import type {
   AdminTechnology,
   AdminTechnologyPage,
   AuthSession,
+  Profile,
   TechnologyInput,
+  UpdateProfileInput,
 } from '../types';
 
 export class AdminApiError extends Error {
@@ -96,6 +98,17 @@ export function changePassword(currentPassword: string, newPassword: string): Pr
     method: 'POST',
     body: JSON.stringify({ currentPassword, newPassword }),
   }).then(rememberSession);
+}
+
+export function getProfile(): Promise<Profile> {
+  return request<Profile>('/admin/profile');
+}
+
+export function updateProfile(input: Partial<UpdateProfileInput>): Promise<Profile> {
+  return request<Profile>('/admin/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
 }
 
 export function listTechnologies(page = 1, limit = 50): Promise<AdminTechnologyPage> {

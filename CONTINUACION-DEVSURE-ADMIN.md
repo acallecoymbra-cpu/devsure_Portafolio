@@ -93,6 +93,153 @@ role) y crear una entidad `Profile` 1:1 (`owner_id` único → `admin_users.id`)
 con el contenido editorial, para no mezclar responsabilidades de auth con
 contenido de portfolio.
 
+### Sesión 2026-09-07 (2) — Módulo Profile
+
+**Objetivo de la sesión:** implementar `GET/PATCH /api/admin/profile` (spec
+§5.2, §6.1, §7): identidad editable, contenido traducible (`headline`, `bio`,
+`resume`), `activeLocales`/`defaultLocale` y su página admin. Translations y
+Uploads quedan para sesiones propias.
+
+**Decisión de diseño:** `admin_users` sigue siendo solo identidad de auth
+(username/email/password/role). Se creó una entidad `Profile` 1:1
+(`owner_id` único → `admin_users.id`, `ON DELETE CASCADE`) para el contenido
+editorial, en vez de mezclarlo en `admin_users`. `GET/PATCH /admin/profile`
+combina ambas (permite editar `email` de `AdminUser` además de los campos de
+`Profile`) para que el admin no necesite dos llamadas.
+
+**Hallazgo importante (afecta a toda sesión futura que use contratos en
+runtime, no solo Profile):** `@devsure/contracts` es un paquete ESM puro
+(`"type": "module"`, sin condición `require` en `exports`). Hasta ahora la
+API solo importaba **tipos** de ese paquete (`import type`, se borra en
+compilación), así que nunca se notó. Este módulo fue el primero en necesitar
+un **valor** en tiempo de ejecución (`SUPPORTED_LOCALES`) y eso rompe
+`require()` bajo Jest/CommonJS con "Cannot find module '@devsure/contracts'".
+Arreglar el build dual CJS/ESM de contracts es una tarea de tooling propia,
+fuera de alcance de "un módulo por sesión". Mitigación aplicada: se creó
+`apps/api/src/common/locales.ts` con una copia local de `SUPPORTED_LOCALES`
+(mismo array, comentado) para uso en tiempo de ejecución dentro de la API; el
+contrato compartido sigue siendo la fuente de verdad de cara al resto del
+monorepo (web) y para tipado. **Si una sesión futura toca contracts para
+exportar otro valor runtime que la API deba consumir, revisar este mismo
+problema antes de asumir que `import { X } from '@devsure/contracts'`
+funciona en Jest.**
+
+**Cambios realizados:**
+
+- Backend: entidad `Profile`, migración `CreateProfiles`, validador
+  reutilizable `IsTranslatableString` (para Translations también), DTOs
+  (`UpdateProfileDto`/`ProfileDto`), `ProfileService` (transacción que
+  sincroniza `AdminUser.email` + `Profile`, valida
+  `defaultLocale ∈ activeLocales`, crea el perfil por defecto en el primer
+  `GET` a partir del `username`), `AdminProfileController`
+  (`GET/PATCH /api/admin/profile`, mismos guards que technologies/auth).
+- Contratos compartidos: `SUPPORTED_LOCALES`, `SupportedLocale`,
+  `TranslatableString`, `translateValue()` (helper de fallback de locale,
+  aún sin consumidor — lo usará el endpoint público del portfolio),
+  `Profile`, `UpdateProfileInput`.
+- Frontend: página `/admin/profile`, `ProfileForm` (identidad + tabs de
+  locale para headline/bio/resume + checkboxes de idiomas activos + select
+  de idioma por defecto), componente reutilizable `<LocaleTabs>` (spec
+  §11.2), cliente API (`getProfile`/`updateProfile`). `/admin` y el login
+  ahora redirigen a `/admin/profile` (antes `/admin/technologies`), acorde a
+  la spec ("no hay dashboard; Profile es la home del panel").
+- El campo `avatar` y `resume.<locale>` se editan como **ruta de texto**
+  (no hay subida de archivos todavía); el formulario lo indica explícitamente
+  para no simular una funcionalidad que no existe.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/profile/entities/profile.entity.ts                      (nuevo)
+apps/api/src/profile/dto/profile.dto.ts                               (nuevo)
+apps/api/src/profile/profile.service.ts                               (nuevo)
+apps/api/src/profile/profile.service.spec.ts                          (nuevo)
+apps/api/src/profile/admin-profile.controller.ts                      (nuevo)
+apps/api/src/profile/profile.module.ts                                (nuevo)
+apps/api/src/common/validators/translatable-string.validator.ts       (nuevo)
+apps/api/src/common/locales.ts                                        (nuevo)
+apps/api/src/database/migrations/1788912000000-CreateProfiles.ts      (nuevo)
+apps/api/src/database/migrations/__tests__/1788912000000-CreateProfiles.spec.ts (nuevo)
+apps/api/test/profile.e2e-spec.ts                                     (nuevo)
+apps/api/src/app.module.ts               (registra ProfileModule + entidad)
+apps/api/src/database/data-source.ts     (registra entidad Profile)
+packages/contracts/src/index.ts          (SUPPORTED_LOCALES, TranslatableString,
+                                           translateValue, Profile, UpdateProfileInput)
+apps/web/src/app/admin/(protected)/profile/page.tsx                   (nuevo)
+apps/web/src/features/admin/components/profile-form.tsx               (nuevo)
+apps/web/src/features/admin/components/locale-tabs.tsx                (nuevo)
+apps/web/tests/admin-profile-structure.test.mjs                       (nuevo)
+apps/web/src/features/admin/types.ts       (re-exporta Profile/locales)
+apps/web/src/features/admin/api/admin-api.ts (getProfile/updateProfile)
+apps/web/src/features/admin/components/admin-shell.tsx (nav Profile)
+apps/web/src/app/admin/page.tsx            (redirect -> /admin/profile)
+apps/web/src/features/admin/components/login-form.tsx (redirect -> /admin/profile)
+apps/web/src/features/admin/admin.module.css (estilos .localeTab*)
+```
+
+**Nota sobre la ubicación del test de migración:** se colocó en
+`database/migrations/__tests__/` y NO directamente en `database/migrations/`
+porque `app.module.ts`/`data-source.ts` cargan las migraciones reales con el
+glob `database/migrations/*{.ts,.js}` (un solo nivel). Un `.spec.ts` colocado
+directamente ahí se ejecuta como si fuera una migración real durante el
+arranque de Nest en los tests e2e, y sus `describe/it/beforeEach` explotan
+con "Cannot add a test after tests have started running". Cualquier test
+nuevo sobre una migración debe ir en esa subcarpeta (el glob de un nivel no
+la alcanza), no junto a los archivos de migración.
+
+**Pruebas ejecutadas (todas verdes):**
+
+```text
+pnpm --filter @devsure/contracts build
+pnpm --filter @devsure/api lint
+pnpm --filter @devsure/api typecheck
+pnpm --filter @devsure/api test              (25 tests: incluye profile.service.spec.ts
+                                               con DB real en memoria y la migración
+                                               up/down/up + cascada de borrado)
+pnpm --filter @devsure/api test:integration  (29 tests: incluye profile.e2e-spec.ts:
+                                               bloqueo por mustChangePassword, 401 sin
+                                               sesión, perfil por defecto, 403 sin CSRF,
+                                               400 por defaultLocale fuera de
+                                               activeLocales, 400 por locale no
+                                               soportado en headline, update end-to-end
+                                               persistido)
+pnpm --filter @devsure/web lint
+pnpm --filter @devsure/web typecheck
+pnpm --filter @devsure/web test              (falla 1/5, la misma preexistente de la
+                                               sesión anterior — ver "Pendientes")
+```
+
+No se ejecutó `pnpm test:e2e` (Playwright): no hay spec de Playwright para
+`/admin/profile` todavía (mismo hueco que technologies) y levantar el server
+completo no era necesario para verificar este módulo end-to-end (ya cubierto
+por los e2e de Jest contra la app real).
+
+**Pendientes detectados (no corregidos, fuera de alcance de esta sesión):**
+
+- `apps/web/tests/admin-structure.test.mjs` sigue fallando por el mismo
+  motivo preexistente (falta `tests/e2e/admin-technologies.spec.ts`).
+- No hay endpoint de subida de archivos: `avatar` y `resume.<locale>` se
+  editan como texto libre con la ruta relativa. Es intencional — Uploads es
+  su propio módulo (ver "Trabajo pendiente principal" más abajo).
+- El endpoint público `GET /api/public/portfolio` (que usaría
+  `translateValue()`) no existe todavía; `translateValue` está exportado en
+  contracts pero sin consumidor real aún.
+- Ningún test cubre todavía `IsTranslatableString` de forma aislada (se
+  ejerce indirectamente vía los DTOs de Profile en el e2e); si Translations
+  reutiliza el validador, considerar un spec unitario dedicado.
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Implementar **Translations** (`GET/PATCH /api/admin/translations`, spec
+§6.2): reutilizar `Profile` (añadir las columnas de headings/intros que
+faltan: `heroTag`, `heroTitle/Copy/Note`, `aboutHeading/Body`,
+`strengthsHeading/Intro`, etc. — ver spec §5.2) y el mismo patrón de
+controller/DTO ya usado en Profile. Reutilizar `IsTranslatableString` y
+`SUPPORTED_LOCALES` (desde `apps/api/src/common/locales.ts`, no desde
+`@devsure/contracts` directamente — ver la nota sobre el paquete ESM arriba).
+Después de Translations, sigue **Uploads** (`POST /api/admin/uploads`) para
+poder reemplazar los campos de texto de `avatar`/`resume` por una carga real.
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del

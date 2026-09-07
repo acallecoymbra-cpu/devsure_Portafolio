@@ -1,5 +1,5 @@
-import { SUPPORTED_LOCALES } from '@devsure/contracts';
 import { ValidationArguments, ValidationOptions, registerDecorator } from 'class-validator';
+import { SUPPORTED_LOCALES } from '../locales';
 
 const SUPPORTED_LOCALE_SET: ReadonlySet<string> = new Set(SUPPORTED_LOCALES);
 

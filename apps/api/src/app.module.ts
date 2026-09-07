@@ -9,6 +9,8 @@ import { TechnologiesModule } from './technologies/technologies.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminUser } from './auth/entities/admin-user.entity';
 import { AdminSession } from './auth/entities/admin-session.entity';
+import { ProfileModule } from './profile/profile.module';
+import { Profile } from './profile/entities/profile.entity';
 
 @Module({
   imports: [
@@ -27,12 +29,13 @@ import { AdminSession } from './auth/entities/admin-session.entity';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession],
+        entities: [Technology, AdminUser, AdminSession, Profile],
       }),
     }),
     HealthModule,
     AuthModule,
     TechnologiesModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}

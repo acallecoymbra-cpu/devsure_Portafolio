@@ -113,6 +113,33 @@ export interface UpdateProfileInput {
   defaultLocale?: string;
 }
 
+export interface Translations {
+  heroTag?: string;
+  heroTitle: TranslatableString;
+  heroCopy: TranslatableString;
+  heroNote: TranslatableString;
+  aboutHeading: TranslatableString;
+  aboutBody: TranslatableString;
+  strengthsHeading: TranslatableString;
+  strengthsIntro: TranslatableString;
+  experienceHeading: TranslatableString;
+  experienceIntro: TranslatableString;
+  educationHeading: TranslatableString;
+  portfolioHeading: TranslatableString;
+  portfolioIntro: TranslatableString;
+  skillsHeading: TranslatableString;
+  skillsIntro: TranslatableString;
+  workstyleHeading: TranslatableString;
+  workstyleIntro: TranslatableString;
+  testimonialsHeading: TranslatableString;
+  faqHeading: TranslatableString;
+  blogHeading: TranslatableString;
+  contactHeading: TranslatableString;
+  contactIntro: TranslatableString;
+}
+
+export type UpdateTranslationsInput = Partial<Translations>;
+
 export interface TechnologyInput {
   name: string;
   slug: string;

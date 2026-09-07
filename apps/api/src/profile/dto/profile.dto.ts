@@ -1,5 +1,4 @@
 import type { Profile, TranslatableString, UpdateProfileInput } from '@devsure/contracts';
-import { SUPPORTED_LOCALES } from '@devsure/contracts';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
@@ -15,6 +14,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { IsTranslatableString } from '../../common/validators/translatable-string.validator';
+import { SUPPORTED_LOCALES } from '../../common/locales';
 
 export class UpdateProfileDto implements UpdateProfileInput {
   @ApiPropertyOptional({ format: 'email', maxLength: 254 })
