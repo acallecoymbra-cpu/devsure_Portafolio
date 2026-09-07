@@ -19,6 +19,9 @@ import type {
   Strength,
   StrengthInput,
   StrengthPage,
+  WorkStyleItem,
+  WorkStyleItemInput,
+  WorkStyleItemPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -287,6 +290,34 @@ export function updateStrength(id: string, input: Partial<StrengthInput>): Promi
 
 export function deleteStrength(id: string): Promise<void> {
   return request<void>(`/admin/strengths/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listWorkStyleItems(page = 1, limit = 50): Promise<WorkStyleItemPage> {
+  return request<WorkStyleItemPage>(`/admin/work-style-items?page=${page}&limit=${limit}`);
+}
+
+export function getWorkStyleItem(id: string): Promise<WorkStyleItem> {
+  return request<WorkStyleItem>(`/admin/work-style-items/${encodeURIComponent(id)}`);
+}
+
+export function createWorkStyleItem(input: WorkStyleItemInput): Promise<WorkStyleItem> {
+  return request<WorkStyleItem>('/admin/work-style-items', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateWorkStyleItem(id: string, input: Partial<WorkStyleItemInput>): Promise<WorkStyleItem> {
+  return request<WorkStyleItem>(`/admin/work-style-items/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteWorkStyleItem(id: string): Promise<void> {
+  return request<void>(`/admin/work-style-items/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

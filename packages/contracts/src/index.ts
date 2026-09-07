@@ -317,6 +317,21 @@ export interface WorkStyleItemInput {
   sortOrder?: number;
 }
 
+export interface Faq {
+  id: string;
+  question: TranslatableString;
+  answer: TranslatableString;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FaqInput {
+  question: TranslatableString;
+  answer: TranslatableString;
+  sortOrder?: number;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

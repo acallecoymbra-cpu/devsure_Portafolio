@@ -1139,6 +1139,77 @@ propio para el número). Después sigue **Faqs** (spec §5.10, `question` +
 `answer` traducibles) para cerrar el plan acordado con el usuario antes del
 endpoint público del portfolio.
 
+### Sesión 2026-09-07 (11) — Módulo WorkStyleItems
+
+**Objetivo de la sesión:** implementar el CRUD completo de `WorkStyleItems`
+(spec §5.9) — tercer paso del plan acordado ("Services → Strengths →
+WorkStyleItems → Faqs"). El módulo más simple de todo el CMS hasta ahora: un
+único campo traducible `text` + `sort_order`, sin nada más. Mapea a los
+bullets numerados de "Cómo trabajamos" en `Portfolio/imagenBase.png` (el
+número de cada bullet lo pone el front por posición, no es un campo).
+
+Mismo patrón `FormData` no controlado que Services/Studies, sin ningún
+`useState` adicional siquiera (a diferencia de Strengths, que necesitaba uno
+para `techStack`). Nada nuevo que decidir arquitectónicamente en esta
+sesión — fue una repetición mecánica del patrón ya establecido.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/work-style-items/entities/work-style-item.entity.ts       (nuevo)
+apps/api/src/work-style-items/dto/work-style-item.dto.ts               (nuevo)
+apps/api/src/work-style-items/dto/list-work-style-items-query.dto.ts   (nuevo)
+apps/api/src/work-style-items/work-style-items.service.ts              (nuevo)
+apps/api/src/work-style-items/work-style-items.service.spec.ts         (nuevo)
+apps/api/src/work-style-items/admin-work-style-items.controller.ts     (nuevo)
+apps/api/src/work-style-items/work-style-items.module.ts               (nuevo)
+apps/api/src/database/migrations/1789516800000-CreateWorkStyleItems.ts (nuevo)
+apps/api/src/database/migrations/__tests__/1789516800000-CreateWorkStyleItems.spec.ts (nuevo)
+apps/api/test/work-style-items.e2e-spec.ts                             (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (WorkStyleItem, WorkStyleItemInput)
+apps/web/src/app/admin/(protected)/work-style-items/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/work-style-item-list.tsx        (nuevo)
+apps/web/src/features/admin/components/work-style-item-form.tsx        (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx  (nav Estilo de trabajo)
+apps/web/src/features/admin/api/admin-api.ts (listWorkStyleItems/
+                                               getWorkStyleItem/
+                                               createWorkStyleItem/
+                                               updateWorkStyleItem/
+                                               deleteWorkStyleItem)
+apps/web/src/features/admin/types.ts       (WorkStyleItem, WorkStyleItemPage)
+apps/web/tests/admin-work-style-items-structure.test.mjs               (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (93 tests: incluye
+                                               work-style-items.service.spec.ts
+                                               y su migración up/down/up +
+                                               cascada)
+pnpm --filter @devsure/api test:integration  (72 tests: incluye
+                                               work-style-items.e2e-spec.ts —
+                                               401, 400 texto vacío, 201,
+                                               list/update/delete end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/13, la misma
+                                               preexistente ya documentada)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Cerrar el plan acordado con **Faqs** (spec §5.10): `question` + `answer`
+traducibles, ambos obligatorios, `sort_order`. Mismo patrón exacto que
+Services (dos bloques `<LocaleTabs>`, sin campos extra). Después de Faqs,
+**los cuatro módulos del plan del usuario quedan completos** — el siguiente
+hito natural es el endpoint público `GET /api/public/portfolio` (spec §10.7,
+§12), y recién después el rediseño visual de la home.
+
 ## Nueva dirección visual: rediseño de la home pública
 
 **Añadido el 2026-09-07, a pedido del usuario, tras validar el CMS admin

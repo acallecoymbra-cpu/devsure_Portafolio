@@ -179,6 +179,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Fortalezas
           </Link>
           <Link
+            href="/admin/work-style-items"
+            aria-current={pathname.startsWith('/admin/work-style-items') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">☰</span>
+            Estilo de trabajo
+          </Link>
+          <Link
             href="/admin/technologies"
             aria-current={pathname.startsWith('/admin/technologies') ? 'page' : undefined}
           >
