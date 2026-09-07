@@ -16,6 +16,8 @@ import { ExperiencesModule } from './experiences/experiences.module';
 import { Experience } from './experiences/entities/experience.entity';
 import { ProjectsModule } from './projects/projects.module';
 import { Project } from './projects/entities/project.entity';
+import { StudiesModule } from './studies/studies.module';
+import { Study } from './studies/entities/study.entity';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { Project } from './projects/entities/project.entity';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project],
+        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study],
       }),
     }),
     HealthModule,
@@ -44,6 +46,7 @@ import { Project } from './projects/entities/project.entity';
     UploadsModule,
     ExperiencesModule,
     ProjectsModule,
+    StudiesModule,
   ],
 })
 export class AppModule {}

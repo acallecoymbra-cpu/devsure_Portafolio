@@ -10,6 +10,9 @@ import type {
   Project,
   ProjectInput,
   ProjectPage,
+  Study,
+  StudyInput,
+  StudyPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -194,6 +197,34 @@ export function updateProject(id: string, input: Partial<ProjectInput>): Promise
 
 export function deleteProject(id: string): Promise<void> {
   return request<void>(`/admin/projects/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listStudies(page = 1, limit = 50): Promise<StudyPage> {
+  return request<StudyPage>(`/admin/studies?page=${page}&limit=${limit}`);
+}
+
+export function getStudy(id: string): Promise<Study> {
+  return request<Study>(`/admin/studies/${encodeURIComponent(id)}`);
+}
+
+export function createStudy(input: StudyInput): Promise<Study> {
+  return request<Study>('/admin/studies', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateStudy(id: string, input: Partial<StudyInput>): Promise<Study> {
+  return request<Study>(`/admin/studies/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteStudy(id: string): Promise<void> {
+  return request<void>(`/admin/studies/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

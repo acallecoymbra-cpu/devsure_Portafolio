@@ -241,6 +241,33 @@ export interface ProjectInput {
   publishedAt?: string | null;
 }
 
+export interface Study {
+  id: string;
+  institution: string;
+  title: TranslatableString;
+  field?: string;
+  description: TranslatableString;
+  startDate?: string;
+  endDate?: string | null;
+  inProgress: boolean;
+  logo?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StudyInput {
+  institution: string;
+  title: TranslatableString;
+  field?: string;
+  description?: TranslatableString;
+  startDate?: string;
+  endDate?: string | null;
+  inProgress?: boolean;
+  logo?: string;
+  sortOrder?: number;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

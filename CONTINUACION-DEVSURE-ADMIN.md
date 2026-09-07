@@ -874,6 +874,103 @@ simples) y llegar al hito de la spec: "Endpoint público completo del
 portfolio" (Fase 2, item 8), que requiere que Experiences + Projects +
 Studies + Skills + Services ya existan.
 
+### Sesión 2026-09-07 (8) — Módulo Studies (Education)
+
+**Objetivo de la sesión:** implementar el CRUD completo de `Studies` (spec
+§5.5, §6.5) — el primer módulo "CRUD estándar" sin repeaters anidados, slug,
+ni reglas de negocio especiales (a diferencia de Experiences/Projects).
+
+**Decisión de diseño — vuelta al patrón `FormData` no controlado:**
+`Study` no tiene ningún array de longitud dinámica (no hay `levels`, `apps`,
+`gallery`, `tech_stack` en la spec de este recurso), así que el formulario
+de admin **no necesita ser un componente controlado** como
+`ExperienceForm`/`ProjectForm`. Se construyó igual que `ProfileForm`/
+`TranslationsForm`: `<form>` no controlado + `FormData` + `<LocaleTabs>` +
+`<FileUploadField>` (modo `hiddenName`, sin `onUploaded`). Solo se usa
+`useState` local para una cosa puntual de UX (deshabilitar `endDate` cuando
+`inProgress` está marcado), no para todo el formulario. El test estructural
+de esta sesión incluye una aserción negativa explícita
+(`doesNotMatch(form, /RepeaterField|TagsInput/)`) para que quede registrado
+que esta simplicidad es intencional, no un olvido.
+
+**Otras decisiones:**
+
+- Sin slug: la tabla `studies` de la spec no lo incluye (a diferencia de
+  Experience/Project/Network/Post), así que no hay lógica de unicidad ni
+  `ConflictException` en este servicio — el `save()` es un simple
+  `repository.save()`.
+- Regla de consistencia `inProgress` ⇒ `endDate = null`: aplicada tanto en
+  `create` como en `update` (incluyendo el caso de marcar `inProgress: true`
+  sin tocar `endDate` en un PATCH parcial — cubierto explícitamente en el
+  test unitario).
+- Orden de listado: `sortOrder ASC, startDate DESC, id ASC` (coherente con
+  cómo el front público mostrará educación más reciente primero dentro del
+  mismo `sortOrder`, igual que describe la spec §12 para el home).
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/studies/entities/study.entity.ts                         (nuevo)
+apps/api/src/studies/dto/study.dto.ts                                 (nuevo)
+apps/api/src/studies/dto/list-studies-query.dto.ts                    (nuevo)
+apps/api/src/studies/studies.service.ts                               (nuevo)
+apps/api/src/studies/studies.service.spec.ts                          (nuevo)
+apps/api/src/studies/admin-studies.controller.ts                      (nuevo)
+apps/api/src/studies/studies.module.ts                                (nuevo)
+apps/api/src/database/migrations/1789257600000-CreateStudies.ts       (nuevo)
+apps/api/src/database/migrations/__tests__/1789257600000-CreateStudies.spec.ts (nuevo)
+apps/api/test/studies.e2e-spec.ts                                     (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (Study, StudyInput)
+apps/web/src/app/admin/(protected)/studies/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/study-list.tsx                 (nuevo)
+apps/web/src/features/admin/components/study-form.tsx                 (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx    (nav Educación)
+apps/web/src/features/admin/api/admin-api.ts (listStudies/getStudy/
+                                               createStudy/updateStudy/
+                                               deleteStudy)
+apps/web/src/features/admin/types.ts       (Study, StudyPage)
+apps/web/tests/admin-studies-structure.test.mjs                       (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (73 tests: incluye
+                                               studies.service.spec.ts —
+                                               defaults, inProgress limpia
+                                               endDate en create Y en update
+                                               parcial, scoping por owner —
+                                               y la migración up/down/up +
+                                               cascada)
+pnpm --filter @devsure/api test:integration  (59 tests: incluye
+                                               studies.e2e-spec.ts — 401,
+                                               400 título vacío, 201 con
+                                               inProgress limpiando endDate,
+                                               list/update/delete end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas
+                                               de studies)
+pnpm --filter @devsure/web test              (falla 1/10, la misma
+                                               preexistente ya documentada)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Pendientes detectados:** mismo hueco preexistente de siempre
+(`admin-structure.test.mjs`). Nada nuevo.
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Seguir con **Skills** (spec §5.6) — más simple todavía que Studies: solo
+`name`, `category` (enum sugerido: Languages, Frameworks, Databases, Tools,
+Cloud, Methodology), `sort_order`. Sin campos traducibles siquiera, así que
+el formulario puede ser aún más directo. Después de Skills, **Services**
+(spec §5.7, con `title`/`description` traducibles e `icon`) completa la
+lista de contenido "core" que la spec exige antes del endpoint público del
+portfolio (Fase 2, item 8).
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del
