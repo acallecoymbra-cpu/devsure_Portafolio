@@ -517,6 +517,91 @@ pnpm --filter @devsure/web build             (FALLA — ver hallazgo crítico
    `levels` (repeater anidado con traducciones), `owner_id`, y reutilizar
    `<FileUploadField>` para `logo` (carpeta `experiences-logos`).
 
+### Sesión 2026-09-07 (5) — Fix: build roto de `admin.module.css` + bug real de chrome público en `/admin`
+
+**Objetivo de la sesión:** arreglar el `pnpm --filter @devsure/web build`
+roto que dejé documentado como bloqueante al final de la sesión de Uploads,
+antes de tocar Experiences.
+
+**Lo que encontré al investigar (más grave que un simple error de build):**
+las reglas `:global(body:has(.adminRoot) > .site-header), ...` en
+`admin.module.css` intentaban ocultar el header/footer/skip-link públicos
+cuando se está en `/admin/*`. Pero:
+1. Nunca eran válidas para CSS Modules (selectores 100% `:global`, sin
+   ningún token local — de ahí el error "not pure" que rompía el build).
+2. Aunque compilaran, **nunca habrían funcionado en runtime**: CSS Modules
+   hashea `.adminRoot` (p. ej. a `adminRoot_a1b2c3`), pero el selector usaba
+   el string literal `adminRoot` dentro de `:global()`, que no matchea el
+   DOM real.
+
+Conclusión: el panel `/admin/*` **siempre se ha renderizado con el header y
+el footer del sitio público envolviéndolo**, desde que existe el scaffolding
+del admin (antes de mi primera sesión). No es solo un build roto: es una
+funcionalidad que nunca funcionó.
+
+**Decisión de diseño y arreglo:** en vez de parchear el selector CSS, se
+resolvió donde corresponde — en React, por ruta. Se creó
+`src/components/site-chrome.tsx` (client component, `usePathname()`): si la
+ruta empieza con `/admin`, renderiza solo `<main>{children}</main>` (el panel
+ya trae su propio layout completo vía `AdminShell`); si no, renderiza
+skip-link + `SiteHeader` + `main` + `SiteFooter` como antes. `app/layout.tsx`
+ahora delega en `<SiteChrome>` en vez de tener esa lógica inline. Se
+eliminaron las 3 reglas `:global(...)` rotas de `admin.module.css` (ya
+redundantes: `.adminRoot` ya define `min-height: 100vh` y su propio fondo).
+
+**Verificado con un servidor real** (`next build` + `next start`, no solo
+tests): `curl` a `/` trae `class="site-header"`; `curl` a `/admin/login` ya
+no lo trae. Confirma que el fix funciona en runtime, no solo en el test
+estructural.
+
+**Archivos modificados/creados:**
+
+```text
+apps/web/src/components/site-chrome.tsx                               (nuevo)
+apps/web/src/app/layout.tsx               (usa <SiteChrome>, ya no arma el
+                                            chrome público inline)
+apps/web/src/features/admin/admin.module.css (quita las 3 reglas :global rotas)
+apps/web/tests/app-structure.test.mjs     (el assert de "Saltar al contenido"
+                                            ahora lee site-chrome.tsx, que es
+                                            donde vive esa marca; se agregó un
+                                            assert de que decide por pathname)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm lint                    (turbo, 4 paquetes)
+pnpm typecheck                (turbo, 4 paquetes)
+pnpm test                     (contracts + api 40/40 verdes; web falla 1/7,
+                               el mismo hueco preexistente de siempre —
+                               admin-technologies.spec.ts de Playwright que
+                               nunca se creó, no relacionado)
+pnpm test:integration         (api, 42/42 verdes, sin cambios de este fix)
+pnpm --filter @devsure/web build   ✅ AHORA PASA (antes fallaba)
+pnpm build (raíz, turbo, los 3 paquetes con build)  ✅ AHORA PASA
+```
+
+**Gap adicional encontrado (no corregido, informado según AGENTS.md
+"informa el vacío"):** `pnpm format:check` falla en ~80 archivos, la gran
+mayoría **preexistentes y ajenos a mis 5 sesiones** (todo `Portfolio/`, los
+archivos de `10k-websites-skill/`, y también archivos base del admin que ya
+estaban sin formatear antes de que yo los tocara, como
+`auth.controller.ts`/`admin-technologies.controller.ts`). Nunca se ha
+ejecutado `pnpm format` en este repo. No corrí `prettier --write` porque
+reformatear esos archivos mezclaría cambios de estilo masivos y ajenos con
+los diffs semánticos de cada slice, y tocaría `Portfolio/` (fuera de
+alcance). **Recomendación:** una sesión dedicada y explícitamente pedida por
+el usuario para correr `pnpm format` sobre `apps/` y `packages/` (nunca sobre
+`Portfolio/`, que es la especificación de referencia, no código del
+proyecto).
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Con la Fase 1 completa y el build verde, continuar con **Experiences**
+(Fase 2, spec §5.3, §6.3): entidad con `levels` (repeater anidado
+traducible), CRUD `owner_id`-scoped, y reutilizar `<FileUploadField>` para
+`logo` (carpeta `experiences-logos`, ya soportada en `upload-folders.ts`).
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del

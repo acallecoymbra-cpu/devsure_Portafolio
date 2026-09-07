@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
+import { SiteChrome } from '@/components/site-chrome';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -41,12 +40,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <a className="skip-link" href="#contenido-principal">
-          Saltar al contenido
-        </a>
-        <SiteHeader />
-        <main id="contenido-principal">{children}</main>
-        <SiteFooter />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

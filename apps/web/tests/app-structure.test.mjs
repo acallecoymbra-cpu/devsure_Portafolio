@@ -11,6 +11,7 @@ test('the App Router foundation includes global states and metadata', async () =
     'src/app/loading.tsx',
     'src/app/error.tsx',
     'src/app/not-found.tsx',
+    'src/components/site-chrome.tsx',
     'src/features/home/components/home-hero.tsx',
     'src/features/home/home-hero.module.css',
     'src/lib/config.ts',
@@ -19,6 +20,7 @@ test('the App Router foundation includes global states and metadata', async () =
   await Promise.all(requiredFiles.map((file) => access(new URL(file, root))));
 
   const layout = await readFile(new URL('src/app/layout.tsx', root), 'utf8');
+  const siteChrome = await readFile(new URL('src/components/site-chrome.tsx', root), 'utf8');
   const config = await readFile(new URL('src/lib/config.ts', root), 'utf8');
   const page = await readFile(new URL('src/app/page.tsx', root), 'utf8');
   const loading = await readFile(new URL('src/app/loading.tsx', root), 'utf8');
@@ -34,7 +36,8 @@ test('the App Router foundation includes global states and metadata', async () =
   assert.match(layout, /export const metadata/);
   assert.match(layout, /metadataBase/);
   assert.match(config, /NEXT_PUBLIC_API_BASE_URL/);
-  assert.match(layout, /Saltar al contenido/);
+  assert.match(siteChrome, /Saltar al contenido/);
+  assert.match(siteChrome, /startsWith\('\/admin'\)/);
   assert.match(layout, /canonical/);
   assert.match(page, /<HomeHero \/>/);
   assert.doesNotMatch(page, /<video|\.mkv|hero-poster\.jpg/);
