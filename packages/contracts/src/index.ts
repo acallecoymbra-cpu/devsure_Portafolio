@@ -195,6 +195,52 @@ export interface ExperienceInput {
   sortOrder?: number;
 }
 
+/** One app/platform within a multi-app project; `projects.apps[]` in spec §5.4. */
+export interface ProjectApp {
+  name: string;
+  platform?: string;
+  description?: TranslatableString;
+  techStack?: string[];
+  links?: Record<string, string>;
+}
+
+export interface Project {
+  id: string;
+  experienceId?: string;
+  title: TranslatableString;
+  slug: string;
+  excerpt: TranslatableString;
+  description: TranslatableString;
+  coverImage?: string;
+  gallery: string[];
+  techStack: string[];
+  apps: ProjectApp[];
+  url?: string;
+  repoUrl?: string;
+  featured: boolean;
+  sortOrder: number;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectInput {
+  experienceId?: string | null;
+  title: TranslatableString;
+  slug?: string;
+  excerpt?: TranslatableString;
+  description?: TranslatableString;
+  coverImage?: string;
+  gallery?: string[];
+  techStack?: string[];
+  apps?: ProjectApp[];
+  url?: string;
+  repoUrl?: string;
+  featured?: boolean;
+  sortOrder?: number;
+  publishedAt?: string | null;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

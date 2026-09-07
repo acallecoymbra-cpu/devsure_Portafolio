@@ -151,6 +151,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Experiencias
           </Link>
           <Link
+            href="/admin/projects"
+            aria-current={pathname.startsWith('/admin/projects') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">▣</span>
+            Proyectos
+          </Link>
+          <Link
             href="/admin/technologies"
             aria-current={pathname.startsWith('/admin/technologies') ? 'page' : undefined}
           >

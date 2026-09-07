@@ -788,6 +788,42 @@
   font-size: 0.85rem;
 }
 
+.gallery {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.galleryItem {
+  align-items: center;
+  background: var(--admin-panel-soft);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.6rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.55rem 0.7rem;
+}
+
+.galleryItemActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.3rem;
+}
+
+.galleryItemActions button {
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.4rem;
+  color: var(--admin-text);
+  cursor: pointer;
+  min-height: 2.1rem;
+  min-width: 2.1rem;
+  padding: 0.2rem 0.5rem;
+}
+
 .highlightsLabel {
   color: #e9edfa;
   display: block;

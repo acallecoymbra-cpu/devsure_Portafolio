@@ -737,6 +737,143 @@ archivos, hoy `<FileUploadField>` solo maneja uno; revisar si conviene
 extenderlo o crear una variante antes de construir el formulario de
 Projects).
 
+### Sesión 2026-09-07 (7) — Módulo Projects
+
+**Objetivo de la sesión:** implementar el CRUD completo de `Projects`
+(spec §5.4, §6.4) con `apps[]` (multi-app repeater), galería de imágenes
+múltiple y reordenable, `experience_id` opcional validado contra las
+experiencias del propio owner, y la regla de negocio de `featured` con tope
+de 3 (spec §9 regla 4).
+
+**Decisiones de diseño:**
+
+- `Project.title` es traducible (`TranslatableString`), a diferencia de
+  `Experience.company` (string plano) — el auto-slug ahora usa
+  `firstTranslatableValue()` (nuevo helper en `common/slugify.ts`, con
+  tests) sobre la primera traducción no vacía, tal como pide la spec
+  ("Auto desde primera traducción de title").
+- `experience_id` es FK nullable con `onDelete: 'SET NULL'` (no `CASCADE`):
+  si se borra una experiencia, sus proyectos quedan como "Personal" en vez
+  de borrarse — verificado con un test de migración dedicado.
+- El servicio valida que `experienceId` (si viene) pertenezca al mismo
+  `ownerId` antes de guardar (`BadRequestException` si no), replicando el
+  mismo patrón de aislamiento por owner que ya usa Experiences, ahora entre
+  dos entidades relacionadas.
+- **Regla de `featured` (máx. 3, desmarcar el más antiguo por
+  `updated_at DESC, id DESC`)**: implementada en `enforceFeaturedCap()`,
+  que se ejecuta después de persistir cualquier proyecto con
+  `featured: true`. Se descubrió en el test unitario que **sqlite trunca
+  `datetime` a resolución de segundo** (aunque TypeORM genera el valor con
+  precisión de milisegundo en JS) — el primer intento del test con
+  separaciones de 5ms entre creaciones fallaba por empates de timestamp.
+  Se corrigió usando separaciones de ~1.1s en el test unitario
+  (determinista) y se relajó la aserción del e2e correspondiente (que sí
+  puede tener timestamps empatados entre requests rápidos) para verificar
+  solo el invariante (`total <= 3`), no qué proyecto específico quedó
+  desmarcado — esa semántica exacta ya está cubierta de forma determinista
+  en el test unitario. **Cualquier función futura que dependa del orden por
+  `updated_at` en sqlite debe tener esto en cuenta.**
+- Se creó `IsStringRecord` (nuevo validador, hermano de
+  `IsTranslatableString`) para `ProjectApp.links` — un `Record<string,string>`
+  sin el conjunto de claves fijo de un locale (claves libres tipo
+  `"Live"`/`"Code"`).
+- **Se resolvió la subida de múltiples archivos** (pendiente explícito de
+  la sesión anterior): se creó `<GalleryField>`, hermano de
+  `<FileUploadField>` pero para arrays — sube cada archivo seleccionado
+  (input con `multiple`) por separado contra el mismo
+  `POST /admin/uploads`, y permite reordenar con botones ↑/↓ (sin
+  drag-and-drop, consistente con el resto del panel que no usa librerías
+  extra) y quitar. No se modificó `<FileUploadField>` para esto — es un
+  caso de uso genuinamente distinto (una ruta vs. un array de rutas).
+- El campo `published_at` se editó como `<input type="datetime-local">`
+  (vacío = borrador), acorde a `<DraftPublishField>` de la spec §11.2.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/common/validators/string-record.validator.ts             (nuevo)
+apps/api/src/common/slugify.ts (+firstTranslatableValue, con tests)
+apps/api/src/projects/entities/project.entity.ts                      (nuevo)
+apps/api/src/projects/dto/project-app.dto.ts                          (nuevo)
+apps/api/src/projects/dto/project.dto.ts                              (nuevo)
+apps/api/src/projects/dto/list-projects-query.dto.ts                  (nuevo)
+apps/api/src/projects/projects.service.ts                             (nuevo)
+apps/api/src/projects/projects.service.spec.ts                        (nuevo)
+apps/api/src/projects/admin-projects.controller.ts                    (nuevo)
+apps/api/src/projects/projects.module.ts                              (nuevo)
+apps/api/src/database/migrations/1789171200000-CreateProjects.ts      (nuevo)
+apps/api/src/database/migrations/__tests__/1789171200000-CreateProjects.spec.ts (nuevo)
+apps/api/test/projects.e2e-spec.ts                                    (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (Project, ProjectApp, ProjectInput)
+apps/web/src/app/admin/(protected)/projects/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/project-list.tsx               (nuevo)
+apps/web/src/features/admin/components/project-form.tsx               (nuevo)
+apps/web/src/features/admin/components/gallery-field.tsx              (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx    (nav Proyectos)
+apps/web/src/features/admin/api/admin-api.ts (listProjects/getProject/
+                                               createProject/updateProject/
+                                               deleteProject)
+apps/web/src/features/admin/types.ts       (Project*, ProjectPage)
+apps/web/src/features/admin/admin.module.css (.gallery, .galleryItem*)
+apps/web/tests/admin-projects-structure.test.mjs                      (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (66 tests: incluye
+                                               projects.service.spec.ts —
+                                               auto-slug desde title,
+                                               experienceId ajeno rechazado,
+                                               experienceId propio aceptado,
+                                               draft por defecto, filtros
+                                               (owner/experienceId/featured/
+                                               published), tope de featured
+                                               con separación real de 1.1s —
+                                               y la migración up/down/up +
+                                               cascada + SET NULL de
+                                               experience_id)
+pnpm --filter @devsure/api test:integration  (55 tests: incluye
+                                               projects.e2e-spec.ts — 401,
+                                               400 título vacío, 400 URL sin
+                                               protocolo, 400 demasiados
+                                               links, 201 draft con
+                                               auto-slug, 400 experienceId
+                                               inexistente, tope de featured
+                                               + publicar + borrar end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas
+                                               de projects)
+pnpm --filter @devsure/web test              (falla 1/9, la misma
+                                               preexistente ya documentada)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Pendientes detectados:**
+
+- Mismo hueco preexistente de siempre (`admin-structure.test.mjs`).
+- El listado de Projects hace una segunda llamada (`listExperiences`) solo
+  para mostrar el nombre de la experiencia asociada — aceptable para el
+  tamaño esperado de datos (owner único, pocas decenas de experiencias como
+  mucho), pero si el catálogo público crece mucho convendría que el backend
+  devuelva el nombre embebido en vez de resolverlo en el cliente.
+- No hay borrado de archivos huérfanos al quitar una imagen de la galería o
+  reemplazar la portada (mismo pendiente ya anotado en la sesión de
+  Uploads).
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Seguir con **Studies** (Education) — spec §5.5, más pequeño que
+Experiences/Projects (sin repeaters anidados: institution, title
+traducible, field, description traducible, fechas, in_progress, logo). Es
+un buen candidato para cerrar rápido antes de Skills y Services (aún más
+simples) y llegar al hito de la spec: "Endpoint público completo del
+portfolio" (Fase 2, item 8), que requiere que Experiences + Projects +
+Studies + Skills + Services ya existan.
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del

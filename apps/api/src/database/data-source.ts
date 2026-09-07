@@ -6,6 +6,7 @@ import { AdminUser } from '../auth/entities/admin-user.entity';
 import { AdminSession } from '../auth/entities/admin-session.entity';
 import { Profile } from '../profile/entities/profile.entity';
 import { Experience } from '../experiences/entities/experience.entity';
+import { Project } from '../projects/entities/project.entity';
 
 const environment = validateEnvironment(process.env);
 
@@ -16,5 +17,5 @@ export default new DataSource({
   synchronize: false,
   migrationsRun: false,
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
-  entities: [Technology, AdminUser, AdminSession, Profile, Experience],
+  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project],
 });

@@ -7,6 +7,9 @@ import type {
   ExperienceInput,
   ExperiencePage,
   Profile,
+  Project,
+  ProjectInput,
+  ProjectPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -163,6 +166,34 @@ export function updateExperience(id: string, input: Partial<ExperienceInput>): P
 
 export function deleteExperience(id: string): Promise<void> {
   return request<void>(`/admin/experiences/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listProjects(page = 1, limit = 50): Promise<ProjectPage> {
+  return request<ProjectPage>(`/admin/projects?page=${page}&limit=${limit}`);
+}
+
+export function getProject(id: string): Promise<Project> {
+  return request<Project>(`/admin/projects/${encodeURIComponent(id)}`);
+}
+
+export function createProject(input: ProjectInput): Promise<Project> {
+  return request<Project>('/admin/projects', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateProject(id: string, input: Partial<ProjectInput>): Promise<Project> {
+  return request<Project>(`/admin/projects/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteProject(id: string): Promise<void> {
+  return request<void>(`/admin/projects/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }
