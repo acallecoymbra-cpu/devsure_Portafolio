@@ -140,6 +140,28 @@ export interface Translations {
 
 export type UpdateTranslationsInput = Partial<Translations>;
 
+/**
+ * Storage folders from spec §8, one per uploadable field. Kept as a
+ * type-only union (no runtime array) so the API — which is CommonJS and
+ * cannot `require()` a value export from this ESM-only package (see the
+ * `SUPPORTED_LOCALES` note above) — never needs to import it as a value.
+ */
+export type UploadFolder =
+  | 'avatars'
+  | 'resumes'
+  | 'experiences-logos'
+  | 'projects-covers'
+  | 'projects-gallery'
+  | 'studies-logos'
+  | 'testimonials'
+  | 'posts-covers'
+  | 'network-icons';
+
+export interface UploadResult {
+  path: string;
+  url: string;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

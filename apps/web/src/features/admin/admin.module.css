@@ -733,6 +733,16 @@
   padding: 0.4rem 0.9rem;
 }
 
+.uploadPath {
+  color: var(--admin-accent-strong);
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+
+.uploadError {
+  color: #ffb7c6;
+}
+
 .localeTab[aria-selected='true'] {
   background: rgba(169, 156, 255, 0.16);
   border-color: var(--admin-accent);

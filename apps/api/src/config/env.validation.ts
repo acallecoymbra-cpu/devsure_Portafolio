@@ -13,6 +13,7 @@ export interface AppEnvironment {
   AUTH_SESSION_TTL_SECONDS: number;
   AUTH_LOGIN_WINDOW_SECONDS: number;
   AUTH_LOGIN_MAX_ATTEMPTS: number;
+  UPLOADS_DIR: string;
 }
 
 const environmentSchema = Joi.object<AppEnvironment>({
@@ -32,6 +33,7 @@ const environmentSchema = Joi.object<AppEnvironment>({
   AUTH_SESSION_TTL_SECONDS: Joi.number().integer().min(300).max(2592000).default(28800),
   AUTH_LOGIN_WINDOW_SECONDS: Joi.number().integer().min(1).max(3600).default(60),
   AUTH_LOGIN_MAX_ATTEMPTS: Joi.number().integer().min(1).max(100).default(5),
+  UPLOADS_DIR: Joi.string().min(1).default('./.data/uploads'),
 }).unknown(false);
 
 export function validateEnvironment(input: Record<string, unknown>): AppEnvironment {
@@ -48,6 +50,7 @@ export function validateEnvironment(input: Record<string, unknown>): AppEnvironm
     AUTH_SESSION_TTL_SECONDS: input.AUTH_SESSION_TTL_SECONDS,
     AUTH_LOGIN_WINDOW_SECONDS: input.AUTH_LOGIN_WINDOW_SECONDS,
     AUTH_LOGIN_MAX_ATTEMPTS: input.AUTH_LOGIN_MAX_ATTEMPTS,
+    UPLOADS_DIR: input.UPLOADS_DIR,
   };
   const { error, value } = environmentSchema.validate(values, {
     abortEarly: false,

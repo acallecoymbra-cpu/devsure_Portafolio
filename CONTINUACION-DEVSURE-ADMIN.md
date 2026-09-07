@@ -366,6 +366,157 @@ Uploads hasta que Projects lo necesite también (galerías, covers). Cualquiera
 de las dos es un módulo autocontenido válido; recomendamos Uploads primero
 porque Profile ya tiene los campos esperando la integración.
 
+### Sesión 2026-09-07 (4) — Módulo Uploads
+
+**Objetivo de la sesión:** implementar `POST /api/admin/uploads` (spec §8,
+§10.6) y reemplazar los campos de texto de `avatar`/`resume` en Profile por
+carga real de archivos, con el componente reutilizable `<FileUploadField>`
+que ya preveía la spec (§11.2).
+
+**⚠️ Hallazgo crítico, preexistente, fuera de alcance de esta sesión —
+`pnpm --filter @devsure/web build` está roto ahora mismo:**
+
+Al ejecutar por primera vez (en ninguna de las 3 sesiones previas se había
+corrido) `pnpm --filter @devsure/web build`, falla con un error de webpack
+en `apps/web/src/features/admin/admin.module.css` líneas 1-15 (código que
+**no toqué en ninguna sesión** — es parte del scaffolding original del panel
+admin, previo a mi participación):
+
+```
+Selector ":global(body:has(.adminRoot) > .site-header), ..." is not pure
+(pure selectors must contain at least one local class or id)
+```
+
+Causa raíz doble:
+1. css-loader exige que todo selector en un `.module.css` tenga al menos un
+   token local fuera de `:global(...)`; aquí los tres selectores están
+   100% envueltos en `:global(...)`, así que el build falla directamente.
+2. Aunque compilara, esas reglas ya eran **no funcionales**: usan la clase
+   literal `.adminRoot` dentro de `:global()`, pero CSS Modules hashea el
+   nombre real (`styles.adminRoot` se renderiza como algo tipo
+   `adminRoot_a1b2c3`), así que `:has(.adminRoot)` nunca matchea el DOM real.
+   Es decir, la lógica que debía ocultar el header/footer/skip-link públicos
+   dentro de `/admin` nunca funcionó como CSS Module.
+
+**No lo arreglé** porque la solución correcta no es un one-liner: implica
+decidir si esa hoja de estilos "global" sale del `.module.css` (a un CSS
+plano importado en el layout) o si el ocultamiento del chrome público se
+resuelve en `layout.tsx` sin CSS. Es una decisión de arquitectura de la capa
+de layout admin, no de Uploads. **Recomendación: la próxima sesión que toque
+el layout/estilos del admin debe resolver esto antes de nada más — el
+`pnpm build` de la raíz también fallará mientras esto no se arregle.**
+Mientras tanto, verifiqué el módulo de Uploads con lint/typecheck/unit/
+integración (todo real, contra la app real), y con `pnpm --filter @devsure/api
+build` (sí pasa) — pero **no pude confirmar el build de producción de
+`apps/web`** por este bug ajeno.
+
+**Cambios realizados:**
+
+- Backend: `UploadsModule` con `StorageService` (disco local, uuid + carpeta
+  por tipo de contenido) y `UploadsService` (valida mimetype y tamaño por
+  carpeta contra la tabla del spec §8: avatars 2MB, resumes 5MB PDF,
+  experiences/logos 2MB, projects/covers 4MB, projects/gallery 4MB,
+  studies/logos 2MB, testimonials 1MB, posts/covers 4MB, network-icons
+  512KB SVG/PNG), `AdminUploadsController`
+  (`POST /api/admin/uploads`, multipart, mismos guards). Se sirven los
+  archivos en `/storage/*` vía `express.static` en `bootstrap.ts`, con
+  `Cross-Origin-Resource-Policy: cross-origin` solo en esa ruta (el resto de
+  la API conserva el `same-origin` por defecto de helmet) para que el sitio
+  público (otro origen) pueda incrustar las imágenes.
+- Se agregaron `multer` (dependency) y `@types/multer` (devDependency) a
+  `apps/api` — antes solo llegaban transitivamente vía
+  `@nestjs/platform-express` y pnpm no los exponía para `require()` directo.
+- Config: `UPLOADS_DIR` (env, default `./.data/uploads`) en
+  `env.validation.ts`/`configuration.ts`/`.env.example` (raíz y
+  `apps/api/.env.example`).
+- Contratos compartidos: `UploadFolder` (unión de los 9 folders) y
+  `UploadResult { path, url }` — **solo tipos** (`import type` en todo el
+  API), a propósito, para no repetir el problema ESM/CJS de
+  `SUPPORTED_LOCALES` documentado en la sesión de Profile; el mapa de
+  configuración por carpeta (tamaños/mimetypes) vive solo en la API
+  (`upload-folders.ts`), no en contracts, porque es un detalle de
+  implementación del backend.
+- Frontend: `<FileUploadField>` reutilizable (spec §11.2: sube al elegir el
+  archivo, guarda el `path` devuelto en un input oculto, se integra con el
+  patrón de formulario no controlado + `FormData` ya usado en Profile/
+  Translations sin tocar `formDataToInput`). Se integró en `ProfileForm`:
+  el campo de avatar y el CV por locale ahora son cargas reales, no texto
+  libre. Se corrigió `admin-api.ts` para no forzar
+  `Content-Type: application/json` cuando el body es `FormData` (si no, el
+  navegador no podía fijar el boundary multipart correcto).
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/uploads/upload-folders.ts                                (nuevo)
+apps/api/src/uploads/dto/upload.dto.ts                                (nuevo)
+apps/api/src/uploads/storage.service.ts                               (nuevo)
+apps/api/src/uploads/storage.service.spec.ts                          (nuevo)
+apps/api/src/uploads/uploads.service.ts                               (nuevo)
+apps/api/src/uploads/uploads.service.spec.ts                          (nuevo)
+apps/api/src/uploads/admin-uploads.controller.ts                      (nuevo)
+apps/api/src/uploads/uploads.module.ts                                (nuevo)
+apps/api/test/uploads.e2e-spec.ts                                     (nuevo)
+apps/api/src/app.module.ts                (registra UploadsModule)
+apps/api/src/bootstrap.ts                 (sirve /storage, CORP cross-origin)
+apps/api/src/config/env.validation.ts     (UPLOADS_DIR)
+apps/api/src/config/configuration.ts      (storage.uploadsDir)
+apps/api/package.json                     (multer, @types/multer)
+.env.example / apps/api/.env.example      (UPLOADS_DIR)
+packages/contracts/src/index.ts           (UploadFolder, UploadResult)
+apps/web/src/features/admin/components/file-upload-field.tsx          (nuevo)
+apps/web/src/features/admin/components/profile-form.tsx  (usa FileUploadField)
+apps/web/src/features/admin/api/admin-api.ts (uploadFile, fix Content-Type
+                                               para FormData)
+apps/web/src/features/admin/types.ts      (UploadFolder, UploadResult)
+apps/web/src/features/admin/admin.module.css (.uploadPath, .uploadError)
+apps/web/tests/admin-uploads-structure.test.mjs                       (nuevo)
+```
+
+**Pruebas ejecutadas:**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (40 tests: incluye
+                                               storage.service.spec.ts —
+                                               escribe en un tmpdir real y lo
+                                               limpia — y uploads.service.spec.ts
+                                               con las 9 carpetas/reglas)
+pnpm --filter @devsure/api test:integration  (42 tests: incluye
+                                               uploads.e2e-spec.ts — 401/403/
+                                               400 folder inválido/415 mimetype/
+                                               413 tamaño/201 + servido real en
+                                               /storage con verificación del
+                                               header CORP)
+pnpm --filter @devsure/api build             (nest build — verde)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/7, la misma preexistente
+                                               ya documentada)
+pnpm --filter @devsure/web build             (FALLA — ver hallazgo crítico
+                                               arriba, no relacionado con
+                                               Uploads)
+```
+
+**Pendientes detectados:**
+
+- **Crítico, primero en la cola:** arreglar `admin.module.css` para que
+  `pnpm build` vuelva a pasar (ver hallazgo arriba).
+- `apps/web/tests/admin-structure.test.mjs` sigue con el mismo hueco de
+  siempre (falta el e2e de Playwright de technologies).
+- No hay borrado de archivos huérfanos: si un admin reemplaza un avatar, el
+  archivo viejo queda en disco. Aceptable para MVP (spec no lo pide), pero
+  documentarlo para cuando exista un job de limpieza.
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+1. Primero, una sesión corta y aislada para arreglar el build roto de
+   `admin.module.css` (ver hallazgo crítico).
+2. Luego, con Fase 1 completa (auth, Profile, Translations, Uploads),
+   continuar con **Experiences** (Fase 2, spec §5.3, §6.3): CRUD con
+   `levels` (repeater anidado con traducciones), `owner_id`, y reutilizar
+   `<FileUploadField>` para `logo` (carpeta `experiences-logos`).
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del

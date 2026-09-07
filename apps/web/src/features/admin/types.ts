@@ -13,6 +13,8 @@ export type {
   UpdateTranslationsInput,
   TranslatableString,
   SupportedLocale,
+  UploadFolder,
+  UploadResult,
 } from '@devsure/contracts';
 
 export { SUPPORTED_LOCALES } from '@devsure/contracts';

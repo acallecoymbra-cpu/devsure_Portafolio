@@ -27,5 +27,8 @@ export default () => {
       loginMaxAttempts: environment.AUTH_LOGIN_MAX_ATTEMPTS,
       secureCookies: environment.NODE_ENV === 'production',
     },
+    storage: {
+      uploadsDir: environment.UPLOADS_DIR,
+    },
   };
 };

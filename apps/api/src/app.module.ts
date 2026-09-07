@@ -11,6 +11,7 @@ import { AdminUser } from './auth/entities/admin-user.entity';
 import { AdminSession } from './auth/entities/admin-session.entity';
 import { ProfileModule } from './profile/profile.module';
 import { Profile } from './profile/entities/profile.entity';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { Profile } from './profile/entities/profile.entity';
     AuthModule,
     TechnologiesModule,
     ProfileModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}

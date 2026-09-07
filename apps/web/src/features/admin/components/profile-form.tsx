@@ -6,6 +6,7 @@ import { AdminApiError, getProfile, updateProfile } from '../api/admin-api';
 import { SUPPORTED_LOCALES } from '../types';
 import type { Profile, UpdateProfileInput } from '../types';
 import { collectTranslatable } from '../lib/translatable-form';
+import { FileUploadField } from './file-upload-field';
 import { LOCALE_LABELS, LocaleTabs } from './locale-tabs';
 import styles from '../admin.module.css';
 
@@ -159,11 +160,16 @@ export function ProfileForm() {
               <input name="fullName" defaultValue={profile.fullName} maxLength={150} autoComplete="off" />
               <small>Solo en la sección About; si se deja vacío usa el nombre corto.</small>
             </label>
-            <label className={`${styles.field} ${styles.fullField}`}>
-              <span>Avatar (ruta relativa)</span>
-              <input name="avatar" defaultValue={profile.avatar} maxLength={255} placeholder="avatars/eduardo.webp" autoComplete="off" />
-              <small>La carga de archivos llega en una sesión futura; por ahora indica la ruta ya subida.</small>
-            </label>
+            <div className={styles.fullField}>
+              <FileUploadField
+                label="Avatar"
+                folder="avatars"
+                accept="image/png,image/jpeg,image/webp"
+                hiddenName="avatar"
+                value={profile.avatar}
+                helpText="PNG, JPEG o WEBP, hasta 2 MB."
+              />
+            </div>
           </div>
         </fieldset>
 
@@ -197,19 +203,17 @@ export function ProfileForm() {
         </fieldset>
 
         <fieldset disabled={submitting}>
-          <legend>Currículum (ruta por idioma)</legend>
+          <legend>Currículum (por idioma)</legend>
           <LocaleTabs idPrefix="resume" locales={activeLocales}>
             {(locale) => (
-              <label className={styles.field}>
-                <span>CV ({LOCALE_LABELS[locale] ?? locale})</span>
-                <input
-                  name={`resume.${locale}`}
-                  defaultValue={profile.resume[locale] ?? ''}
-                  maxLength={255}
-                  placeholder="resumes/eduardo-en.pdf"
-                  autoComplete="off"
-                />
-              </label>
+              <FileUploadField
+                label={`CV (${LOCALE_LABELS[locale] ?? locale})`}
+                folder="resumes"
+                accept="application/pdf"
+                hiddenName={`resume.${locale}`}
+                value={profile.resume[locale]}
+                helpText="PDF, hasta 5 MB."
+              />
             )}
           </LocaleTabs>
         </fieldset>

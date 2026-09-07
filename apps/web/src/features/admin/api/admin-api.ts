@@ -8,6 +8,8 @@ import type {
   Translations,
   UpdateProfileInput,
   UpdateTranslationsInput,
+  UploadFolder,
+  UploadResult,
 } from '../types';
 
 export class AdminApiError extends Error {
@@ -38,7 +40,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
 
-  if (init.body && !headers.has('Content-Type')) {
+  if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -121,6 +123,16 @@ export function updateTranslations(input: Partial<UpdateTranslationsInput>): Pro
   return request<Translations>('/admin/translations', {
     method: 'PATCH',
     body: JSON.stringify(input),
+  });
+}
+
+export function uploadFile(file: File, folder: UploadFolder): Promise<UploadResult> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+  return request<UploadResult>('/admin/uploads', {
+    method: 'POST',
+    body: formData,
   });
 }
 
