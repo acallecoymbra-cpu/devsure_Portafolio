@@ -13,6 +13,12 @@ import type {
   Study,
   StudyInput,
   StudyPage,
+  ServiceContent,
+  ServiceInput,
+  ServicePage,
+  Strength,
+  StrengthInput,
+  StrengthPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -225,6 +231,62 @@ export function updateStudy(id: string, input: Partial<StudyInput>): Promise<Stu
 
 export function deleteStudy(id: string): Promise<void> {
   return request<void>(`/admin/studies/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listServices(page = 1, limit = 50): Promise<ServicePage> {
+  return request<ServicePage>(`/admin/services?page=${page}&limit=${limit}`);
+}
+
+export function getService(id: string): Promise<ServiceContent> {
+  return request<ServiceContent>(`/admin/services/${encodeURIComponent(id)}`);
+}
+
+export function createService(input: ServiceInput): Promise<ServiceContent> {
+  return request<ServiceContent>('/admin/services', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateService(id: string, input: Partial<ServiceInput>): Promise<ServiceContent> {
+  return request<ServiceContent>(`/admin/services/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteService(id: string): Promise<void> {
+  return request<void>(`/admin/services/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listStrengths(page = 1, limit = 50): Promise<StrengthPage> {
+  return request<StrengthPage>(`/admin/strengths?page=${page}&limit=${limit}`);
+}
+
+export function getStrength(id: string): Promise<Strength> {
+  return request<Strength>(`/admin/strengths/${encodeURIComponent(id)}`);
+}
+
+export function createStrength(input: StrengthInput): Promise<Strength> {
+  return request<Strength>('/admin/strengths', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateStrength(id: string, input: Partial<StrengthInput>): Promise<Strength> {
+  return request<Strength>(`/admin/strengths/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteStrength(id: string): Promise<void> {
+  return request<void>(`/admin/strengths/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

@@ -268,6 +268,55 @@ export interface StudyInput {
   sortOrder?: number;
 }
 
+export interface Service {
+  id: string;
+  title: TranslatableString;
+  description: TranslatableString;
+  icon?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServiceInput {
+  title: TranslatableString;
+  description: TranslatableString;
+  icon?: string;
+  sortOrder?: number;
+}
+
+export interface Strength {
+  id: string;
+  label: TranslatableString;
+  title: TranslatableString;
+  body: TranslatableString;
+  techStack: string[];
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StrengthInput {
+  label: TranslatableString;
+  title: TranslatableString;
+  body: TranslatableString;
+  techStack?: string[];
+  sortOrder?: number;
+}
+
+export interface WorkStyleItem {
+  id: string;
+  text: TranslatableString;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkStyleItemInput {
+  text: TranslatableString;
+  sortOrder?: number;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

@@ -971,6 +971,235 @@ el formulario puede ser aún más directo. Después de Skills, **Services**
 lista de contenido "core" que la spec exige antes del endpoint público del
 portfolio (Fase 2, item 8).
 
+### Sesión 2026-09-07 (9) — Módulo Services
+
+**Objetivo de la sesión:** implementar el CRUD completo de `Services` (spec
+§5.7) — primer paso del plan acordado con el usuario ("Services →
+Strengths → WorkStyleItems → Faqs, luego el endpoint público, luego el
+rediseño visual"). Es el módulo más simple hasta ahora: `title`/
+`description` traducibles **obligatorios**, `icon` (clase Themify) opcional,
+`sort_order`. Sin fechas, sin uploads, sin slug, sin reglas de negocio
+especiales.
+
+**Se mantuvo el patrón `FormData` no controlado** (como Studies) —
+`ServiceForm` es aún más corto que `StudyForm` porque no hay ni siquiera un
+`useState` local para UX (no hay ningún campo condicional). El test
+estructural incluye la misma aserción negativa que Studies
+(`doesNotMatch(form, /RepeaterField|TagsInput|FileUploadField/)`) para dejar
+constancia de que la simplicidad es intencional.
+
+**Nota operativa (no un problema de código):** al correr
+`pnpm --filter @devsure/web build` para verificar esta sesión, falló con
+`EPERM` sobre `apps/web/.next/trace`. Investigué antes de asumir que era un
+bug: **son los propios servidores de desarrollo del usuario corriendo en
+paralelo** (`pnpm --filter @devsure/api start:dev` y
+`pnpm --filter @devsure/web dev`, arrancados ~4:01pm, probablemente
+mientras probaba el login que configuramos en la sesión anterior) — el
+`next dev` activo tiene el `.next` abierto y choca con `next build`. **No
+maté esos procesos** (podrían ser el entorno de trabajo activo del usuario).
+Se compensó verificando lint + typecheck + unit + integración (ambos
+verdes), pero **el build de producción de `apps/web` no se confirmó en esta
+sesión** por este motivo externo — no por un error introducido. Si la
+siguiente sesión también encuentra esto, avisar al usuario en vez de matar
+procesos sin preguntar.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/services/entities/service.entity.ts                      (nuevo)
+apps/api/src/services/dto/service.dto.ts                              (nuevo)
+apps/api/src/services/dto/list-services-query.dto.ts                  (nuevo)
+apps/api/src/services/services.service.ts                             (nuevo)
+apps/api/src/services/services.service.spec.ts                        (nuevo)
+apps/api/src/services/admin-services.controller.ts                    (nuevo)
+apps/api/src/services/services.module.ts                              (nuevo)
+apps/api/src/database/migrations/1789344000000-CreateServices.ts      (nuevo)
+apps/api/src/database/migrations/__tests__/1789344000000-CreateServices.spec.ts (nuevo)
+apps/api/test/services.e2e-spec.ts                                    (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (Service, ServiceInput)
+apps/web/src/app/admin/(protected)/services/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/service-list.tsx               (nuevo)
+apps/web/src/features/admin/components/service-form.tsx               (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx    (nav Servicios)
+apps/web/src/features/admin/api/admin-api.ts (listServices/getService/
+                                               createService/updateService/
+                                               deleteService)
+apps/web/src/features/admin/types.ts       (ServiceContent, ServicePage —
+                                             alias para no chocar con el
+                                             nombre genérico `Service`)
+apps/web/tests/admin-services-structure.test.mjs                      (nuevo)
+```
+
+**Pruebas ejecutadas:**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (80 tests: incluye
+                                               services.service.spec.ts y su
+                                               migración up/down/up + cascada)
+pnpm --filter @devsure/api test:integration  (64 tests: incluye
+                                               services.e2e-spec.ts — 401,
+                                               400 descripción vacía, 400
+                                               ícono con formato inválido,
+                                               201, list/update/delete
+                                               end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/11, la misma
+                                               preexistente ya documentada)
+pnpm --filter @devsure/web build             NO EJECUTADO ESTA VEZ — ver
+                                              nota operativa arriba
+```
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Seguir con **Strengths** (spec §5.8) — según el plan acordado con el
+usuario. Mapea casi 1:1 a la sección "Por qué elegirnos" de
+`Portfolio/imagenBase.png`: `label` + `title` + `body` traducibles,
+`tech_stack` opcional (reutilizar `<TagsInput>`), `sort_order`. Mismo patrón
+`FormData` no controlado que Services/Studies (sin arrays anidados
+dinámicos salvo el `tech_stack`, que ya tiene componente reutilizable).
+
+### Sesión 2026-09-07 (10) — Módulo Strengths
+
+**Objetivo de la sesión:** implementar el CRUD completo de `Strengths`
+(spec §5.8) — segundo paso del plan acordado ("Services → Strengths →
+WorkStyleItems → Faqs"). Mapea a la sección "Por qué elegirnos" de
+`Portfolio/imagenBase.png`: `label` (tag corto) + `title` + `body`
+traducibles, todos obligatorios, más `tech_stack` opcional y `sort_order`.
+
+**Decisión de diseño:** se mantuvo el formulario `FormData` no controlado
+(como Studies/Services), pero esta vez con un campo controlado puntual:
+`techStack` usa `<TagsInput>` con un `useState<string[]>` local que se
+combina manualmente con el resto del `FormData` recién en el submit
+(`formDataToInput(data, activeLocales, techStack)`). No fue necesario tocar
+`<TagsInput>` — ya era reutilizable tal cual. Se ajustó `onChange` para
+marcar `dirty` explícitamente, porque quitar un tag (botón ×) no dispara un
+evento nativo `change` que el `onChange` del `<form>` pueda capturar por
+bubbling (a diferencia de escribir en el input de texto, que sí burbujea).
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/strengths/entities/strength.entity.ts                    (nuevo)
+apps/api/src/strengths/dto/strength.dto.ts                            (nuevo)
+apps/api/src/strengths/dto/list-strengths-query.dto.ts                (nuevo)
+apps/api/src/strengths/strengths.service.ts                           (nuevo)
+apps/api/src/strengths/strengths.service.spec.ts                      (nuevo)
+apps/api/src/strengths/admin-strengths.controller.ts                  (nuevo)
+apps/api/src/strengths/strengths.module.ts                            (nuevo)
+apps/api/src/database/migrations/1789430400000-CreateStrengths.ts     (nuevo)
+apps/api/src/database/migrations/__tests__/1789430400000-CreateStrengths.spec.ts (nuevo)
+apps/api/test/strengths.e2e-spec.ts                                   (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (Strength, StrengthInput)
+apps/web/src/app/admin/(protected)/strengths/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/strength-list.tsx              (nuevo)
+apps/web/src/features/admin/components/strength-form.tsx              (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx    (nav Fortalezas)
+apps/web/src/features/admin/api/admin-api.ts (listStrengths/getStrength/
+                                               createStrength/updateStrength/
+                                               deleteStrength)
+apps/web/src/features/admin/types.ts       (Strength, StrengthPage)
+apps/web/tests/admin-strengths-structure.test.mjs                     (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (87 tests: incluye
+                                               strengths.service.spec.ts —
+                                               defaults, techStack, scoping
+                                               por owner — y la migración
+                                               up/down/up + cascada)
+pnpm --filter @devsure/api test:integration  (68 tests: incluye
+                                               strengths.e2e-spec.ts — 401,
+                                               400 body vacío, 201 con
+                                               techStack, list/update/delete
+                                               end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/12, la misma
+                                               preexistente ya documentada)
+pnpm --filter @devsure/web build             ✅ (esta vez sí — el usuario ya
+                                               había cerrado sus `pnpm dev`;
+                                               incluye las 3 rutas nuevas)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Seguir con **WorkStyleItems** (spec §5.9) — el más simple de toda la lista:
+un único campo traducible `text` + `sort_order`, sin nada más. Mapea a
+"Cuatro pasos, cero sorpresas" en la imagen de referencia (aunque esa
+sección numera los items automáticamente por posición, no necesita un campo
+propio para el número). Después sigue **Faqs** (spec §5.10, `question` +
+`answer` traducibles) para cerrar el plan acordado con el usuario antes del
+endpoint público del portfolio.
+
+## Nueva dirección visual: rediseño de la home pública
+
+**Añadido el 2026-09-07, a pedido del usuario, tras validar el CMS admin
+construido hasta ahora ("ya probé, están buenas lo que hicimos").** Es una
+línea de trabajo **nueva y separada** del backlog del CMS admin (Skills,
+Services, etc.) — toca `apps/web`, la home pública, no `/admin`.
+
+**Referencia visual:** `Portfolio/imagenBase.png` — captura de una landing
+page corporativa de servicios tecnológicos (marca ajena, "Sinaloa Nube", no
+relacionada con DevSure). El usuario quiere que la home pública de DevSure
+se acerque a esa **estructura y composición de secciones**, no a esa marca.
+
+**Regla que sigue aplicando sin excepción (AGENTS.md):** *"No copies marca,
+textos, activos ni composición exacta del sitio de referencia."* Esto
+significa: replicar el **tipo de sección y su propósito**, con copy, colores,
+iconografía y contenido 100% de DevSure — nunca el texto, los logos de
+cliente, ni el layout pixel-por-pixel de la captura.
+
+**Inventario de secciones de la referencia** (de arriba hacia abajo; el
+recuadro azul repetido a la derecha de la captura es una superposición de
+una extensión del navegador, no es parte del diseño — ignorarlo):
+
+| # | Sección en la imagen | Propósito | Fuente de contenido en DevSure |
+|---|---|---|---|
+| 1 | Header: logo + nav + botón CTA | Navegación fija | Ya existe (`site-header.tsx`); solo ajustar estilo/CTA si se decide |
+| 2 | Hero: eyebrow + título + copy + 2 CTAs + bullets de confianza + tarjeta de contacto | Primera impresión | `Translations.heroTag/heroTitle/heroCopy/heroNote` (ya implementado) + `Profile` (ya implementado) |
+| 3 | Franja de logos de clientes | Prueba social | **No existe en la spec del CMS** — decidir si se agrega (tabla nueva) o se omite |
+| 4 | "Quiénes somos" + stats en tarjetas | Autoridad/trayectoria | `Translations.aboutHeading/aboutBody` (ya implementado); los stats numéricos no tienen campo propio todavía — evaluar si van hardcodeados, en `Profile`, o en una tabla nueva |
+| 5 | Grid de servicios agrupado por categoría | Oferta de valor | **`Services`** (spec §5.7 — pendiente de implementar) |
+| 6 | "Por qué elegirnos" con tarjetas | Diferenciación | **`Strengths`** (spec §5.8 — pendiente) — encaja casi exacto (`label`+`title`+`body`) |
+| 7 | Casos de éxito (tarjetas con imagen) | Prueba social concreta | **`Projects`** (ya implementado) filtrados por `featured`, o **`Testimonials`** (spec §5.11 — pendiente) |
+| 8 | "Cómo trabajamos" (4 pasos numerados) | Proceso/confianza | **`WorkStyleItems`** (spec §5.9 — pendiente) — encaja casi exacto |
+| 9 | FAQ (acordeón) | Reducir fricción | **`Faqs`** (spec §5.10 — pendiente) |
+| 10 | Contacto: info + formulario | Conversión | `Profile`/`Translations.contactHeading/contactIntro` (ya implementado) + **formulario público → `ContactMessages`/Inbox** (spec §5.15, §6.9 — pendiente) |
+| 11 | Footer (logo, columnas, legal) | Cierre | Ya existe (`site-footer.tsx`); ampliar columnas cuando existan Servicios/enlaces reales |
+
+**Lectura clave:** la mayoría de las secciones de la imagen ya mapean 1:1 a
+módulos que **ya estaban en el backlog del CMS** (Services, Strengths,
+WorkStyleItems, Faqs, Testimonials, Inbox) — este pedido no reemplaza el
+backlog de la sección "Trabajo pendiente principal" más abajo, lo confirma y
+le da un destino visual concreto. La franja de logos de clientes (#3) y los
+stats numéricos (#4) son lo único que no tiene un lugar obvio todavía en la
+spec original; no inventar una tabla nueva sin confirmar con el usuario.
+
+**Cómo continuar esta línea de trabajo (sesiones futuras, una cosa a la
+vez):**
+
+1. Terminar primero los módulos de contenido que la home necesita para no
+   maquetar con datos inventados: **Services** → **Strengths** →
+   **WorkStyleItems** → **Faqs** (mismo patrón CRUD ya usado en
+   Studies/Skills; `Faqs`/`Strengths`/`WorkStyleItems` son aún más simples).
+2. Implementar el endpoint público `GET /api/public/portfolio` (spec §10.7,
+   §12) que agrega todo eso para que la home pública deje de tener datos
+   fijos.
+3. Recién ahí abordar el rediseño visual de `apps/web/src/app/page.tsx` y
+   sus secciones, sección por sección, con la copy y marca propias de
+   DevSure — **preguntar al usuario por la paleta/tono de marca antes de
+   diseñar**, no asumirlos de la imagen de referencia.
+4. El formulario de contacto (#10) y la franja de logos (#3) son decisiones
+   de producto pendientes de confirmar con el usuario antes de construirlas.
+
 ## Instrucción para la siguiente IA
 
 Continúa el desarrollo del proyecto **DevSure** desde el estado actual del
@@ -979,7 +1208,8 @@ no reviertas cambios que no hayas creado tú.
 
 Antes de modificar archivos:
 
-1. Lee este documento.
+1. Lee este documento, incluida la sección "Nueva dirección visual: rediseño
+   de la home pública" si vas a trabajar en `apps/web` (front público).
 2. Lee `AGENTS.md`, `README.md` y `Portfolio/ADMIN-PORTABLE-SPEC.md`.
 3. Revisa `git status` y el diff actual.
 4. Inspecciona la implementación existente para reutilizar sus patrones.

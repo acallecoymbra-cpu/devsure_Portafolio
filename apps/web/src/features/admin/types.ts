@@ -1,4 +1,4 @@
-﻿import type { AdminTechnology, Experience, PaginatedResponse, Project, Study } from '@devsure/contracts';
+﻿import type { AdminTechnology, Experience, PaginatedResponse, Project, Service, Strength, Study } from '@devsure/contracts';
 
 export type {
   AdminIdentity as AdminUser,
@@ -23,6 +23,10 @@ export type {
   ProjectInput,
   Study,
   StudyInput,
+  Service as ServiceContent,
+  ServiceInput,
+  Strength,
+  StrengthInput,
 } from '@devsure/contracts';
 
 export { SUPPORTED_LOCALES } from '@devsure/contracts';
@@ -31,3 +35,5 @@ export type AdminTechnologyPage = PaginatedResponse<AdminTechnology>;
 export type ExperiencePage = PaginatedResponse<Experience>;
 export type ProjectPage = PaginatedResponse<Project>;
 export type StudyPage = PaginatedResponse<Study>;
+export type ServicePage = PaginatedResponse<Service>;
+export type StrengthPage = PaginatedResponse<Strength>;

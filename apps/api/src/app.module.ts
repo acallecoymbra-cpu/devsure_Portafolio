@@ -18,6 +18,12 @@ import { ProjectsModule } from './projects/projects.module';
 import { Project } from './projects/entities/project.entity';
 import { StudiesModule } from './studies/studies.module';
 import { Study } from './studies/entities/study.entity';
+import { ServicesModule } from './services/services.module';
+import { Service } from './services/entities/service.entity';
+import { StrengthsModule } from './strengths/strengths.module';
+import { Strength } from './strengths/entities/strength.entity';
+import { WorkStyleItemsModule } from './work-style-items/work-style-items.module';
+import { WorkStyleItem } from './work-style-items/entities/work-style-item.entity';
 
 @Module({
   imports: [
@@ -36,7 +42,7 @@ import { Study } from './studies/entities/study.entity';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study],
+        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem],
       }),
     }),
     HealthModule,
@@ -47,6 +53,9 @@ import { Study } from './studies/entities/study.entity';
     ExperiencesModule,
     ProjectsModule,
     StudiesModule,
+    ServicesModule,
+    StrengthsModule,
+    WorkStyleItemsModule,
   ],
 })
 export class AppModule {}
