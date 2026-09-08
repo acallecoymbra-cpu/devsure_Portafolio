@@ -1,7 +1,7 @@
 import type { Translations as TranslationsContract } from '@devsure/contracts';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AdminUser } from '../auth/entities/admin-user.entity';
 import { Profile } from './entities/profile.entity';
 import { UpdateTranslationsDto } from './dto/translations.dto';
@@ -28,7 +28,17 @@ export class TranslationsService {
     const existing = await this.profiles.findOneBy({ ownerId });
     if (existing) return existing;
     const user = await this.users.findOneByOrFail({ id: ownerId });
-    return this.profiles.save(this.profiles.create(profileDefaults(ownerId, user.username)));
+    try {
+      return await this.profiles.save(this.profiles.create(profileDefaults(ownerId, user.username)));
+    } catch (error) {
+      // See ProfileService.getOrCreate: the public portfolio aggregate reads
+      // Profile and Translations concurrently, so both can race to create
+      // the first-ever row for an owner.
+      if (error instanceof QueryFailedError && /unique/i.test(error.message)) {
+        return this.profiles.findOneByOrFail({ ownerId });
+      }
+      throw error;
+    }
   }
 }
 

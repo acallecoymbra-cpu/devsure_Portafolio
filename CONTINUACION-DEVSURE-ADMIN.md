@@ -1399,18 +1399,343 @@ pnpm build (raíz, turbo)                     ✅
 - No hay borrado de archivos huérfanos al reemplazar un avatar (mismo
   pendiente ya anotado en Uploads/Projects).
 
-**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo) — SUPERADA,
+ver sesión (14) más abajo.**
 
-Seguir con **Posts (Blog)** (spec §5.12, §6.7): `title`/`excerpt`/`content`
-traducibles (RichEditor para `content`, HTML), `slug` único auto-generado
-(reutilizar `firstTranslatableValue()`/`slugify()` de `common/slugify.ts`,
-igual que Projects), `cover_image` (reutilizar `<FileUploadField>`,
-carpeta `posts-covers` ya soportada), `published_at` (borrador si `null`,
-mismo patrón que Projects), `sort_order`. Después de Posts, con
-Testimonials y Posts completos, corresponde el **endpoint público**
-`GET /api/public/portfolio` (spec §10.7, §12) — y en algún momento antes o
-después, la sesión pendiente de **capacidades/expertise de empresa**
-(reemplazo de Skills, ver arriba).
+### Sesión 2026-09-07 (14) — Módulo Posts (Blog), con adaptación a empresa
+
+**Contexto de la decisión de producto (antes de empezar):** se le preguntó
+al usuario para qué serviría Posts y cómo adaptarlo a DevSure (empresa, no
+persona). Recomendación aplicada: mantener la estructura base de la spec
+(§5.12, §6.7) pero **agregar un campo `category` opcional** (Engineering,
+QA, Casos de éxito, Noticias de la empresa) para organizar el blog por área
+— mismo espíritu que la futura adaptación de Skills a capacidades de
+empresa (Desarrollo/QA), pendiente en una sesión propia.
+
+**Objetivo de esta sesión:** implementar el CRUD completo de `Posts`
+(spec §5.12, §6.7): `title`/`excerpt`/`content` traducibles (`content` es
+HTML, requerido), `slug` único auto-generado desde el título, `category`
+(adaptación de empresa, opcional), `cover_image`, `published_at`
+(borrador si `null`), `sort_order`.
+
+**Decisiones de diseño:**
+
+- **Sin RichEditor/WYSIWYG**: el proyecto no tiene ninguna librería de
+  edición de texto enriquecido y no se agregó una para esto (evita una
+  dependencia nueva solo para un campo). `content` se edita como HTML
+  crudo en un `<textarea>` por locale, con una nota explícita en el
+  formulario ("No hay un editor visual todavía"). Si en el futuro se
+  decide agregar un editor visual, es un cambio de UI aislado — el
+  contrato (`content: TranslatableString` con HTML como valor) no cambia.
+- **Vuelta al patrón `FormData` no controlado** (como Faqs/Studies, no
+  como Project): a diferencia de Project, Post no tiene ningún array de
+  longitud dinámica (`apps`, `gallery`, `techStack`), así que no necesitaba
+  un formulario controlado. Slug, auto-slug y conflicto 409 sí se
+  reutilizan igual que en Project (`firstTranslatableValue()`/`slugify()`
+  de `common/slugify.ts`, unicidad global del slug, mismo
+  `ConflictException`/mensaje en el form).
+- **`category` como valor local en la API, tipo importado de contracts**:
+  mismo patrón ya establecido con `TESTIMONIAL_SOURCES` — se evita
+  importar el array `POST_CATEGORIES` como *valor* desde
+  `@devsure/contracts` en la API (rompería `require()` bajo Jest por el
+  paquete ESM puro); se duplicó localmente en
+  `apps/api/src/posts/dto/post.dto.ts` y en
+  `apps/api/src/posts/dto/list-posts-query.dto.ts`. El front sí importa el
+  valor (`POST_CATEGORIES`) desde contracts sin problema para el
+  `<select>`.
+- **Corrección de un descuido en el contrato de `Project` reflejado
+  también en `Post`**: al escribir `Post` en contracts inicialmente marqué
+  `excerpt` como opcional (`excerpt?:`), pero el backend siempre devuelve
+  `{}` como mínimo (igual que `Project.excerpt`, que **sí** es requerido
+  en su interfaz de respuesta). Se corrigió a `excerpt: TranslatableString`
+  (requerido) en la interfaz `Post` de respuesta antes de terminar la
+  sesión, para que el formulario pueda leer `post.excerpt[locale]` sin
+  chequeo de undefined adicional, igual que ya hace `ProjectForm`.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/posts/entities/post.entity.ts                           (nuevo)
+apps/api/src/posts/dto/post.dto.ts                                   (nuevo)
+apps/api/src/posts/dto/list-posts-query.dto.ts                       (nuevo)
+apps/api/src/posts/posts.service.ts                                  (nuevo)
+apps/api/src/posts/posts.service.spec.ts                             (nuevo)
+apps/api/src/posts/admin-posts.controller.ts                         (nuevo)
+apps/api/src/posts/posts.module.ts                                   (nuevo)
+apps/api/src/database/migrations/1789776000000-CreatePosts.ts        (nuevo)
+apps/api/src/database/migrations/__tests__/1789776000000-CreatePosts.spec.ts (nuevo)
+apps/api/test/posts.e2e-spec.ts                                       (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (POST_CATEGORIES, PostCategory,
+                                            Post, PostInput)
+apps/web/src/app/admin/(protected)/posts/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/post-list.tsx                  (nuevo)
+apps/web/src/features/admin/components/post-form.tsx                  (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx  (nav Blog)
+apps/web/src/features/admin/api/admin-api.ts (listPosts/getPost/
+                                               createPost/updatePost/
+                                               deletePost)
+apps/web/src/features/admin/types.ts       (Post, PostInput, PostCategory,
+                                             POST_CATEGORIES, PostPage)
+apps/web/tests/admin-posts-structure.test.mjs                         (nuevo)
+```
+
+**Pruebas ejecutadas:**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (115 tests: incluye
+                                               posts.service.spec.ts —
+                                               auto-slug, slug duplicado
+                                               rechazado, category opcional,
+                                               filtros por owner/published/
+                                               category — y la migración
+                                               up/down/up + unicidad de
+                                               slug + cascada)
+pnpm --filter @devsure/api test:integration  (89 tests: incluye
+                                               posts.e2e-spec.ts — 401, 400
+                                               título vacío, 400 contenido
+                                               vacío, 400 category inválida,
+                                               201 con auto-slug y category,
+                                               409 slug duplicado, publicar/
+                                               actualizar/borrar end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/16, la misma
+                                               preexistente ya documentada)
+pnpm --filter @devsure/web build             ⚠️ ver nota operativa abajo
+```
+
+**Nota operativa (no un problema de código, mismo patrón ya visto en la
+sesión de Services):** al ejecutar `pnpm --filter @devsure/web build`, el
+comando no pudo completarse dentro del tiempo esperado; se detectaron
+varios procesos `node.exe` del usuario ya en ejecución (probablemente
+`pnpm dev` de sesiones interactivas). **No se mataron esos procesos.** Se
+compensó verificando lint + typecheck + unit + integración (todos verdes,
+incluye la app real vía Jest e2e), pero el build de producción de
+`apps/web` con Posts incluido no quedó confirmado end-to-end en esta
+sesión por este motivo externo. **Si la siguiente sesión también encuentra
+esto, avisar al usuario y pedir que cierre sus `pnpm dev` antes de
+reintentar, en vez de matarlos sin preguntar.**
+
+**Pendientes detectados:**
+
+- Confirmar `pnpm --filter @devsure/web build` (y `pnpm build` raíz) en
+  cuanto no haya un `pnpm dev` compitiendo por `.next`.
+- Mismo hueco preexistente de siempre (`admin-structure.test.mjs`).
+- Sin editor WYSIWYG para `content` (decisión explícita, ver arriba) — si
+  se decide agregar uno más adelante, es un cambio de UI aislado.
+- No hay borrado de archivos huérfanos al reemplazar la portada (mismo
+  pendiente ya anotado en Uploads/Projects/Testimonials).
+- El módulo de **capacidades/expertise de empresa** (reemplazo de `Skills`)
+  sigue sin implementar (ver sesión 13).
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo) — SUPERADA,
+ver sesión (15) más abajo:** se ejecutó el endpoint público del portfolio en
+la sesión siguiente, junto con dos módulos que ese endpoint necesitaba y que
+no existían todavía.
+
+### Sesión 2026-09-08 (15) — Módulo ClientLogos + stats de Profile + `GET /api/v1/portfolio`
+
+**Contexto de la decisión de producto (antes de empezar):** el usuario pidió
+empezar a arreglar la home pública (`http://localhost:3000/`) para que
+refleje todo el CMS, con un orden de secciones como el proyecto de
+referencia real `sinaloanube-master/` (Laravel, en la raíz del repo — **no
+solo la imagen** `Portfolio/imagenBase.png`; su
+`resources/views/landing.blade.php` confirma el orden exacto de secciones:
+Hero → Clientes → Nosotros → Servicios → Diferenciadores → Casos → Proceso →
+Preguntas → Contacto). Se identificaron 3 decisiones de producto pendientes
+(documentadas en la sesión de Posts) y se resolvieron con el usuario antes
+de tocar código:
+
+1. **Logos de clientes** (franja bajo el Hero, `partials/clientes.blade.php`
+   en la referencia): el usuario eligió crear un **módulo nuevo
+   `ClientLogo`** (no omitir, no reusar `Testimonial.company`).
+2. **Stats de "Nosotros"** (`partials/nosotros.blade.php` → `$ajustes->metricas`,
+   ya un array flexible de `{valor, sufijo, texto}` en la referencia, no
+   columnas fijas): el usuario eligió que vivan en **Profile**. Se implementó
+   como `Profile.stats: ProfileStat[]` (repeater JSON, igual patrón que
+   `Experience.levels`), replicando la forma flexible de la referencia en
+   vez de inventar columnas fijas (`yearsExperience`, etc.).
+3. **Alcance de la sesión**: primero el endpoint público, el rediseño visual
+   de la home queda para la siguiente sesión.
+
+**Objetivo de esta sesión:** (a) CRUD completo de `ClientLogo` (nombre, logo
+vía upload, `websiteUrl` opcional, `sortOrder`); (b) agregar `stats` a
+Profile con su propio fieldset en `ProfileForm` (`<RepeaterField>` +
+`<LocaleTabs>` anidados, primer uso de un repeater dentro de un formulario
+`FormData` no controlado — se combina manualmente en el submit, mismo patrón
+que `techStack` en `StrengthForm`); (c) `GET /api/v1/portfolio`
+(sin autenticar) que agrega Profile + Translations + ClientLogos +
+Experiences + Projects (`featured && published`) + Studies + Services +
+Strengths + WorkStyleItems + Faqs + Testimonials + Posts recientes (top 3,
+`published`) en una sola respuesta, para que la próxima sesión de rediseño
+visual no tenga que armar 11 llamadas por separado.
+
+**Decisiones de diseño:**
+
+- **Convención de ruta pública**: la spec original pide `/api/public/...`,
+  pero el único endpoint público que ya existía (`technologies`) usa
+  `@Controller('technologies')` sin prefijo `/public` (→
+  `GET /api/v1/technologies`). Se siguió la convención real del proyecto en
+  vez de la spec literal (regla explícita del documento): el agregado nuevo
+  es `@Controller('portfolio')` → `GET /api/v1/portfolio`.
+- **`PortfolioModule` no depende de las demás módulos vía `exports`**:
+  ninguno de los 9 módulos de contenido exporta su `Service` (mismo patrón
+  ya visto: `ProjectsModule` registra `Experience` con su propio
+  `TypeOrmModule.forFeature` en vez de importar `ExperiencesModule`).
+  `PortfolioModule` sigue el mismo patrón: re-registra
+  `TypeOrmModule.forFeature([...])` para las 12 entidades que agrega y
+  re-provee los 12 servicios ya existentes como providers propios, en vez de
+  tocar 9 módulos para agregarles `exports`.
+- **Sin método `listAll` nuevo en 8 servicios**: se reutiliza `.list(ownerId,
+  {page:1, limit:50})` de cada servicio existente (mismo límite ya aceptado
+  como suficiente para este CMS de un solo owner, precedente en la sesión de
+  Projects). Solo `ClientLogosService` gana un `listAll()` propio
+  (sin paginar) porque no tenía ningún consumidor público todavía.
+- **Bug real encontrado y corregido, no solo un workaround del agregado**:
+  `ProfileService.getOrCreate` y `TranslationsService.getOrCreate` (ambas
+  crean la misma fila de `profiles` en el primer `GET`) nunca se habían
+  llamado en paralelo hasta este endpoint (`Promise.all([profile.get(),
+  translations.get(), ...])`). Bajo sqlite/better-sqlite3, dos `save()`
+  concurrentes sobre la misma fila nueva chocan (una entra en conflicto de
+  unique constraint en `owner_id`, y reintentar leerla dentro del mismo
+  `catch` también fallaba — el `save()` de TypeORM abre una transacción por
+  llamada y ambas colisionaban en la misma conexión). Es un bug latente que
+  ya existía para dos requests públicas concurrentes reales, no solo un
+  artefacto de este agregado. Arreglo aplicado en dos partes: (1) se agregó
+  manejo defensivo de la violación de unicidad con re-lectura en ambos
+  `getOrCreate` (código robusto en general); (2) en `PortfolioService.get()`
+  se lee `profile` primero y de forma secuencial, y recién después el resto
+  en paralelo (`translations` ya no compite por crear la fila, solo la lee).
+- **`client-logos` como nueva carpeta de uploads**: 512 KB, PNG/JPEG/WEBP/SVG
+  (mismo límite que `network-icons`, coherente con ser un ícono pequeño).
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/client-logos/entities/client-logo.entity.ts              (nuevo)
+apps/api/src/client-logos/dto/client-logo.dto.ts                      (nuevo)
+apps/api/src/client-logos/dto/list-client-logos-query.dto.ts          (nuevo)
+apps/api/src/client-logos/client-logos.service.ts                     (nuevo)
+apps/api/src/client-logos/client-logos.service.spec.ts                (nuevo)
+apps/api/src/client-logos/admin-client-logos.controller.ts            (nuevo)
+apps/api/src/client-logos/client-logos.module.ts                      (nuevo)
+apps/api/src/database/migrations/1789862400000-CreateClientLogos.ts   (nuevo)
+apps/api/src/database/migrations/__tests__/1789862400000-CreateClientLogos.spec.ts (nuevo)
+apps/api/test/client-logos.e2e-spec.ts                                (nuevo)
+apps/api/src/uploads/upload-folders.ts             (+client-logos, 512KB)
+apps/api/src/uploads/uploads.service.spec.ts        (+test de client-logos)
+apps/api/src/profile/entities/profile.entity.ts     (+stats)
+apps/api/src/profile/dto/profile-stat.dto.ts                          (nuevo)
+apps/api/src/profile/dto/profile.dto.ts             (+stats en Update/ProfileDto)
+apps/api/src/profile/profile.defaults.ts            (+stats: null)
+apps/api/src/profile/profile.service.ts             (+stats, fix de la
+                                                      condición de carrera)
+apps/api/src/profile/profile.service.spec.ts        (+stats en las
+                                                      aserciones existentes)
+apps/api/src/profile/translations.service.ts        (fix de la misma
+                                                      condición de carrera)
+apps/api/src/profile/translations.service.spec.ts   (+migración de stats)
+apps/api/src/database/migrations/1789948800000-AddProfileStats.ts     (nuevo)
+apps/api/src/database/migrations/__tests__/1789948800000-AddProfileStats.spec.ts (nuevo)
+apps/api/src/database/migrations/__tests__/1788912000000-CreateProfiles.spec.ts
+  (+migración de stats en el describe de integridad de datos)
+apps/api/src/database/migrations/__tests__/1788998400000-AddProfileTranslations.spec.ts
+  (dividido en 2 describe, mismo motivo que la sesión de Translations: el
+  test de up/down/up no debe incluir la migración de stats o
+  undoLastMigration() deshace la migración equivocada)
+apps/api/src/portfolio/portfolio.service.ts                           (nuevo)
+apps/api/src/portfolio/portfolio.controller.ts                        (nuevo)
+apps/api/src/portfolio/portfolio.module.ts                            (nuevo)
+apps/api/test/portfolio.e2e-spec.ts                                   (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran ClientLogo
+                                                        + ClientLogosModule +
+                                                        PortfolioModule)
+packages/contracts/src/index.ts    (ClientLogo, ClientLogoInput,
+                                     UploadFolder +'client-logos',
+                                     ProfileStat, Profile.stats,
+                                     UpdateProfileInput.stats,
+                                     PublicPortfolio)
+apps/web/src/features/admin/components/client-logo-list.tsx           (nuevo)
+apps/web/src/features/admin/components/client-logo-form.tsx           (nuevo)
+apps/web/src/app/admin/(protected)/client-logos/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/admin-shell.tsx  (nav Logos de clientes)
+apps/web/src/features/admin/components/profile-form.tsx (+fieldset de stats
+                                                           con RepeaterField)
+apps/web/src/features/admin/api/admin-api.ts (listClientLogos/getClientLogo/
+                                               createClientLogo/updateClientLogo/
+                                               deleteClientLogo)
+apps/web/src/features/admin/types.ts       (ClientLogo*, ProfileStat)
+apps/web/tests/admin-client-logos-structure.test.mjs                  (nuevo)
+apps/web/tests/admin-profile-structure.test.mjs     (+aserciones de
+                                                      RepeaterField/stats)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (126 tests: incluye
+                                               client-logos.service.spec.ts,
+                                               las migraciones de
+                                               ClientLogos y AddProfileStats,
+                                               y profile.service.spec.ts/
+                                               translations.service.spec.ts
+                                               actualizados)
+pnpm --filter @devsure/api test:integration  (96 tests: incluye
+                                               client-logos.e2e-spec.ts y
+                                               portfolio.e2e-spec.ts —
+                                               sin auth, agrega los 11
+                                               módulos, solo proyectos
+                                               featured+published)
+pnpm --filter @devsure/api build             ✅
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/17, la misma
+                                               preexistente ya documentada;
+                                               admin-client-logos-structure
+                                               y admin-profile-structure
+                                               (con stats) verdes)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas
+                                               de client-logos)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Pendientes detectados:**
+
+- Mismo hueco preexistente de siempre (`admin-structure.test.mjs`).
+- **El rediseño visual de la home pública NO se tocó en esta sesión** (a
+  propósito, ver "Alcance" arriba): `apps/web/src/app/page.tsx` sigue con
+  datos fijos (`HomeHero`, `CaseStudiesSection`, `TechnologiesSection`, una
+  sección "Cómo trabajamos" con texto hardcodeado). El endpoint
+  `GET /api/v1/portfolio` ya existe y está listo para consumirse desde ahí.
+- Franja de logos de clientes: el módulo `ClientLogo` ya existe, pero
+  todavía no hay ningún logo cargado por el usuario — la sección se verá
+  vacía hasta que se cree contenido real desde `/admin/client-logos`.
+- Igual que Uploads/Projects/Testimonials/Posts: no hay borrado de archivos
+  huérfanos al reemplazar un logo.
+- El módulo de **capacidades/expertise de empresa** (reemplazo de `Skills`,
+  ver sesión 13) sigue sin implementar.
+- Redes e Inbox (bloque 4 de la spec) siguen sin empezar.
+
+**Siguiente tarea recomendada (siguiente sesión):**
+
+Rediseñar `apps/web/src/app/page.tsx` consumiendo `GET /api/v1/portfolio`
+(una sola llamada, ver `PublicPortfolio` en `@devsure/contracts`), con el
+orden de secciones confirmado contra `sinaloanube-master/resources/views/landing.blade.php`:
+Hero → Logos de clientes (`ClientLogo[]`) → Nosotros (`Profile.stats` +
+`Translations.aboutHeading/aboutBody`) → Servicios (`Service[]`) →
+Diferenciadores (`Strength[]`) → Casos de éxito (`Project[]` destacados) →
+Proceso (`WorkStyleItem[]`) → Preguntas frecuentes (`Faq[]`) → Contacto
+(`Profile` + `Translations.contactHeading/contactIntro`). Usar
+`translateValue()` (ya exportado en contracts, sin consumidor real hasta
+ahora) para resolver cada `TranslatableString` al locale activo del visitante.
+Antes de diseñar, **preguntar al usuario por la paleta/tono de marca** (regla
+ya anotada en "Nueva dirección visual" más abajo) — no asumirlo de
+`Portfolio/imagenBase.png` ni de `sinaloanube-master`. Recordar la regla de
+AGENTS.md: replicar tipo de sección y propósito, nunca marca/copy/logos
+ajenos.
 
 ## Nueva dirección visual: rediseño de la home pública
 

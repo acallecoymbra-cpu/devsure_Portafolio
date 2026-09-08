@@ -87,6 +87,13 @@ export function translateValue(
   return fallback ?? null;
 }
 
+/** One entry in the "Nosotros" metrics strip (e.g. 8 years / 40+ projects). */
+export interface ProfileStat {
+  value: number;
+  suffix?: string;
+  label: TranslatableString;
+}
+
 export interface Profile {
   id: string;
   username: string;
@@ -97,6 +104,7 @@ export interface Profile {
   bio: TranslatableString;
   avatar?: string;
   resume: TranslatableString;
+  stats: ProfileStat[];
   activeLocales: string[];
   defaultLocale: string;
 }
@@ -109,6 +117,7 @@ export interface UpdateProfileInput {
   bio?: TranslatableString;
   avatar?: string;
   resume?: TranslatableString;
+  stats?: ProfileStat[];
   activeLocales?: string[];
   defaultLocale?: string;
 }
@@ -155,7 +164,8 @@ export type UploadFolder =
   | 'studies-logos'
   | 'testimonials'
   | 'posts-covers'
-  | 'network-icons';
+  | 'network-icons'
+  | 'client-logos';
 
 export interface UploadResult {
   path: string;
@@ -360,6 +370,39 @@ export interface TestimonialInput {
   sortOrder?: number;
 }
 
+/**
+ * Company-level adaptation of spec §5.12's blog `category`: DevSure is a
+ * company portfolio (not a personal one), so posts are grouped by the kind
+ * of company content rather than left uncategorized.
+ */
+export const POST_CATEGORIES = ['engineering', 'qa', 'case-studies', 'company-news'] as const;
+export type PostCategory = (typeof POST_CATEGORIES)[number];
+
+export interface Post {
+  id: string;
+  title: TranslatableString;
+  slug: string;
+  excerpt: TranslatableString;
+  content: TranslatableString;
+  category?: PostCategory;
+  coverImage?: string;
+  publishedAt: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PostInput {
+  title: TranslatableString;
+  slug?: string;
+  excerpt?: TranslatableString;
+  content: TranslatableString;
+  category?: PostCategory;
+  coverImage?: string;
+  publishedAt?: string | null;
+  sortOrder?: number;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;
@@ -378,4 +421,45 @@ export interface AdminTechnology extends TechnologyCard {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Trust-strip logo shown under the Hero (sinaloanube-master's `clientes`). */
+export interface ClientLogo {
+  id: string;
+  name: string;
+  logo: string;
+  websiteUrl?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientLogoInput {
+  name: string;
+  logo: string;
+  websiteUrl?: string;
+  sortOrder?: number;
+}
+
+/**
+ * Single aggregate read for the public home page (spec §10.7, §12): every
+ * section the home renders in one request, in the order the page shows them
+ * (see `sinaloanube-master/resources/views/landing.blade.php`). Editorial
+ * fields stay as `TranslatableString` — the caller resolves the locale with
+ * `translateValue()` at render time instead of baking one locale into the
+ * response.
+ */
+export interface PublicPortfolio {
+  profile: Profile;
+  translations: Translations;
+  clientLogos: ClientLogo[];
+  experiences: Experience[];
+  projects: Project[];
+  studies: Study[];
+  services: Service[];
+  strengths: Strength[];
+  workStyleItems: WorkStyleItem[];
+  faqs: Faq[];
+  testimonials: Testimonial[];
+  posts: Post[];
 }

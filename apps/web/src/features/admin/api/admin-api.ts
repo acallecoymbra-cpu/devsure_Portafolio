@@ -3,6 +3,9 @@ import type {
   AdminTechnology,
   AdminTechnologyPage,
   AuthSession,
+  ClientLogo,
+  ClientLogoInput,
+  ClientLogoPage,
   Experience,
   ExperienceInput,
   ExperiencePage,
@@ -28,6 +31,9 @@ import type {
   Testimonial,
   TestimonialInput,
   TestimonialPage,
+  Post,
+  PostInput,
+  PostPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -380,6 +386,62 @@ export function updateTestimonial(id: string, input: Partial<TestimonialInput>):
 
 export function deleteTestimonial(id: string): Promise<void> {
   return request<void>(`/admin/testimonials/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listPosts(page = 1, limit = 50): Promise<PostPage> {
+  return request<PostPage>(`/admin/posts?page=${page}&limit=${limit}`);
+}
+
+export function getPost(id: string): Promise<Post> {
+  return request<Post>(`/admin/posts/${encodeURIComponent(id)}`);
+}
+
+export function createPost(input: PostInput): Promise<Post> {
+  return request<Post>('/admin/posts', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updatePost(id: string, input: Partial<PostInput>): Promise<Post> {
+  return request<Post>(`/admin/posts/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deletePost(id: string): Promise<void> {
+  return request<void>(`/admin/posts/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listClientLogos(page = 1, limit = 50): Promise<ClientLogoPage> {
+  return request<ClientLogoPage>(`/admin/client-logos?page=${page}&limit=${limit}`);
+}
+
+export function getClientLogo(id: string): Promise<ClientLogo> {
+  return request<ClientLogo>(`/admin/client-logos/${encodeURIComponent(id)}`);
+}
+
+export function createClientLogo(input: ClientLogoInput): Promise<ClientLogo> {
+  return request<ClientLogo>('/admin/client-logos', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateClientLogo(id: string, input: Partial<ClientLogoInput>): Promise<ClientLogo> {
+  return request<ClientLogo>(`/admin/client-logos/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteClientLogo(id: string): Promise<void> {
+  return request<void>(`/admin/client-logos/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

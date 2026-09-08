@@ -1,0 +1,53 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.codex
+/.cursor/*
+!/.cursor/rules/
+/.cursor/rules/*
+!/.cursor/rules/graphify-first.mdc
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+_ide_helper.php
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Archivos que sube el equipo desde el panel (disco "publico").
+# Viven en el servidor, no en el repo: el deploy corre sin --delete y los respeta.
+/public/img/casos
+/public/img/clientes
+/public/img/marca
+/public/img/portada
+
+# Assets compilados de Filament: los publica "filament:assets" en cada deploy.
+/public/css/filament
+/public/js/filament
+/public/fonts/filament
+
+# Base de datos local de desarrollo.
+/database/database.sqlite
+
+# Datos de demostración opcionales, instalados sólo en los entornos que los usan.
+/database/seeders/ContenidoDeEjemploSeeder.php
+
+# Caché y rutas locales de Graphify; conservar grafo, manifiesto e informes.
+/graphify-out/cache/
+/graphify-out/.graphify_root
+/graphify-out/.graphify_python

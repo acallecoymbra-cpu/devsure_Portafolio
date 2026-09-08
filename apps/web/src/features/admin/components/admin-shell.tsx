@@ -200,6 +200,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Testimonios
           </Link>
           <Link
+            href="/admin/posts"
+            aria-current={pathname.startsWith('/admin/posts') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">✎</span>
+            Blog
+          </Link>
+          <Link
+            href="/admin/client-logos"
+            aria-current={pathname.startsWith('/admin/client-logos') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">◆</span>
+            Logos de clientes
+          </Link>
+          <Link
             href="/admin/technologies"
             aria-current={pathname.startsWith('/admin/technologies') ? 'page' : undefined}
           >

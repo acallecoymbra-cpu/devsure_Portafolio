@@ -8,6 +8,7 @@ export function profileDefaults(ownerId: string, username: string): Partial<Prof
     headline: null,
     bio: null,
     resume: null,
+    stats: null,
     activeLocales: ['en'],
     defaultLocale: 'en',
   };

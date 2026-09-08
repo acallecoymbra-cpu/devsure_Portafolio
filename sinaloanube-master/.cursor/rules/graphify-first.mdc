@@ -1,0 +1,13 @@
+---
+description: Consultar el análisis de Graphify antes de explorar este proyecto
+alwaysApply: true
+---
+
+Sigue la regla «Consultar Graphify primero» de `AGENTS.md`.
+Antes de analizar o buscar código, lee `docs/GRAPHIFY.md` y
+`graphify-out/GRAPH_REPORT.md`, y consulta el grafo con `graphify query`.
+Después confirma los resultados en los archivos fuente pertinentes.
+Si el grafo falta o está desactualizado, sigue los comandos de regeneración
+de `docs/GRAPHIFY.md`. Si la herramienta no está disponible, usa el informe
+guardado e indica la limitación. No instales dependencias de Laravel para
+análisis estático. Después de cambios estructurales, actualiza el grafo.

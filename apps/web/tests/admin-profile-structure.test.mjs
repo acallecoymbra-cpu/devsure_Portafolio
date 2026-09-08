@@ -42,6 +42,9 @@ test('admin profile exposes a protected page wired to the profile API contract',
   assert.match(form, /defaultLocale/);
   assert.match(form, /status === 409/);
   assert.match(form, /beforeunload/);
+  // Nosotros metrics strip (spec follow-up): a repeater of {value, suffix, label}.
+  assert.match(form, /RepeaterField/);
+  assert.match(form, /stats/);
   assert.match(localeTabs, /role="tablist"/);
   assert.match(localeTabs, /role="tabpanel"/);
   assert.match(styles, /localeTab/);

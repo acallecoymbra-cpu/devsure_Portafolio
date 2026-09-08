@@ -8,8 +8,9 @@ import { RequireAdminPasswordChange1788739200000 } from '../1788739200000-Requir
 import { AddAdminUsername1788825600000 } from '../1788825600000-AddAdminUsername';
 import { CreateProfiles1788912000000 } from '../1788912000000-CreateProfiles';
 import { AddProfileTranslations1788998400000 } from '../1788998400000-AddProfileTranslations';
+import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
 
-describe('profile translations migration', () => {
+describe('profile translations migration (up/down/up)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -47,9 +48,35 @@ describe('profile translations migration', () => {
     await dataSource.runMigrations();
     expect(await columns()).toEqual(expect.arrayContaining(['hero_tag', 'contact_intro']));
   });
+});
+
+describe('profile translations migration (data integrity, with stats column applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [AdminUser, AdminSession, Profile],
+      migrations: [
+        CreateAdminAuth1788480000000,
+        RequireAdminPasswordChange1788739200000,
+        AddAdminUsername1788825600000,
+        CreateProfiles1788912000000,
+        AddProfileTranslations1788998400000,
+        AddProfileStats1789948800000,
+      ],
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
+  });
 
   it('persists and reloads translation fields through the Profile entity', async () => {
-    await dataSource.runMigrations();
     const { id: ownerId } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',

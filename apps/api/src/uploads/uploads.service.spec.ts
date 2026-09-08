@@ -64,6 +64,18 @@ describe('UploadsService', () => {
     ).rejects.toBeInstanceOf(PayloadTooLargeException);
   });
 
+  it('allows client-logos png up to its own (smaller) limit', async () => {
+    const write = jest.fn().mockResolvedValue('client-logos/abc.png');
+    const service = serviceWith({ write, publicUrl: () => 'http://localhost:3001/storage/client-logos/abc.png' });
+    await expect(
+      service.store('client-logos', fakeFile({ mimetype: 'image/png', size: 400 * 1024 }), request),
+    ).resolves.toMatchObject({ path: 'client-logos/abc.png' });
+
+    await expect(
+      service.store('client-logos', fakeFile({ mimetype: 'image/png', size: 600 * 1024 }), request),
+    ).rejects.toBeInstanceOf(PayloadTooLargeException);
+  });
+
   it('stores the file and returns the path and public url on success', async () => {
     const write = jest.fn().mockResolvedValue('avatars/generated.webp');
     const publicUrl = jest.fn().mockReturnValue('http://localhost:3001/storage/avatars/generated.webp');

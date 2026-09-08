@@ -43,6 +43,7 @@ export class ProfileService {
         ...(input.bio !== undefined ? { bio: input.bio } : {}),
         ...(input.avatar !== undefined ? { avatar: input.avatar } : {}),
         ...(input.resume !== undefined ? { resume: input.resume } : {}),
+        ...(input.stats !== undefined ? { stats: input.stats } : {}),
         ...(input.activeLocales !== undefined ? { activeLocales: input.activeLocales } : {}),
         ...(input.defaultLocale !== undefined ? { defaultLocale: input.defaultLocale } : {}),
       });
@@ -59,7 +60,18 @@ export class ProfileService {
   private async getOrCreate(manager: EntityManager, ownerId: string, username: string): Promise<Profile> {
     const existing = await manager.findOneBy(Profile, { ownerId });
     if (existing) return existing;
-    return manager.save(Profile, manager.create(Profile, profileDefaults(ownerId, username)));
+    try {
+      return await manager.save(Profile, manager.create(Profile, profileDefaults(ownerId, username)));
+    } catch (error) {
+      // Two concurrent first-reads (e.g. the public portfolio aggregate
+      // reading Profile and Translations at once) can both race past the
+      // `existing` check above; the loser re-fetches the row the winner just
+      // created instead of surfacing a spurious 500.
+      if (error instanceof QueryFailedError && /unique/i.test(error.message)) {
+        return manager.findOneByOrFail(Profile, { ownerId });
+      }
+      throw error;
+    }
   }
 }
 
@@ -74,6 +86,7 @@ function toProfile(user: AdminUser, profile: Profile): ProfileContract {
     bio: profile.bio ?? {},
     ...(profile.avatar ? { avatar: profile.avatar } : {}),
     resume: profile.resume ?? {},
+    stats: profile.stats ?? [],
     activeLocales: profile.activeLocales,
     defaultLocale: profile.defaultLocale,
   };

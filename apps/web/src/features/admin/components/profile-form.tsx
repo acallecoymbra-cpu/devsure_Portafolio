@@ -4,10 +4,11 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { AdminApiError, getProfile, updateProfile } from '../api/admin-api';
 import { SUPPORTED_LOCALES } from '../types';
-import type { Profile, UpdateProfileInput } from '../types';
+import type { Profile, ProfileStat, UpdateProfileInput } from '../types';
 import { collectTranslatable } from '../lib/translatable-form';
 import { FileUploadField } from './file-upload-field';
 import { LOCALE_LABELS, LocaleTabs } from './locale-tabs';
+import { RepeaterField } from './repeater-field';
 import styles from '../admin.module.css';
 
 export function ProfileForm() {
@@ -20,6 +21,7 @@ export function ProfileForm() {
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string }>();
   const [activeLocales, setActiveLocales] = useState<string[]>(['en']);
   const [defaultLocale, setDefaultLocale] = useState('en');
+  const [stats, setStats] = useState<ProfileStat[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -29,6 +31,7 @@ export function ProfileForm() {
         setProfile(data);
         setActiveLocales(data.activeLocales);
         setDefaultLocale(data.defaultLocale);
+        setStats(data.stats);
         setStatus('ready');
       })
       .catch((error: unknown) => {
@@ -70,7 +73,7 @@ export function ProfileForm() {
     event.preventDefault();
     setSubmitting(true);
     setMessage(undefined);
-    const input = formDataToInput(new FormData(event.currentTarget), activeLocales, defaultLocale);
+    const input = formDataToInput(new FormData(event.currentTarget), activeLocales, defaultLocale, stats);
 
     try {
       const updated = await updateProfile(input);
@@ -219,6 +222,58 @@ export function ProfileForm() {
         </fieldset>
 
         <fieldset disabled={submitting}>
+          <legend>Métricas (sección "Nosotros")</legend>
+          <p className={styles.muted}>
+            Franja de números bajo el "Quiénes somos" de la home (ej. años en el mercado, proyectos entregados).
+          </p>
+          <RepeaterField<ProfileStat>
+            items={stats}
+            onChange={(next) => { setDirty(true); setStats(next); }}
+            createItem={() => ({ value: 0, suffix: '', label: {} })}
+            addLabel="Agregar métrica"
+            itemLabel={(item) => item.label[defaultLocale] || item.label[activeLocales[0]] || 'Nueva métrica'}
+            emptyText="Aún no hay métricas configuradas."
+            renderItem={(item, index, update) => (
+              <div className={styles.formGrid}>
+                <label className={styles.field}>
+                  <span>Valor <em aria-hidden="true">*</em></span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={item.value}
+                    onChange={(event) => update({ value: Number(event.target.value) })}
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span>Sufijo</span>
+                  <input
+                    value={item.suffix ?? ''}
+                    maxLength={8}
+                    placeholder="+"
+                    onChange={(event) => update({ suffix: event.target.value })}
+                  />
+                </label>
+                <div className={styles.fullField}>
+                  <LocaleTabs idPrefix={`stat-${index}-label`} locales={activeLocales}>
+                    {(locale) => (
+                      <label className={styles.field}>
+                        <span>Etiqueta ({LOCALE_LABELS[locale] ?? locale})</span>
+                        <input
+                          value={item.label[locale] ?? ''}
+                          maxLength={120}
+                          onChange={(event) => update({ label: { ...item.label, [locale]: event.target.value } })}
+                        />
+                      </label>
+                    )}
+                  </LocaleTabs>
+                </div>
+              </div>
+            )}
+          />
+        </fieldset>
+
+        <fieldset disabled={submitting}>
           <legend>Idiomas</legend>
           <div className={styles.formGrid}>
             {SUPPORTED_LOCALES.map((locale) => (
@@ -266,6 +321,7 @@ function formDataToInput(
   data: FormData,
   activeLocales: string[],
   defaultLocale: string,
+  stats: ProfileStat[],
 ): Partial<UpdateProfileInput> {
   const fullName = String(data.get('fullName') ?? '').trim();
   const avatar = String(data.get('avatar') ?? '').trim();
@@ -278,6 +334,14 @@ function formDataToInput(
     headline: collectTranslatable(data, 'headline', activeLocales),
     bio: collectTranslatable(data, 'bio', activeLocales),
     resume: collectTranslatable(data, 'resume', activeLocales),
+    stats: stats
+      .map((stat) => ({
+        ...stat,
+        label: Object.fromEntries(
+          Object.entries(stat.label).filter(([, text]) => text?.trim()),
+        ),
+      }))
+      .filter((stat) => Object.keys(stat.label).length > 0),
     activeLocales,
     defaultLocale,
   };

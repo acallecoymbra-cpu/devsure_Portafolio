@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AdminUser } from '../../auth/entities/admin-user.entity';
-import type { TranslatableString } from '@devsure/contracts';
+import type { ProfileStat, TranslatableString } from '@devsure/contracts';
 
 @Entity({ name: 'profiles' })
 @Index('UQ_profiles_owner', ['ownerId'], { unique: true })
@@ -27,6 +27,7 @@ export class Profile {
   @Column({ type: 'simple-json', nullable: true }) bio!: TranslatableString | null;
   @Column({ type: 'varchar', length: 255, nullable: true }) avatar!: string | null;
   @Column({ type: 'simple-json', nullable: true }) resume!: TranslatableString | null;
+  @Column({ type: 'simple-json', nullable: true }) stats!: ProfileStat[] | null;
 
   @Column({ name: 'active_locales', type: 'simple-array', default: 'en' })
   activeLocales!: string[];

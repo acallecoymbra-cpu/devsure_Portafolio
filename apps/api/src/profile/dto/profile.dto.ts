@@ -1,7 +1,8 @@
-import type { Profile, TranslatableString, UpdateProfileInput } from '@devsure/contracts';
+import type { Profile, ProfileStat, TranslatableString, UpdateProfileInput } from '@devsure/contracts';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   ArrayMinSize,
   ArrayUnique,
   IsArray,
@@ -12,9 +13,11 @@ import {
   Matches,
   MaxLength,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { IsTranslatableString } from '../../common/validators/translatable-string.validator';
 import { SUPPORTED_LOCALES } from '../../common/locales';
+import { ProfileStatDto } from './profile-stat.dto';
 
 export class UpdateProfileDto implements UpdateProfileInput {
   @ApiPropertyOptional({ format: 'email', maxLength: 254 })
@@ -53,6 +56,11 @@ export class UpdateProfileDto implements UpdateProfileInput {
   @IsTranslatableString(255)
   resume?: TranslatableString;
 
+  @ApiPropertyOptional({ type: [ProfileStatDto] })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsArray() @ArrayMaxSize(12) @ValidateNested({ each: true }) @Type(() => ProfileStatDto)
+  stats?: ProfileStatDto[];
+
   @ApiPropertyOptional({ type: [String], enum: SUPPORTED_LOCALES })
   @ValidateIf((_object, value) => value !== undefined)
   @IsArray() @ArrayMinSize(1) @ArrayUnique() @IsIn(SUPPORTED_LOCALES, { each: true })
@@ -74,6 +82,7 @@ export class ProfileDto implements Profile {
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) bio!: TranslatableString;
   @ApiPropertyOptional() avatar?: string;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) resume!: TranslatableString;
+  @ApiProperty({ type: [ProfileStatDto] }) stats!: ProfileStat[];
   @ApiProperty({ type: [String] }) activeLocales!: string[];
   @ApiProperty() defaultLocale!: string;
 }

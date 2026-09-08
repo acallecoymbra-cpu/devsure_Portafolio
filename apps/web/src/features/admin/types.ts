@@ -1,8 +1,10 @@
 ﻿import type {
   AdminTechnology,
+  ClientLogo,
   Experience,
   Faq,
   PaginatedResponse,
+  Post,
   Project,
   Service,
   Strength,
@@ -19,6 +21,7 @@ export type {
   TechnologyPublicationStatus as PublicationStatus,
   PaginationMeta,
   Profile,
+  ProfileStat,
   UpdateProfileInput,
   Translations,
   UpdateTranslationsInput,
@@ -45,9 +48,16 @@ export type {
   Testimonial,
   TestimonialInput,
   TestimonialSource,
+  Post,
+  PostInput,
+  PostCategory,
+  ClientLogo,
+  ClientLogoInput,
 } from '@devsure/contracts';
 
 export { TESTIMONIAL_SOURCES } from '@devsure/contracts';
+
+export { POST_CATEGORIES } from '@devsure/contracts';
 
 export { SUPPORTED_LOCALES } from '@devsure/contracts';
 
@@ -60,3 +70,5 @@ export type StrengthPage = PaginatedResponse<Strength>;
 export type WorkStyleItemPage = PaginatedResponse<WorkStyleItem>;
 export type FaqPage = PaginatedResponse<Faq>;
 export type TestimonialPage = PaginatedResponse<Testimonial>;
+export type PostPage = PaginatedResponse<Post>;
+export type ClientLogoPage = PaginatedResponse<ClientLogo>;

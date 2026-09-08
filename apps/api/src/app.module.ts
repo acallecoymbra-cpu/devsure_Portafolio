@@ -28,6 +28,11 @@ import { FaqsModule } from './faqs/faqs.module';
 import { Faq } from './faqs/entities/faq.entity';
 import { TestimonialsModule } from './testimonials/testimonials.module';
 import { Testimonial } from './testimonials/entities/testimonial.entity';
+import { PostsModule } from './posts/posts.module';
+import { Post } from './posts/entities/post.entity';
+import { ClientLogosModule } from './client-logos/client-logos.module';
+import { ClientLogo } from './client-logos/entities/client-logo.entity';
+import { PortfolioModule } from './portfolio/portfolio.module';
 
 @Module({
   imports: [
@@ -46,7 +51,7 @@ import { Testimonial } from './testimonials/entities/testimonial.entity';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial],
+        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo],
       }),
     }),
     HealthModule,
@@ -62,6 +67,9 @@ import { Testimonial } from './testimonials/entities/testimonial.entity';
     WorkStyleItemsModule,
     FaqsModule,
     TestimonialsModule,
+    PostsModule,
+    ClientLogosModule,
+    PortfolioModule,
   ],
 })
 export class AppModule {}

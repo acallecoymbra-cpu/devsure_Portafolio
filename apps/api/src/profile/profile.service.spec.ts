@@ -8,6 +8,7 @@ import { RequireAdminPasswordChange1788739200000 } from '../database/migrations/
 import { AddAdminUsername1788825600000 } from '../database/migrations/1788825600000-AddAdminUsername';
 import { CreateProfiles1788912000000 } from '../database/migrations/1788912000000-CreateProfiles';
 import { AddProfileTranslations1788998400000 } from '../database/migrations/1788998400000-AddProfileTranslations';
+import { AddProfileStats1789948800000 } from '../database/migrations/1789948800000-AddProfileStats';
 import { Profile } from './entities/profile.entity';
 import { ProfileService } from './profile.service';
 
@@ -28,6 +29,7 @@ describe('ProfileService', () => {
         AddAdminUsername1788825600000,
         CreateProfiles1788912000000,
         AddProfileTranslations1788998400000,
+        AddProfileStats1789948800000,
       ],
     });
     await dataSource.initialize();
@@ -61,6 +63,7 @@ describe('ProfileService', () => {
       headline: {},
       bio: {},
       resume: {},
+      stats: [],
       activeLocales: ['en'],
       defaultLocale: 'en',
     });
@@ -81,6 +84,7 @@ describe('ProfileService', () => {
       bio: { en: 'Building reliable systems.' },
       avatar: 'avatars/eduardo.webp',
       resume: { en: 'resumes/eduardo-en.pdf', es: 'resumes/eduardo-es.pdf' },
+      stats: [{ value: 8, suffix: '+', label: { en: 'Years shipping software' } }],
       activeLocales: ['en', 'es'],
       defaultLocale: 'es',
     });
@@ -95,6 +99,7 @@ describe('ProfileService', () => {
       bio: { en: 'Building reliable systems.' },
       avatar: 'avatars/eduardo.webp',
       resume: { en: 'resumes/eduardo-en.pdf', es: 'resumes/eduardo-es.pdf' },
+      stats: [{ value: 8, suffix: '+', label: { en: 'Years shipping software' } }],
       activeLocales: ['en', 'es'],
       defaultLocale: 'es',
     });
