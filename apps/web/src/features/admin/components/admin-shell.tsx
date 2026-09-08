@@ -193,6 +193,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Preguntas frecuentes
           </Link>
           <Link
+            href="/admin/testimonials"
+            aria-current={pathname.startsWith('/admin/testimonials') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">❝</span>
+            Testimonios
+          </Link>
+          <Link
             href="/admin/technologies"
             aria-current={pathname.startsWith('/admin/technologies') ? 'page' : undefined}
           >

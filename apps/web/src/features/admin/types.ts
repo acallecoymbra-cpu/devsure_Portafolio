@@ -7,6 +7,7 @@
   Service,
   Strength,
   Study,
+  Testimonial,
   WorkStyleItem,
 } from '@devsure/contracts';
 
@@ -41,7 +42,12 @@ export type {
   WorkStyleItemInput,
   Faq,
   FaqInput,
+  Testimonial,
+  TestimonialInput,
+  TestimonialSource,
 } from '@devsure/contracts';
+
+export { TESTIMONIAL_SOURCES } from '@devsure/contracts';
 
 export { SUPPORTED_LOCALES } from '@devsure/contracts';
 
@@ -53,3 +59,4 @@ export type ServicePage = PaginatedResponse<Service>;
 export type StrengthPage = PaginatedResponse<Strength>;
 export type WorkStyleItemPage = PaginatedResponse<WorkStyleItem>;
 export type FaqPage = PaginatedResponse<Faq>;
+export type TestimonialPage = PaginatedResponse<Testimonial>;

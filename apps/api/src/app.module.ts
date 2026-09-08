@@ -26,6 +26,8 @@ import { WorkStyleItemsModule } from './work-style-items/work-style-items.module
 import { WorkStyleItem } from './work-style-items/entities/work-style-item.entity';
 import { FaqsModule } from './faqs/faqs.module';
 import { Faq } from './faqs/entities/faq.entity';
+import { TestimonialsModule } from './testimonials/testimonials.module';
+import { Testimonial } from './testimonials/entities/testimonial.entity';
 
 @Module({
   imports: [
@@ -44,7 +46,7 @@ import { Faq } from './faqs/entities/faq.entity';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq],
+        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial],
       }),
     }),
     HealthModule,
@@ -59,6 +61,7 @@ import { Faq } from './faqs/entities/faq.entity';
     StrengthsModule,
     WorkStyleItemsModule,
     FaqsModule,
+    TestimonialsModule,
   ],
 })
 export class AppModule {}

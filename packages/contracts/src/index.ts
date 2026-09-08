@@ -332,6 +332,34 @@ export interface FaqInput {
   sortOrder?: number;
 }
 
+export const TESTIMONIAL_SOURCES = ['workana', 'linkedin', 'upwork', 'email', 'other'] as const;
+export type TestimonialSource = (typeof TESTIMONIAL_SOURCES)[number];
+
+export interface Testimonial {
+  id: string;
+  author: string;
+  role?: string;
+  company?: string;
+  quote: string;
+  avatar?: string;
+  source?: TestimonialSource;
+  sourceUrl?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TestimonialInput {
+  author: string;
+  role?: string;
+  company?: string;
+  quote: string;
+  avatar?: string;
+  source?: TestimonialSource;
+  sourceUrl?: string;
+  sortOrder?: number;
+}
+
 export interface TechnologyInput {
   name: string;
   slug: string;

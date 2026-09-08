@@ -1273,20 +1273,144 @@ pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas)
 pnpm build (raíz, turbo)                     ✅
 ```
 
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo) — SUPERADA,
+ver sesión (13) más abajo:** se le preguntó al usuario cómo continuar dado
+que `Skills`/`Testimonials`/`Posts` no existían. Decisiones tomadas:
+`Skills` (personal) **no aplica** — DevSure es un portfolio de **empresa**,
+no de una persona; se reemplaza por un módulo de **capacidades/expertise a
+nivel empresa** (Desarrollo y QA) — pendiente de implementar, ver sesión (13).
+Orden elegido: **Testimonials y Posts primero**, luego el endpoint público.
+
+### Sesión 2026-09-07 (13) — Módulo Testimonials
+
+**Contexto de la decisión de producto (antes de empezar):** se le preguntó
+al usuario cómo seguir dado que `Skills`, `Testimonials` y `Posts` no
+existían todavía. Dos decisiones:
+
+1. **`Skills` (spec §5.6, habilidades personales) no aplica a DevSure**:
+   el usuario aclaró que "esto no sería personal, es para una empresa, para
+   mostrar todo lo que se tiene a nivel de empresa". Se reemplaza por un
+   módulo de **capacidades/expertise de la empresa** (Desarrollo y QA) —
+   **todavía no implementado, queda pendiente para una sesión propia** (no
+   confundir con el `Skills` original de la spec: cambia el propósito, el
+   nombre de entidad y probablemente los campos).
+2. **Orden de trabajo**: Testimonials y Posts primero, endpoint público
+   después.
+
+**Objetivo de esta sesión:** implementar el CRUD completo de `Testimonials`
+(spec §5.11, §6.6) — el primero de los dos módulos elegidos. Campos:
+`author`/`quote` (requeridos, no traducibles — la spec los marca
+explícitamente como "no traducible en MVP actual"), `role`, `company`,
+`avatar` (upload, carpeta `testimonials` ya soportada desde la sesión de
+Uploads), `source` (enum: workana/linkedin/upwork/email/other),
+`source_url`, `sort_order`.
+
+**Decisiones de diseño:**
+
+- **Primer módulo del CMS sin ningún campo traducible.** El formulario de
+  admin no usa `<LocaleTabs>` ni depende de `getProfile()`/`activeLocales`
+  en absoluto — es más simple que Studies/Services en ese sentido, aunque sí
+  reutiliza `<FileUploadField>` (modo `hiddenName`, igual que
+  Studies/Profile) para el avatar.
+- `source` se guardó como `varchar(20)` simple (no un enum de base de datos)
+  con la validación de pertenencia (`@IsIn([...])`) solo en el DTO — mismo
+  nivel de rigidez que el resto del CMS (sin CHECK constraint de enum a
+  nivel de columna, coherente con cómo se hizo `TestimonialSource` como
+  union type de TypeScript en vez de un enum nativo).
+- Se agregó `TESTIMONIAL_SOURCES`/`TestimonialSource`/`Testimonial`/
+  `TestimonialInput` a `@devsure/contracts`. **`TESTIMONIAL_SOURCES` es un
+  valor en tiempo de ejecución** (lo usa el `<select>` del formulario web),
+  pero — siguiendo la lección de la sesión de Profile sobre el paquete ESM
+  puro de contracts rompiendo `require()` bajo Jest — el array de fuentes
+  válidas se **duplicó localmente** en
+  `apps/api/src/testimonials/dto/testimonial.dto.ts` en vez de importarse
+  como valor desde contracts en la API (se sigue importando el *tipo*
+  `TestimonialSource` normalmente). El front sí importa el valor desde
+  contracts sin problema porque Next/webpack no tiene el problema de
+  interop CJS/ESM que tiene Jest.
+- `sourceUrl` valida con `@IsUrl({ require_protocol: true })`, el mismo
+  patrón ya usado en `Project`/`ProjectApp` para URLs externas.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/testimonials/entities/testimonial.entity.ts             (nuevo)
+apps/api/src/testimonials/dto/testimonial.dto.ts                     (nuevo)
+apps/api/src/testimonials/dto/list-testimonials-query.dto.ts         (nuevo)
+apps/api/src/testimonials/testimonials.service.ts                    (nuevo)
+apps/api/src/testimonials/testimonials.service.spec.ts               (nuevo)
+apps/api/src/testimonials/admin-testimonials.controller.ts           (nuevo)
+apps/api/src/testimonials/testimonials.module.ts                     (nuevo)
+apps/api/src/database/migrations/1789689600000-CreateTestimonials.ts (nuevo)
+apps/api/src/database/migrations/__tests__/1789689600000-CreateTestimonials.spec.ts (nuevo)
+apps/api/test/testimonials.e2e-spec.ts                                (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (TESTIMONIAL_SOURCES,
+                                            TestimonialSource, Testimonial,
+                                            TestimonialInput)
+apps/web/src/app/admin/(protected)/testimonials/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/testimonial-list.tsx           (nuevo)
+apps/web/src/features/admin/components/testimonial-form.tsx           (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx  (nav Testimonios)
+apps/web/src/features/admin/api/admin-api.ts (listTestimonials/getTestimonial/
+                                               createTestimonial/updateTestimonial/
+                                               deleteTestimonial)
+apps/web/src/features/admin/types.ts       (Testimonial, TestimonialInput,
+                                             TestimonialSource,
+                                             TESTIMONIAL_SOURCES,
+                                             TestimonialPage)
+apps/web/tests/admin-testimonials-structure.test.mjs                  (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (106 tests: incluye
+                                               testimonials.service.spec.ts —
+                                               defaults, todos los campos
+                                               opcionales, scoping por owner —
+                                               y la migración up/down/up +
+                                               cascada)
+pnpm --filter @devsure/api test:integration  (82 tests: incluye
+                                               testimonials.e2e-spec.ts — 401,
+                                               400 quote vacío, 400 source
+                                               inválido, 400 sourceUrl sin
+                                               protocolo, 201 con opcionales,
+                                               list/update/delete end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/15, la misma
+                                               preexistente ya documentada)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas
+                                               de testimonials)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Pendientes detectados:**
+
+- Mismo hueco preexistente de siempre (`admin-structure.test.mjs`).
+- El módulo de **capacidades/expertise de empresa** (reemplazo de `Skills`,
+  ver contexto de decisión arriba) sigue sin implementar — su diseño de
+  datos (¿una tabla con `area` Desarrollo/QA + lista de ítems, o dos listas
+  separadas?) no se definió todavía; requiere una sesión propia y
+  probablemente confirmar el modelo de datos con el usuario antes de
+  construirlo.
+- No hay borrado de archivos huérfanos al reemplazar un avatar (mismo
+  pendiente ya anotado en Uploads/Projects).
+
 **Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
 
-Según el plan que el usuario ya confirmó, el siguiente hito es el **endpoint
-público del portfolio**: `GET /api/public/portfolio` (spec §10.7, §12), que
-agrega Profile + Translations + Experiences + Projects (featured) + Studies
-+ Services + Skills + Strengths + WorkStyleItems + Faqs + Testimonials +
-Posts recientes en una sola respuesta para el front público. **Nota:**
-`Skills` y `Testimonials`/`Posts` todavía no existen — o bien se
-implementan primero (fuera del plan de 4 módulos ya acordado, pero
-mencionados en la lista completa del CMS), o el endpoint público se arma
-inicialmente solo con lo que ya existe y se van sumando secciones a medida
-que se completen los módulos restantes. **Preguntar al usuario cuál prefiere
-antes de empezar.** Recién después de ese endpoint corresponde el rediseño
-visual de la home (ver sección "Nueva dirección visual" más abajo).
+Seguir con **Posts (Blog)** (spec §5.12, §6.7): `title`/`excerpt`/`content`
+traducibles (RichEditor para `content`, HTML), `slug` único auto-generado
+(reutilizar `firstTranslatableValue()`/`slugify()` de `common/slugify.ts`,
+igual que Projects), `cover_image` (reutilizar `<FileUploadField>`,
+carpeta `posts-covers` ya soportada), `published_at` (borrador si `null`,
+mismo patrón que Projects), `sort_order`. Después de Posts, con
+Testimonials y Posts completos, corresponde el **endpoint público**
+`GET /api/public/portfolio` (spec §10.7, §12) — y en algún momento antes o
+después, la sesión pendiente de **capacidades/expertise de empresa**
+(reemplazo de Skills, ver arriba).
 
 ## Nueva dirección visual: rediseño de la home pública
 

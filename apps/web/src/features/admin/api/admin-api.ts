@@ -25,6 +25,9 @@ import type {
   Faq,
   FaqInput,
   FaqPage,
+  Testimonial,
+  TestimonialInput,
+  TestimonialPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -349,6 +352,34 @@ export function updateFaq(id: string, input: Partial<FaqInput>): Promise<Faq> {
 
 export function deleteFaq(id: string): Promise<void> {
   return request<void>(`/admin/faqs/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listTestimonials(page = 1, limit = 50): Promise<TestimonialPage> {
+  return request<TestimonialPage>(`/admin/testimonials?page=${page}&limit=${limit}`);
+}
+
+export function getTestimonial(id: string): Promise<Testimonial> {
+  return request<Testimonial>(`/admin/testimonials/${encodeURIComponent(id)}`);
+}
+
+export function createTestimonial(input: TestimonialInput): Promise<Testimonial> {
+  return request<Testimonial>('/admin/testimonials', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateTestimonial(id: string, input: Partial<TestimonialInput>): Promise<Testimonial> {
+  return request<Testimonial>(`/admin/testimonials/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteTestimonial(id: string): Promise<void> {
+  return request<void>(`/admin/testimonials/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }
