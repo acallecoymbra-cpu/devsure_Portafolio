@@ -1210,6 +1210,84 @@ Services (dos bloques `<LocaleTabs>`, sin campos extra). Después de Faqs,
 hito natural es el endpoint público `GET /api/public/portfolio` (spec §10.7,
 §12), y recién después el rediseño visual de la home.
 
+### Sesión 2026-09-07 (12) — Módulo Faqs — cierra el plan acordado con el usuario
+
+**Objetivo de la sesión:** implementar el CRUD completo de `Faqs`
+(spec §5.10) — último paso del plan acordado ("Services → Strengths →
+WorkStyleItems → Faqs"). `question` + `answer` traducibles, ambos
+obligatorios, `sort_order`. Mapea al acordeón "Lo que casi siempre nos
+preguntan" de `Portfolio/imagenBase.png`.
+
+Mismo patrón exacto que Services (dos bloques `<LocaleTabs>`, `FormData` no
+controlado, sin campos extra). Sin decisiones de diseño nuevas — repetición
+mecánica del patrón ya establecido, igual que WorkStyleItems.
+
+**✅ Con esto, el plan de 4 módulos acordado con el usuario está completo.**
+El CMS admin ahora cubre: Profile, Translations, Uploads, Experiences,
+Projects, Studies, Services, Strengths, WorkStyleItems y Faqs — 10 módulos
+de contenido, todos con CRUD real, `owner_id`-scoped, traducibles donde la
+spec lo pide, con tests unitarios + de integración + build de producción
+verificados en cada uno.
+
+**Archivos modificados/creados:**
+
+```text
+apps/api/src/faqs/entities/faq.entity.ts                              (nuevo)
+apps/api/src/faqs/dto/faq.dto.ts                                      (nuevo)
+apps/api/src/faqs/dto/list-faqs-query.dto.ts                          (nuevo)
+apps/api/src/faqs/faqs.service.ts                                     (nuevo)
+apps/api/src/faqs/faqs.service.spec.ts                                (nuevo)
+apps/api/src/faqs/admin-faqs.controller.ts                            (nuevo)
+apps/api/src/faqs/faqs.module.ts                                      (nuevo)
+apps/api/src/database/migrations/1789603200000-CreateFaqs.ts          (nuevo)
+apps/api/src/database/migrations/__tests__/1789603200000-CreateFaqs.spec.ts (nuevo)
+apps/api/test/faqs.e2e-spec.ts                                        (nuevo)
+apps/api/src/app.module.ts / database/data-source.ts (registran el módulo)
+packages/contracts/src/index.ts           (Faq, FaqInput)
+apps/web/src/app/admin/(protected)/faqs/{page,new/page,[id]/edit/page}.tsx (nuevos)
+apps/web/src/features/admin/components/faq-list.tsx                   (nuevo)
+apps/web/src/features/admin/components/faq-form.tsx                   (nuevo)
+apps/web/src/features/admin/components/admin-shell.tsx  (nav Preguntas frecuentes)
+apps/web/src/features/admin/api/admin-api.ts (listFaqs/getFaq/createFaq/
+                                               updateFaq/deleteFaq)
+apps/web/src/features/admin/types.ts       (Faq, FaqPage)
+apps/web/tests/admin-faqs-structure.test.mjs                          (nuevo)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya conocido):**
+
+```text
+pnpm --filter @devsure/contracts build / test
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (99 tests: incluye
+                                               faqs.service.spec.ts y su
+                                               migración up/down/up + cascada)
+pnpm --filter @devsure/api test:integration  (76 tests: incluye
+                                               faqs.e2e-spec.ts — 401, 400
+                                               respuesta vacía, 201,
+                                               list/update/delete end-to-end)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/14, la misma
+                                               preexistente ya documentada)
+pnpm --filter @devsure/web build             ✅ (incluye las 3 rutas nuevas)
+pnpm build (raíz, turbo)                     ✅
+```
+
+**Siguiente tarea recomendada (siguiente sesión, un solo módulo):**
+
+Según el plan que el usuario ya confirmó, el siguiente hito es el **endpoint
+público del portfolio**: `GET /api/public/portfolio` (spec §10.7, §12), que
+agrega Profile + Translations + Experiences + Projects (featured) + Studies
++ Services + Skills + Strengths + WorkStyleItems + Faqs + Testimonials +
+Posts recientes en una sola respuesta para el front público. **Nota:**
+`Skills` y `Testimonials`/`Posts` todavía no existen — o bien se
+implementan primero (fuera del plan de 4 módulos ya acordado, pero
+mencionados en la lista completa del CMS), o el endpoint público se arma
+inicialmente solo con lo que ya existe y se van sumando secciones a medida
+que se completen los módulos restantes. **Preguntar al usuario cuál prefiere
+antes de empezar.** Recién después de ese endpoint corresponde el rediseño
+visual de la home (ver sección "Nueva dirección visual" más abajo).
+
 ## Nueva dirección visual: rediseño de la home pública
 
 **Añadido el 2026-09-07, a pedido del usuario, tras validar el CMS admin

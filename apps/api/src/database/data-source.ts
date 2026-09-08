@@ -11,6 +11,7 @@ import { Study } from '../studies/entities/study.entity';
 import { Service } from '../services/entities/service.entity';
 import { Strength } from '../strengths/entities/strength.entity';
 import { WorkStyleItem } from '../work-style-items/entities/work-style-item.entity';
+import { Faq } from '../faqs/entities/faq.entity';
 
 const environment = validateEnvironment(process.env);
 
@@ -21,5 +22,5 @@ export default new DataSource({
   synchronize: false,
   migrationsRun: false,
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
-  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem],
+  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq],
 });

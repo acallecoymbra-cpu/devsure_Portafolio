@@ -1,6 +1,7 @@
 ﻿import type {
   AdminTechnology,
   Experience,
+  Faq,
   PaginatedResponse,
   Project,
   Service,
@@ -38,6 +39,8 @@ export type {
   StrengthInput,
   WorkStyleItem,
   WorkStyleItemInput,
+  Faq,
+  FaqInput,
 } from '@devsure/contracts';
 
 export { SUPPORTED_LOCALES } from '@devsure/contracts';
@@ -49,3 +52,4 @@ export type StudyPage = PaginatedResponse<Study>;
 export type ServicePage = PaginatedResponse<Service>;
 export type StrengthPage = PaginatedResponse<Strength>;
 export type WorkStyleItemPage = PaginatedResponse<WorkStyleItem>;
+export type FaqPage = PaginatedResponse<Faq>;

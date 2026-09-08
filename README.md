@@ -48,7 +48,7 @@ Terminal 1 (API):
 
 ```powershell
 pnpm --filter @devsure/api start:dev
-```
+```cambiar-luego-2027
 
 Terminal 2 (web):
 

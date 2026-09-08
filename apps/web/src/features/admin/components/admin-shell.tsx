@@ -186,6 +186,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Estilo de trabajo
           </Link>
           <Link
+            href="/admin/faqs"
+            aria-current={pathname.startsWith('/admin/faqs') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">?</span>
+            Preguntas frecuentes
+          </Link>
+          <Link
             href="/admin/technologies"
             aria-current={pathname.startsWith('/admin/technologies') ? 'page' : undefined}
           >

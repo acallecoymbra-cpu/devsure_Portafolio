@@ -22,6 +22,9 @@ import type {
   WorkStyleItem,
   WorkStyleItemInput,
   WorkStyleItemPage,
+  Faq,
+  FaqInput,
+  FaqPage,
   TechnologyInput,
   Translations,
   UpdateProfileInput,
@@ -318,6 +321,34 @@ export function updateWorkStyleItem(id: string, input: Partial<WorkStyleItemInpu
 
 export function deleteWorkStyleItem(id: string): Promise<void> {
   return request<void>(`/admin/work-style-items/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listFaqs(page = 1, limit = 50): Promise<FaqPage> {
+  return request<FaqPage>(`/admin/faqs?page=${page}&limit=${limit}`);
+}
+
+export function getFaq(id: string): Promise<Faq> {
+  return request<Faq>(`/admin/faqs/${encodeURIComponent(id)}`);
+}
+
+export function createFaq(input: FaqInput): Promise<Faq> {
+  return request<Faq>('/admin/faqs', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateFaq(id: string, input: Partial<FaqInput>): Promise<Faq> {
+  return request<Faq>(`/admin/faqs/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteFaq(id: string): Promise<void> {
+  return request<void>(`/admin/faqs/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }
