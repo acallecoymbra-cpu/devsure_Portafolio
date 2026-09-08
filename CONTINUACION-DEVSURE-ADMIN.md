@@ -2128,15 +2128,127 @@ código real (sin mocks).
   anotado en la sesión 16).
 - Mismo hueco preexistente de siempre (`admin-structure.test.mjs`).
 
+**Siguiente tarea recomendada — SUPERADA, ver sesión (18) más abajo:** el
+usuario pidió el efecto de voltear las tarjetas de tecnología antes de
+llegar a publicar contenido real.
+
+### Sesión 2026-09-08 (18) — Efecto "voltear" en las tarjetas de tecnología
+
+**Objetivo de la sesión:** al hacer clic en la imagen de una tecnología en
+`/tecnologias` (y en el teaser de la home), la tarjeta se voltea en 3D y
+muestra `Technology.summary` (el campo "Resumen" de `/admin/technologies`,
+hasta ahora sin ningún consumidor público).
+
+**Decisiones de diseño:**
+
+- Solo las tecnologías **con** `summary` no vacío son volteables —
+  `TechnologyTile` ahora decide entre renderizar la tarjeta estática de
+  siempre (sin cambios, cero riesgo de regresión) o una nueva
+  `FlippableTechnologyTile` con el mecanismo de flip. Esto evita tocar el
+  layout responsive (fila/columna por breakpoint) de las tarjetas
+  existentes — las reglas nuevas viven bajo una clase modificadora
+  `.technology-tile-flip` que no interfiere con `.technology-tile` a secas.
+- `TechnologyTile` pasó a client component (`'use client'`, estado local
+  `flipped`) — sigue pudiendo usarse desde componentes de servidor
+  (`technologies-section.tsx`, `technology-explorer.tsx`) sin cambios en
+  quien lo consume.
+- Mecanismo CSS: dos caras (`.technology-flip-face`) superpuestas con
+  `position:absolute`, cada una con su propio `rotateY` + `backface-
+  visibility:hidden`, alternando 0°↔180° (frente) y 180°↔360° (reverso) —
+  variante del patrón clásico de flip-card que no depende de
+  `transform-style:preserve-3d` en un wrapper intermedio.
+- Accesibilidad: botón real (`aria-pressed`, `aria-label` dinámico
+  "Ver/Ocultar resumen de X") + `aria-describedby` apuntando al párrafo del
+  resumen (el texto del reverso queda expuesto al lector de pantalla
+  independientemente del estado visual, ya que `aria-label` sustituye el
+  nombre accesible del botón pero no su descripción).
+- Se agregó un pequeño indicador "i" en la esquina de las tarjetas
+  volteables (afordancia de que hay más información al hacer clic).
+
+**Dos bugs reales encontrados y corregidos al probarlo en el navegador**
+(no evidentes desde el código, solo se vieron renderizados):
+
+1. **El texto del reverso no se recortaba**: `-webkit-line-clamp` +
+   `display:-webkit-box` no tomaba efecto en este entorno (el navegador
+   computaba `display:flow-root`, no `-webkit-box`) — con un resumen de
+   300 caracteres, el texto se desbordaba muy por debajo del alto de la
+   tarjeta. Arreglo robusto: `overflow:hidden` también en
+   `.technology-flip-back` (el contenedor de la cara, no solo el párrafo),
+   que recorta el texto pase lo que pase con el soporte de `line-clamp` —
+   el intento de `line-clamp` se dejó como mejora progresiva, inofensiva.
+2. **Hueco vacío debajo de la tarjeta volteable en pantallas anchas**: el
+   grid (`display:grid`, `align-items:stretch` por defecto) estira cada
+   `<li>` a la altura de la fila, que en el breakpoint de 80rem+ puede
+   llegar a ~257px por las imágenes grandes de las tarjetas vecinas; el
+   botón de flip solo tenía `min-height`, así que se quedaba en ~168px
+   dejando un espacio vacío (con el fondo oscuro del `<li>` de por medio)
+   debajo. Arreglo: `height:100%` además de `min-height` en
+   `.technology-flip-card`, para que siempre llene lo que el grid le
+   asigne.
+
+**Gap encontrado y corregido de una sesión anterior (18 no es donde se
+originó, pero se detectó al revisar este archivo):**
+`apps/web/tests/e2e/technologies.spec.ts` seguía probando la home (`/`)
+esperando **41** tarjetas y filtros/búsqueda ahí — quedó desactualizado
+desde la sesión 17, cuando el catálogo completo se movió a `/tecnologias`
+y la home pasó a mostrar solo un teaser. Nunca se detectó porque
+`pnpm test:e2e` no se ha ejecutado en ninguna sesión. Se reescribió el
+spec completo: las pruebas del catálogo completo (41 tecnologías, filtros,
+búsqueda, paginación de la API, fallback de ícono, error/reintento, sin
+overflow horizontal) ahora corren contra `/tecnologias`; la home solo
+prueba el teaser + el enlace a la página completa + su propio estado
+vacío. Se agregó también una prueba nueva del efecto de voltear
+(`technology-db-fixture.mjs` ganó las acciones `add-summary`/
+`remove-summary` para sembrar un resumen real en la tecnología Java solo
+durante esa prueba).
+
+**Archivos modificados/creados:**
+
+```text
+apps/web/src/features/technologies/components/technology-tile.tsx
+  (reescrito: 'use client', variante volteable condicional)
+apps/web/src/app/globals.css               (+estilos del flip, con los
+                                             dos arreglos de altura/recorte)
+apps/web/tests/e2e/technologies.spec.ts     (reescrito: catálogo completo
+                                             en /tecnologias, teaser en /,
+                                             +prueba del flip)
+apps/web/tests/technology-db-fixture.mjs    (+add-summary/remove-summary)
+```
+
+**Verificación:**
+
+```text
+pnpm --filter @devsure/web lint / typecheck   (verdes)
+pnpm --filter @devsure/web test                (falla 1/17, el mismo
+                                                hueco preexistente)
+```
+
+No se corrió `pnpm test:e2e` de forma automatizada (mismo motivo de
+siempre — nunca se ha ejecutado en este proyecto), pero el spec reescrito
+se verificó **manualmente en Chrome real** vía `claude-in-chrome` contra
+`pnpm dev` del usuario: se confirmó `/tecnologias` con las 41 tarjetas y
+filtros funcionando, se hizo clic en la tarjeta de Java (con un resumen de
+prueba de 300 caracteres) y se comprobó el volteo ida y vuelta, sin
+desbordar el alto de la tarjeta ni dejar espacio vacío tras los dos
+arreglos. Sin errores de consola reales (solo los `bis_skin_checked` ya
+conocidos, de una extensión del navegador del entorno de prueba).
+
+**Pendientes detectados:**
+
+- Ninguna tecnología tiene `summary` cargado en la BD real todavía (todas
+  las 41 sembradas tienen `summary: null`) — el efecto de voltear no se
+  activará hasta que el usuario cargue resúmenes desde
+  `/admin/technologies`.
+- Mismos pendientes de la sesión 17 (proyecto y post de prueba en
+  borrador, `/cultura` con paleta anterior, hueco de
+  `admin-structure.test.mjs`).
+
 **Siguiente tarea recomendada:**
 
-(1) El usuario revisa visualmente `/`, `/tecnologias` y `/casos-de-exito`
-con `pnpm dev` y confirma si el diseño de los filtros/tarjetas se acerca a
-lo que buscaba con las imágenes de referencia. (2) Publicar contenido real
-(marcar tecnologías como `featured`, publicar el proyecto y el post de
-prueba, asignarle una categoría al proyecto) para ver todo funcionando de
-punta a punta. (3) Después: el módulo de **capacidades/expertise de
-empresa** (pendiente desde la sesión 13) y Redes e Inbox (bloque 4).
+(1) El usuario carga contenido real: resúmenes de tecnologías, marcar
+`featured`, publicar el proyecto/post de prueba con una categoría. (2)
+Módulo de **capacidades/expertise de empresa** (pendiente desde la sesión
+13). (3) Redes e Inbox (bloque 4).
 
 ## Nueva dirección visual: rediseño de la home pública
 

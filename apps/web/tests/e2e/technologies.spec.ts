@@ -10,13 +10,30 @@ const viewports = [
   { width: 1440, height: 1000 },
 ];
 
-test('publishes the 41 technologies exactly once and filters with the keyboard', async ({
-  page,
-}) => {
+test('shows a technologies teaser on the home page linking to the full catalog', async ({ page }) => {
   await page.goto('/');
 
   await expect(
     page.getByRole('heading', { level: 2, name: 'Tecnologías que manejamos' }),
+  ).toBeVisible();
+
+  const cards = page.getByTestId('technology-card');
+  const count = await cards.count();
+  expect(count).toBeGreaterThan(0);
+  expect(count).toBeLessThanOrEqual(12);
+
+  await page.getByRole('link', { name: /Ver catálogo completo/ }).click();
+  await expect(page).toHaveURL(/\/tecnologias$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Tecnologías que manejamos' })).toBeVisible();
+});
+
+test('publishes the 41 technologies exactly once on /tecnologias and filters with the keyboard', async ({
+  page,
+}) => {
+  await page.goto('/tecnologias');
+
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Tecnologías que manejamos' }),
   ).toBeVisible();
 
   const cards = page.getByTestId('technology-card');
@@ -75,11 +92,41 @@ test('publishes the 41 technologies exactly once and filters with the keyboard',
   expect(controlHeights.every((height) => height >= 44)).toBe(true);
 });
 
+test('flips a technology tile to reveal its admin summary and back', async ({ page }) => {
+  applyDatabaseFixture('add-summary');
+
+  try {
+    await page.goto('/tecnologias');
+    const javaCard = page.locator(
+      '[data-testid="technology-card"][data-technology-id="00000000-0000-4000-8000-000000000001"]',
+    );
+    const flipButton = javaCard.getByRole('button', { name: 'Ver resumen de Java' });
+    await expect(flipButton).toHaveAttribute('aria-pressed', 'false');
+    await expect(javaCard).toContainText(
+      'Lenguaje de propósito general orientado a objetos, con tipado estático y una JVM madura.',
+    );
+
+    await flipButton.click();
+    await expect(page.getByRole('button', { name: 'Ocultar resumen de Java' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await page.getByRole('button', { name: 'Ocultar resumen de Java' }).click();
+    await expect(page.getByRole('button', { name: 'Ver resumen de Java' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  } finally {
+    applyDatabaseFixture('remove-summary');
+  }
+});
+
 test('uses the technology icon when a mapped image cannot load', async ({ page }) => {
   await page.route(/\/_next\/image\?.*typescript\.png/i, (route) => route.abort());
   await page.route('**/technologies/typescript.png', (route) => route.abort());
 
-  await page.goto('/');
+  await page.goto('/tecnologias');
   const typescriptCard = page.locator(
     '[data-testid="technology-card"][data-technology-id="00000000-0000-4000-8000-000000000006"]',
   );
@@ -92,7 +139,7 @@ test('loads every API page when the catalog grows beyond 50 records', async ({ p
   applyDatabaseFixture('insert-extra');
 
   try {
-    await page.goto('/');
+    await page.goto('/tecnologias');
     const cards = page.getByTestId('technology-card');
     await expect(cards).toHaveCount(53);
     const ids = await cards.evaluateAll((elements) =>
@@ -104,7 +151,9 @@ test('loads every API page when the catalog grows beyond 50 records', async ({ p
   }
 });
 
-test('shows the real empty state when the API has no published technologies', async ({ page }) => {
+test('shows the real empty state on the home teaser when the API has no published technologies', async ({
+  page,
+}) => {
   applyDatabaseFixture('draft-all');
 
   try {
@@ -124,7 +173,7 @@ test('uses the neutral fallback when a technology has no image and an unknown ic
   applyDatabaseFixture('unknown-icon');
 
   try {
-    await page.goto('/');
+    await page.goto('/tecnologias');
     const postmanCard = page.locator(
       '[data-testid="technology-card"][data-technology-id="00000000-0000-4000-8000-000000000041"]',
     );
@@ -135,11 +184,11 @@ test('uses the neutral fallback when a technology has no image and an unknown ic
   }
 });
 
-test('recovers the technologies section after an API persistence error', async ({ page }) => {
+test('recovers the technologies catalog after an API persistence error', async ({ page }) => {
   applyDatabaseFixture('hide-table');
 
   try {
-    await page.goto('/');
+    await page.goto('/tecnologias');
     await expect(
       page.getByRole('heading', { name: 'No pudimos cargar las tecnologías.' }),
     ).toBeVisible();
@@ -152,9 +201,9 @@ test('recovers the technologies section after an API persistence error', async (
 });
 
 for (const viewport of viewports) {
-  test(`has no horizontal overflow at ${viewport.width}px`, async ({ page }) => {
+  test(`has no horizontal overflow on /tecnologias at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    await page.goto('/');
+    await page.goto('/tecnologias');
     await expect(page.getByTestId('technology-card')).toHaveCount(41);
 
     const hasOverflow = await page.evaluate(

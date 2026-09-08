@@ -2200,3 +2200,129 @@ input {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Slice 5: tarjeta de tecnología que se voltea al hacer clic para mostrar
+   `Technology.summary` (observación del usuario 2026-09-08). Reglas al
+   final del archivo, y con la clase modificadora `.technology-tile-flip`,
+   a propósito: solo afectan a las tarjetas que sí tienen resumen, sin
+   tocar el layout responsive (fila/columna) de `.technology-tile` que ya
+   usan el resto de las tarjetas. */
+
+.technology-tile.technology-tile-flip {
+  display: block;
+  padding: 0;
+}
+
+.technology-flip-card {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: block;
+  height: 100%;
+  min-height: 9.5rem;
+  padding: 0;
+  perspective: 62rem;
+  position: relative;
+  text-align: inherit;
+  width: 100%;
+}
+
+.technology-flip-face {
+  align-items: center;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+  inset: 0;
+  justify-content: center;
+  padding: 0.9rem 0.7rem;
+  position: absolute;
+  transform: rotateY(0deg);
+  transition: transform 520ms var(--ease-out);
+  width: 100%;
+}
+
+.technology-flip-front {
+  position: relative;
+}
+
+.technology-flip-front > span {
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  padding: 0;
+  width: 100%;
+}
+
+.technology-flip-front .technology-image {
+  flex: none;
+  height: 6rem;
+  width: 100%;
+}
+
+.technology-flip-front::after {
+  align-items: center;
+  background: rgba(60, 216, 197, 0.16);
+  border-radius: 50%;
+  bottom: 0.5rem;
+  color: var(--accent-soft);
+  content: 'i';
+  display: flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  height: 1.15rem;
+  justify-content: center;
+  position: absolute;
+  right: 0.5rem;
+  width: 1.15rem;
+}
+
+.technology-flip-back {
+  background: var(--surface-raised);
+  border-radius: 0.7rem;
+  overflow: hidden;
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+.technology-flip-back-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.technology-flip-back p {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  color: var(--muted);
+  display: -webkit-box;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  margin: 0;
+  overflow: hidden;
+}
+
+.technology-flip-card[data-flipped='true'] .technology-flip-front {
+  transform: rotateY(180deg);
+}
+
+.technology-flip-card[data-flipped='true'] .technology-flip-back {
+  transform: rotateY(360deg);
+}
+
+@media (min-width: 48rem) {
+  .technology-flip-card {
+    min-height: 10.5rem;
+  }
+
+  .technology-flip-front .technology-image {
+    height: 6.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .technology-flip-face {
+    transition: none;
+  }
+}

@@ -35,6 +35,18 @@ try {
         )
         .run();
       break;
+    case 'add-summary':
+      database
+        .prepare(
+          "UPDATE technologies SET summary = 'Lenguaje de propósito general orientado a objetos, con tipado estático y una JVM madura.' WHERE id = '00000000-0000-4000-8000-000000000001'",
+        )
+        .run();
+      break;
+    case 'remove-summary':
+      database
+        .prepare("UPDATE technologies SET summary = NULL WHERE id = '00000000-0000-4000-8000-000000000001'")
+        .run();
+      break;
     case 'hide-table':
       database.exec('ALTER TABLE technologies RENAME TO technologies_unavailable');
       break;
