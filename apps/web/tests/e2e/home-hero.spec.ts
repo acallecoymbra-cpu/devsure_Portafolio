@@ -25,8 +25,8 @@ test('presents one primary action and never requests the retired hero media', as
   await expect(hero.locator('ol > li')).toHaveCount(3);
   await expect(hero.locator('video')).toHaveCount(0);
 
-  const primaryAction = hero.getByRole('link', { name: 'Explorar tecnologías' });
-  await expect(primaryAction).toHaveAttribute('href', '#tecnologias');
+  const primaryAction = hero.getByRole('link', { name: 'Ver servicios' });
+  await expect(primaryAction).toHaveAttribute('href', '#servicios');
   await expect(hero.locator('.button-primary')).toHaveCount(1);
   expect(requestedUrls.some((url) => /\.mkv|hero-poster\.jpg/i.test(url))).toBe(false);
 });
@@ -48,7 +48,7 @@ for (const viewport of viewports) {
     expect(hasOverflow).toBe(false);
 
     const primaryActionHeight = await hero
-      .getByRole('link', { name: 'Explorar tecnologías' })
+      .getByRole('link', { name: 'Ver servicios' })
       .evaluate((element) => element.getBoundingClientRect().height);
     expect(primaryActionHeight).toBeGreaterThanOrEqual(44);
   });

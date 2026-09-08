@@ -1737,6 +1737,197 @@ ya anotada en "Nueva dirección visual" más abajo) — no asumirlo de
 AGENTS.md: replicar tipo de sección y propósito, nunca marca/copy/logos
 ajenos.
 
+## Paleta de marca confirmada para el rediseño (2026-09-08)
+
+Confirmada por el usuario. Estilo: "Dark Mode Corporate Tech con Acento
+Vibrante". Aplicada en la sesión 16 (ver abajo) a `apps/web/src/app/globals.css`
+(`:root`, ambos bloques) y `home-hero.module.css`.
+
+| Uso | Hex | Descripción |
+|---|---|---|
+| Background base | `#070B14` | Azul medianoche muy oscuro, casi negro. Fondo principal de la página. |
+| Surface / Cards | `#111A27` | Azul pizarra oscuro. Fondos de tarjetas/contenedores, contraste sutil sobre el base. |
+| Primary Accent / CTA | `#3CD8C5` | Turquesa/menta vibrante. Logotipos, íconos, botones de acción principal. |
+| Primary Text | `#FFFFFF` | Blanco puro. Títulos y datos clave. |
+| Secondary Text | `#94A3B8` | Gris azulado apagado. Párrafos y descripciones. |
+
+**Pendiente:** `apps/web/src/features/culture/culture.module.css` (la
+página `/cultura`) sigue con la paleta morada anterior — fuera de alcance
+de esta sesión (el pedido era "la sección principal"), no se tocó.
+
+### Sesión 2026-09-08 (16) — Rediseño de la home pública con datos reales del CMS
+
+**Objetivo de la sesión:** reemplazar el contenido fijo de
+`apps/web/src/app/page.tsx` por el CMS real, con el orden de secciones
+confirmado contra `sinaloanube-master/resources/views/landing.blade.php`
+(Hero → Clientes → Nosotros → Servicios → Diferenciadores → Casos →
+Proceso → Preguntas → Contacto) y la paleta de marca de arriba.
+Tecnologías (contenido propio de DevSure, no está en la referencia) se
+insertó entre Servicios y Diferenciadores.
+
+**Decisiones de diseño:**
+
+- **Un solo fetch server-side**: `page.tsx` ahora es un componente de
+  servidor `async` que llama `getPortfolio()` (nuevo,
+  `features/portfolio/api/get-portfolio.ts`, `GET /api/v1/portfolio`,
+  `cache: 'no-store'`) una sola vez y reparte los datos a cada sección como
+  props — antes cada sección hacía su propio fetch (patrón que
+  `TechnologiesSection` conserva, porque `technologies` no forma parte del
+  agregado del portfolio).
+- **Cada sección nueva se oculta si no tiene contenido** (`if
+  (items.length === 0) return null`) — nada de "aún no hay contenido"
+  visible en el sitio público; ese mensaje es correcto en `/admin` pero no
+  en la home. `Hero`/`Nosotros`/`Contacto` siempre se renderizan (con
+  fallback) porque son 1:1 con `Profile`/`Translations`, que siempre
+  existen. Verificado en vivo: con la BD real (`apps/api/.data/devsure.sqlite`,
+  solo un `Strength` de prueba y todo lo demás vacío), Clientes, Servicios,
+  Casos, Testimonios, Proceso y Preguntas quedan correctamente ocultas.
+- **`translateValue()` (contracts, hasta ahora sin consumidor real) ahora
+  se usa en cada sección** para resolver el locale activo
+  (`profile.defaultLocale`, con fallback `'es'`). Los componentes reciben
+  `TranslatableString` crudo y resuelven en el momento de renderizar, no en
+  el backend.
+- **`ServicesSection` reutiliza `Translations.skillsHeading/skillsIntro`**
+  para su título — `Translations` no tiene un campo `servicesHeading`
+  dedicado porque sus columnas siguen la spec original de portfolio
+  personal (Hero/About/Strengths/.../**Skills**/Workstyle/...), y
+  `Services` es el reemplazo a nivel empresa de esa sección `Skills` (ver
+  sesión 13). Reusar el campo evita una migración nueva para una columna
+  que duplicaría la misma idea. Documentado con un comentario en el
+  componente.
+- **`ContactSection` no simula un formulario que no existe todavía**: el
+  formulario público de contacto (`ContactMessages`/Inbox, spec §5.15/§6.9,
+  bloque 4 — sin empezar) no está implementado, así que la sección ofrece
+  un CTA `mailto:` directo con el email real de `Profile` en vez de un
+  `<form>` que no envía nada a ningún lado.
+- **`CaseStudiesSection` se reescribió por completo**: antes mostraba un
+  único caso hardcodeado (AKKIKB) con un modal que incluía una caja de
+  "comentarios" que no enviaba nada a ningún lado (funcionalidad simulada,
+  ver misma regla de arriba — se eliminó, no se migró). Ahora es una grilla
+  de `Project[]` reales (destacados y publicados, ya filtrados por el
+  endpoint), con un modal por proyecto (descripción, tech stack, enlaces a
+  sitio/repositorio) construido a partir de datos reales.
+- **`HomeHero` pasó de estático a recibir `profile`/`translations`/`locale`
+  como props**: `heroTag/heroTitle/heroCopy/heroNote` (Translations) con
+  fallback al copy original si no hay contenido configurado (que es el caso
+  actual en la BD real, `defaultLocale: "en"` sin Translations cargadas).
+  La "tarjeta de señal" (Entender/Construir/Verificar) se dejó como
+  decoración estática — no tiene campo propio en el CMS y no vale la pena
+  una migración nueva solo por eso.
+- **Helper nuevo `getStorageUrl()`** (`apps/web/src/lib/config.ts`):
+  primer lugar del sitio público que necesita convertir un `path` de upload
+  (ej. `projects/covers/x.webp`) en una URL completa (`{origin}/storage/{path}`,
+  fuera del prefijo `/api/v1`). No existía ningún precedente — ni el propio
+  panel admin renderiza imágenes subidas todavía (`FileUploadField` solo
+  muestra el path como texto).
+
+**Bug real encontrado y corregido (no solo de esta sesión, afecta a
+cualquier request pública concurrente):** al agregar `profile.get()` y
+`translations.get()` en paralelo dentro de `PortfolioService.get()`
+(`Promise.all`), la primera lectura de un owner sin fila de `profiles`
+todavía creada disparaba una condición de carrera real: TypeORM abre una
+transacción por cada `manager.save()`, y dos `save()` casi simultáneos
+sobre la misma conexión sqlite se pisaban (`UNIQUE constraint failed:
+profiles.owner_id`, y el manejo defensivo de reintento con `findOneByOrFail`
+tampoco veía la fila recién creada por la otra transacción). Arreglo:
+`PortfolioService.get()` ahora lee `profile` primero, de forma secuencial
+(sin ganancia real de paralelizar dos lecturas que apuntan a la misma fila),
+y el resto de las llamadas van en paralelo después. Se mantuvo también el
+manejo defensivo de la violación de unicidad en `ProfileService.getOrCreate`/
+`TranslationsService.getOrCreate` como refuerzo.
+
+**Archivos modificados/creados:**
+
+```text
+apps/web/src/lib/config.ts                          (+getStorageUrl)
+apps/web/src/app/globals.css                         (paleta completa +
+                                                        estilos de las 8
+                                                        secciones nuevas)
+apps/web/src/features/home/home-hero.module.css      (paleta + .note)
+apps/web/src/app/layout.tsx                          (viewport themeColor)
+apps/web/src/features/portfolio/api/get-portfolio.ts (nuevo)
+apps/web/src/features/portfolio/components/client-logos-section.tsx (nuevo)
+apps/web/src/features/portfolio/components/about-section.tsx        (nuevo)
+apps/web/src/features/portfolio/components/services-section.tsx     (nuevo)
+apps/web/src/features/portfolio/components/strengths-section.tsx    (nuevo)
+apps/web/src/features/portfolio/components/testimonials-section.tsx (nuevo)
+apps/web/src/features/portfolio/components/process-section.tsx      (nuevo)
+apps/web/src/features/portfolio/components/faq-section.tsx          (nuevo)
+apps/web/src/features/portfolio/components/contact-section.tsx      (nuevo)
+apps/web/src/features/case-studies/components/case-studies-section.tsx (reescrito)
+apps/web/src/features/home/components/home-hero.tsx  (recibe props CMS)
+apps/web/src/app/page.tsx                             (reescrito, server
+                                                        component async)
+apps/web/src/components/site-header.tsx               (nav actualizada)
+apps/web/tests/app-structure.test.mjs                 (assert <HomeHero>
+                                                        con props)
+apps/web/tests/e2e/home-hero.spec.ts                  (CTA "Ver servicios"
+                                                        / #servicios)
+apps/api/src/profile/profile.service.ts               (fix condición de
+                                                        carrera)
+apps/api/src/profile/translations.service.ts           (fix condición de
+                                                        carrera)
+apps/api/src/portfolio/portfolio.service.ts             (fix: profile
+                                                          secuencial)
+```
+
+**Pruebas ejecutadas:**
+
+```text
+pnpm --filter @devsure/web lint / typecheck          (verdes)
+pnpm --filter @devsure/web test                       (falla 1/17, el
+                                                        mismo hueco
+                                                        preexistente ya
+                                                        documentado)
+pnpm --filter @devsure/web build                      ✅
+pnpm --filter @devsure/api typecheck                   ✅ (fix de la
+                                                        condición de
+                                                        carrera)
+```
+
+**Verificado en el navegador (Chrome, vía `claude-in-chrome`) contra la API y
+la BD real levantadas para esta sesión** (`pnpm --filter @devsure/api
+start:dev` + `pnpm --filter @devsure/web dev`, ambos detenidos al terminar
+— no se dejaron corriendo): Hero, Nosotros, Tecnologías, Diferenciadores
+(con el único `Strength` real de prueba) y Contacto se ven correctos con
+datos reales; Clientes/Servicios/Casos/Testimonios/Proceso/Preguntas se
+ocultan correctamente al no tener contenido. Los 3 errores de hidratación
+que reportó el overlay de Next.js son **`bis_skin_checked`** — un atributo
+que una extensión de Chrome del entorno de prueba (tipo Bitdefender)
+inyecta en cada `<div>` antes de que React hidrate; no hay ningún mismatch
+real de contenido/estructura. No se probó en viewport móvil real (el
+`resize_window` de la herramienta de automatización no cambió el layout
+capturado); las media queries usadas son las mismas ya validadas en
+sesiones anteriores para Technologies/CaseStudies.
+
+**Pendientes detectados:**
+
+- `apps/web/tests/admin-structure.test.mjs` sigue con el mismo hueco de
+  siempre (Playwright de technologies nunca creado) — no relacionado.
+- No hay logos de clientes cargados todavía (`ClientLogo` existe desde la
+  sesión 15, pero el usuario no ha subido ninguno) — la sección seguirá
+  oculta hasta que se cree contenido real en `/admin/client-logos`.
+- El formulario público de contacto real (`ContactMessages`/Inbox) sigue
+  sin implementar — `ContactSection` usa un CTA `mailto:` mientras tanto.
+- `/cultura` sigue con la paleta morada anterior (fuera de alcance de esta
+  sesión — pedir confirmación explícita antes de tocarla).
+- No se probó `pnpm test:e2e` (Playwright) contra un servidor corriendo
+  con el nuevo contenido — mismo patrón de todas las sesiones anteriores;
+  sí se actualizaron los dos specs (`app-structure.test.mjs`,
+  `home-hero.spec.ts`) que referenciaban el copy/CTA anterior del Hero para
+  que no queden con aserciones obsoletas.
+- Sin borrado de archivos huérfanos en uploads (mismo pendiente de siempre).
+
+**Siguiente tarea recomendada:**
+
+Con la home ya conectada al CMS, los próximos pasos naturales son: (1)
+cargar contenido real desde `/admin` (Services, Strengths, WorkStyleItems,
+Faqs, al menos un Project destacado y publicado, un ClientLogo) para ver la
+home completa con datos reales — tarea del usuario, no de código; (2) el
+módulo de **capacidades/expertise de empresa** (reemplazo de `Skills`,
+pendiente desde la sesión 13); (3) Redes e Inbox (bloque 4 de la spec,
+incluye el formulario de contacto real).
+
 ## Nueva dirección visual: rediseño de la home pública
 
 **Añadido el 2026-09-07, a pedido del usuario, tras validar el CMS admin

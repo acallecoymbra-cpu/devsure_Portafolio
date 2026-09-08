@@ -1,19 +1,32 @@
 import { Suspense } from 'react';
 import { CaseStudiesSection } from '@/features/case-studies/components/case-studies-section';
 import { HomeHero } from '@/features/home/components/home-hero';
+import { AboutSection } from '@/features/portfolio/components/about-section';
+import { ClientLogosSection } from '@/features/portfolio/components/client-logos-section';
+import { ContactSection } from '@/features/portfolio/components/contact-section';
+import { FaqSection } from '@/features/portfolio/components/faq-section';
+import { ProcessSection } from '@/features/portfolio/components/process-section';
+import { ServicesSection } from '@/features/portfolio/components/services-section';
+import { StrengthsSection } from '@/features/portfolio/components/strengths-section';
+import { TestimonialsSection } from '@/features/portfolio/components/testimonials-section';
+import { getPortfolio } from '@/features/portfolio/api/get-portfolio';
 import { TechnologiesSection } from '@/features/technologies/components/technologies-section';
 import { TechnologiesSkeleton } from '@/features/technologies/components/technologies-skeleton';
 
-const organizationJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'DevSure',
-  url: 'https://devsure.example',
-  description:
-    'Equipo de desarrollo de software enfocado en crear soluciones digitales confiables.',
-};
+export default async function HomePage() {
+  const portfolio = await getPortfolio();
+  const { profile, translations } = portfolio;
+  const locale = profile.defaultLocale || 'es';
 
-export default function HomePage() {
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: profile.name,
+    url: 'https://devsure.example',
+    description:
+      'Equipo de desarrollo de software enfocado en crear soluciones digitales confiables.',
+  };
+
   return (
     <>
       <script
@@ -23,28 +36,29 @@ export default function HomePage() {
         }}
       />
 
-      <HomeHero />
+      <HomeHero profile={profile} translations={translations} locale={locale} />
 
-      <CaseStudiesSection />
+      <ClientLogosSection clientLogos={portfolio.clientLogos} />
+
+      <AboutSection profile={profile} translations={translations} locale={locale} />
+
+      <ServicesSection services={portfolio.services} translations={translations} locale={locale} />
 
       <Suspense fallback={<TechnologiesSkeleton />}>
         <TechnologiesSection />
       </Suspense>
 
-      <section className="section approach-section" id="enfoque" aria-labelledby="approach-title">
-        <div className="shell approach-layout">
-          <div>
-            <p className="eyebrow">Cómo trabajamos</p>
-            <h2 id="approach-title">
-              Decisiones que siguen siendo útiles después del lanzamiento.
-            </h2>
-          </div>
-          <p>
-            Priorizamos claridad, calidad verificable y una arquitectura proporcional al problema.
-            Así cada entrega puede mantenerse, probarse y crecer sin perder de vista el objetivo.
-          </p>
-        </div>
-      </section>
+      <StrengthsSection strengths={portfolio.strengths} translations={translations} locale={locale} />
+
+      <CaseStudiesSection projects={portfolio.projects} translations={translations} locale={locale} />
+
+      <TestimonialsSection testimonials={portfolio.testimonials} translations={translations} locale={locale} />
+
+      <ProcessSection workStyleItems={portfolio.workStyleItems} translations={translations} locale={locale} />
+
+      <FaqSection faqs={portfolio.faqs} translations={translations} locale={locale} />
+
+      <ContactSection profile={profile} translations={translations} locale={locale} />
     </>
   );
 }

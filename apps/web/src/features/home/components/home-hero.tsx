@@ -1,6 +1,22 @@
+import type { Profile, Translations } from '@devsure/contracts';
+import { translateValue } from '@devsure/contracts';
 import styles from '@/features/home/home-hero.module.css';
 
-export function HomeHero() {
+interface HomeHeroProps {
+  profile: Profile;
+  translations: Translations;
+  locale: string;
+}
+
+export function HomeHero({ profile, translations, locale }: HomeHeroProps) {
+  const eyebrow = translations.heroTag ?? 'Software con criterio técnico';
+  const title =
+    translateValue(translations.heroTitle, locale) ?? 'Construimos software claro desde la primera decisión.';
+  const description =
+    translateValue(translations.heroCopy, locale) ??
+    'Convertimos necesidades de negocio en productos mantenibles, verificables y preparados para evolucionar junto a tu operación.';
+  const note = translateValue(translations.heroNote, locale) ?? translateValue(profile.headline, locale);
+
   return (
     <section className={styles.hero} aria-labelledby="hero-title" data-testid="home-hero">
       <div className={styles.environment} aria-hidden="true">
@@ -10,20 +26,18 @@ export function HomeHero() {
 
       <div className={`shell ${styles.layout}`}>
         <div className={styles.copy}>
-          <p className="eyebrow">Software con criterio técnico</p>
-          <h1 id="hero-title">Construimos software claro desde la primera decisión.</h1>
-          <p className={styles.description}>
-            Convertimos necesidades de negocio en productos mantenibles, verificables y preparados
-            para evolucionar junto a tu operación.
-          </p>
+          <p className="eyebrow">{eyebrow}</p>
+          <h1 id="hero-title">{title}</h1>
+          <p className={styles.description}>{description}</p>
           <div className={styles.actions}>
-            <a className="button button-primary" href="#tecnologias">
-              Explorar tecnologías
+            <a className="button button-primary" href="#servicios">
+              Ver servicios
             </a>
-            <a className={styles.secondaryLink} href="#enfoque">
-              Conocer el enfoque <span aria-hidden="true">↓</span>
+            <a className={styles.secondaryLink} href="#contacto">
+              Hablar con {profile.name} <span aria-hidden="true">↓</span>
             </a>
           </div>
+          {note ? <p className={styles.note}>{note}</p> : null}
         </div>
 
         <div

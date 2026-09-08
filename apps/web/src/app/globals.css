@@ -1,12 +1,12 @@
 :root {
-  --background: #080d1d;
-  --surface: #111a32;
-  --surface-raised: #172341;
-  --text: #f5f7ff;
-  --muted: #aeb8d2;
-  --line: rgba(190, 205, 255, 0.16);
-  --accent: #8e7dff;
-  --accent-soft: #b9adff;
+  --background: #070b14;
+  --surface: #111a27;
+  --surface-raised: #172236;
+  --text: #ffffff;
+  --muted: #94a3b8;
+  --line: rgba(60, 216, 197, 0.16);
+  --accent: #3cd8c5;
+  --accent-soft: #86e9db;
   --max-width: 1180px;
 }
 
@@ -21,7 +21,7 @@ html {
 body {
   margin: 0;
   background:
-    radial-gradient(circle at 82% 8%, rgba(112, 91, 255, 0.16), transparent 27rem),
+    radial-gradient(circle at 82% 8%, rgba(60, 216, 197, 0.14), transparent 27rem),
     var(--background);
   color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
@@ -247,7 +247,7 @@ h3 {
 }
 
 .orbit {
-  border: 1px solid rgba(185, 173, 255, 0.3);
+  border: 1px solid rgba(134, 233, 219, 0.3);
   border-radius: 50%;
   left: 50%;
   position: absolute;
@@ -261,7 +261,7 @@ h3 {
 }
 
 .orbit-small {
-  border-color: rgba(142, 125, 255, 0.5);
+  border-color: rgba(60, 216, 197, 0.5);
   height: 11rem;
   transform: translate(-50%, -50%) rotate(36deg);
   width: 11rem;
@@ -298,7 +298,7 @@ h3 {
 
 .signal-icon {
   align-items: center;
-  background: rgba(142, 125, 255, 0.2);
+  background: rgba(60, 216, 197, 0.18);
   border-radius: 50%;
   color: var(--accent-soft);
   display: inline-flex;
@@ -406,8 +406,8 @@ h3 {
 }
 
 .status-panel {
-  background: linear-gradient(120deg, rgba(86, 70, 190, 0.52), rgba(20, 32, 65, 0.92));
-  border: 1px solid rgba(185, 173, 255, 0.26);
+  background: linear-gradient(120deg, rgba(20, 92, 84, 0.52), rgba(20, 32, 65, 0.92));
+  border: 1px solid rgba(60, 216, 197, 0.26);
   border-radius: 1rem;
   display: grid;
   gap: 1.5rem;
@@ -548,15 +548,15 @@ h3 {
 /* Slice 1: portada comercial y catálogo de tecnologías */
 
 :root {
-  --background: #070b17;
-  --surface: #10182b;
-  --surface-raised: #17223b;
-  --text: #f7f8ff;
-  --muted: #b8c1d8;
-  --line: rgba(204, 214, 255, 0.16);
-  --accent: #a998ff;
-  --accent-soft: #c9c1ff;
-  --line-strong: rgba(220, 226, 255, 0.48);
+  --background: #070b14;
+  --surface: #111a27;
+  --surface-raised: #172236;
+  --text: #ffffff;
+  --muted: #94a3b8;
+  --line: rgba(60, 216, 197, 0.16);
+  --accent: #3cd8c5;
+  --accent-soft: #86e9db;
+  --line-strong: rgba(60, 216, 197, 0.4);
   --success: #6ee7b7;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -565,7 +565,7 @@ h3 {
 
 body {
   background:
-    radial-gradient(circle at 82% 4%, rgba(112, 91, 255, 0.15), transparent 30rem),
+    radial-gradient(circle at 82% 4%, rgba(60, 216, 197, 0.13), transparent 30rem),
     linear-gradient(180deg, rgba(13, 20, 39, 0.48), transparent 38rem), var(--background);
   overflow-x: hidden;
   overflow-x: clip;
@@ -618,7 +618,7 @@ input {
 }
 
 .wordmark-mark {
-  background: linear-gradient(135deg, var(--accent-soft), #7c68ec);
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
 }
 
 .menu-button {
@@ -691,7 +691,7 @@ input {
 }
 
 .nav-list .nav-culture-link {
-  border: 1px solid rgba(201, 193, 255, 0.42);
+  border: 1px solid rgba(60, 216, 197, 0.42);
   color: var(--text);
   font-size: 0.76rem;
   font-weight: 700;
@@ -737,7 +737,7 @@ input {
 
 .hero-proof {
   background:
-    linear-gradient(150deg, rgba(169, 152, 255, 0.12), transparent 60%), rgba(16, 24, 43, 0.86);
+    linear-gradient(150deg, rgba(60, 216, 197, 0.12), transparent 60%), rgba(16, 24, 43, 0.86);
   border: 1px solid var(--line);
   border-radius: 1rem;
   padding: 1.5rem;
@@ -877,7 +877,7 @@ input {
 }
 
 .filter-chip:hover {
-  border-color: rgba(201, 193, 255, 0.5);
+  border-color: rgba(60, 216, 197, 0.5);
   color: var(--text);
 }
 
@@ -947,7 +947,7 @@ input {
 
 .technology-image {
   align-items: center;
-  background: linear-gradient(135deg, rgba(42, 30, 92, 0.9), rgba(10, 18, 36, 0.95));
+  background: linear-gradient(135deg, rgba(17, 26, 39, 0.9), rgba(10, 18, 36, 0.95));
   display: flex;
   height: clamp(8rem, 26vw, 12rem);
   justify-content: center;
@@ -957,7 +957,7 @@ input {
 }
 
 .technology-image::after {
-  background: radial-gradient(circle at 75% 20%, rgba(177, 163, 255, 0.28), transparent 35%);
+  background: radial-gradient(circle at 75% 20%, rgba(60, 216, 197, 0.26), transparent 35%);
   content: '';
   inset: 0;
   pointer-events: none;
@@ -988,8 +988,8 @@ input {
 
 .technology-icon {
   align-items: center;
-  background: rgba(169, 152, 255, 0.1);
-  border: 1px solid rgba(201, 193, 255, 0.18);
+  background: rgba(60, 216, 197, 0.1);
+  border: 1px solid rgba(60, 216, 197, 0.22);
   border-radius: 0.65rem;
   color: var(--accent-soft);
   display: inline-flex;
@@ -1058,7 +1058,7 @@ input {
 }
 
 .case-study-card:hover {
-  border-color: rgba(185, 173, 255, 0.65);
+  border-color: rgba(60, 216, 197, 0.65);
   box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.25);
   transform: translateY(-0.25rem);
 }
@@ -1413,5 +1413,398 @@ input {
 
   .route-loading .loader {
     animation: none;
+  }
+}
+
+/* Slice 2: portada pública alimentada por el CMS (Profile/Translations +
+   ClientLogos, Services, Strengths, Projects, Testimonials, WorkStyleItems,
+   Faqs). Orden de secciones confirmado contra
+   sinaloanube-master/resources/views/landing.blade.php: hero, clientes,
+   nosotros, servicios, diferenciadores, casos, proceso, preguntas, contacto
+   — nunca su marca, copy ni composición exacta. */
+
+.client-logos-section {
+  padding-block: 3rem;
+}
+
+.client-logos-heading {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 1.6rem;
+  text-align: center;
+}
+
+.client-logos-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem 2.75rem;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.client-logo-item a,
+.client-logo-item span {
+  align-items: center;
+  display: flex;
+  filter: grayscale(1) brightness(1.7) opacity(0.68);
+  height: 2.3rem;
+  justify-content: center;
+  transition:
+    filter 200ms ease,
+    opacity 200ms ease;
+}
+
+.client-logo-item a:hover,
+.client-logo-item a:focus-visible {
+  filter: none;
+}
+
+.client-logo-item img {
+  height: 100%;
+  object-fit: contain;
+  width: auto;
+}
+
+.client-logo-item span {
+  color: var(--muted);
+  filter: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.about-section {
+  background: rgba(17, 26, 39, 0.55);
+  border-block: 1px solid var(--line);
+  scroll-margin-top: 5rem;
+}
+
+.about-layout {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.about-copy > p {
+  color: var(--muted);
+  font-size: 1.02rem;
+  max-width: 42ch;
+}
+
+.about-stats {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.about-stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 1.25rem;
+}
+
+.about-stat strong {
+  color: var(--accent-soft);
+  display: block;
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.about-stat span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.82rem;
+  margin-top: 0.5rem;
+}
+
+.card-grid {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.offer-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.6rem;
+}
+
+.offer-card-badge {
+  align-items: center;
+  background: rgba(60, 216, 197, 0.12);
+  border-radius: 0.7rem;
+  color: var(--accent-soft);
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  height: 2.6rem;
+  justify-content: center;
+  margin-bottom: 1.1rem;
+  width: 2.6rem;
+}
+
+.offer-card-tag {
+  color: var(--accent-soft);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.7rem;
+  text-transform: uppercase;
+}
+
+.offer-card h3 {
+  margin-bottom: 0.6rem;
+}
+
+.offer-card p {
+  color: var(--muted);
+  font-size: 0.94rem;
+  margin-bottom: 0;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1.1rem;
+}
+
+.tag-pill {
+  background: rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  padding: 0.3rem 0.65rem;
+}
+
+.testimonials-section {
+  scroll-margin-top: 5rem;
+}
+
+.testimonial-grid {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.testimonial-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  justify-content: space-between;
+  padding: 1.6rem;
+}
+
+.testimonial-quote {
+  color: var(--text);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.testimonial-quote::before {
+  color: var(--accent-soft);
+  content: '\201C';
+}
+
+.testimonial-quote::after {
+  color: var(--accent-soft);
+  content: '\201D';
+}
+
+.testimonial-author {
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.testimonial-avatar {
+  background: var(--surface-raised);
+  border-radius: 50%;
+  height: 2.6rem;
+  object-fit: cover;
+  width: 2.6rem;
+}
+
+.testimonial-author-name {
+  font-weight: 700;
+}
+
+.testimonial-author-role {
+  color: var(--muted);
+  display: block;
+  font-size: 0.82rem;
+}
+
+.process-list {
+  counter-reset: process;
+  display: grid;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.process-item {
+  align-items: flex-start;
+  counter-increment: process;
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: 3rem minmax(0, 1fr);
+}
+
+.process-item::before {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--accent-soft);
+  content: counter(process, decimal-leading-zero);
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  height: 3rem;
+  width: 3rem;
+  justify-content: center;
+}
+
+.process-item p {
+  color: var(--muted);
+  font-size: 1.02rem;
+  margin: 0;
+  padding-top: 0.65rem;
+}
+
+.faq-section {
+  scroll-margin-top: 5rem;
+}
+
+.faq-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.faq-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  overflow: hidden;
+  padding: 0;
+}
+
+.faq-item summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-weight: 700;
+  gap: 1rem;
+  justify-content: space-between;
+  list-style: none;
+  padding: 1.15rem 1.4rem;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  color: var(--accent-soft);
+  content: '+';
+  flex: 0 0 auto;
+  font-size: 1.3rem;
+  transition: transform 200ms ease;
+}
+
+.faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.faq-item p {
+  color: var(--muted);
+  margin: 0;
+  padding: 0 1.4rem 1.4rem;
+}
+
+.contact-section {
+  background: rgba(17, 26, 39, 0.55);
+  border-block: 1px solid var(--line);
+  scroll-margin-top: 5rem;
+}
+
+.contact-layout {
+  display: grid;
+  gap: 2rem;
+}
+
+.contact-layout > p {
+  color: var(--muted);
+  max-width: 40ch;
+}
+
+.contact-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  display: grid;
+  gap: 1.2rem;
+  padding: 1.75rem;
+}
+
+.contact-card dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.contact-card dd {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.35rem 0 0;
+}
+
+.contact-card a {
+  color: var(--accent-soft);
+}
+
+@media (min-width: 48rem) {
+  .about-layout {
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.9fr);
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .testimonial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .process-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contact-layout {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.85fr);
+  }
+}
+
+@media (min-width: 64rem) {
+  .card-grid,
+  .testimonial-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

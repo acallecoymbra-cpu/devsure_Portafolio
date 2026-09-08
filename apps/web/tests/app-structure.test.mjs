@@ -39,7 +39,7 @@ test('the App Router foundation includes global states and metadata', async () =
   assert.match(siteChrome, /Saltar al contenido/);
   assert.match(siteChrome, /startsWith\('\/admin'\)/);
   assert.match(layout, /canonical/);
-  assert.match(page, /<HomeHero \/>/);
+  assert.match(page, /<HomeHero profile=\{profile\} translations=\{translations\} locale=\{locale\} \/>/);
   assert.doesNotMatch(page, /<video|\.mkv|hero-poster\.jpg/);
   assert.doesNotMatch(loading, /TechnologiesSkeleton|skeleton-shimmer/);
   assert.equal((page.match(/<TechnologiesSkeleton \/>/g) ?? []).length, 1);
