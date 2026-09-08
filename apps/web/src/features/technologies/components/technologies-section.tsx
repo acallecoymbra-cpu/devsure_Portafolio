@@ -1,7 +1,17 @@
+import Link from 'next/link';
 import { getAllTechnologies } from '@/features/technologies/api/get-technologies';
 import { TechnologiesErrorState } from './technologies-error-boundary';
-import { TechnologyExplorer } from './technology-explorer';
+import { TechnologyTile } from './technology-tile';
 
+const TEASER_LIMIT = 12;
+
+/**
+ * Home teaser only (spec follow-up): showing all 41+ technologies at once
+ * read as overwhelming. This shows `featured` technologies (curated from
+ * `/admin/technologies`), falling back to the first N by `sortOrder` when
+ * none are marked featured yet, with a link to the full catalog at
+ * `/tecnologias` (the former in-page explorer, moved there wholesale).
+ */
 export async function TechnologiesSection() {
   let technologies: Awaited<ReturnType<typeof getAllTechnologies>>;
 
@@ -30,7 +40,18 @@ export async function TechnologiesSection() {
         </div>
 
         {technologies.length > 0 ? (
-          <TechnologyExplorer technologies={technologies} />
+          <>
+            <ul className="technology-grid">
+              {teaserOf(technologies).map((technology) => (
+                <TechnologyTile technology={technology} key={technology.id} />
+              ))}
+            </ul>
+            <div className="technologies-teaser-footer">
+              <Link className="button button-secondary" href="/tecnologias">
+                Ver catálogo completo ({technologies.length}) <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </>
         ) : (
           <div className="catalog-empty" role="status">
             <h3>Aún no hay tecnologías publicadas</h3>
@@ -40,4 +61,9 @@ export async function TechnologiesSection() {
       </div>
     </section>
   );
+}
+
+function teaserOf(technologies: Awaited<ReturnType<typeof getAllTechnologies>>) {
+  const featured = technologies.filter((technology) => technology.featured);
+  return (featured.length > 0 ? featured : technologies).slice(0, TEASER_LIMIT);
 }

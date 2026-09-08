@@ -36,6 +36,7 @@ interface FormState {
   experienceId: string;
   title: TranslatableString;
   slug: string;
+  category: string;
   excerpt: TranslatableString;
   description: TranslatableString;
   coverImage: string;
@@ -89,6 +90,7 @@ function toFormState(project?: Project): FormState {
     experienceId: project?.experienceId ?? '',
     title: project?.title ?? {},
     slug: project?.slug ?? '',
+    category: project?.category ?? '',
     excerpt: project?.excerpt ?? {},
     description: project?.description ?? {},
     coverImage: project?.coverImage ?? '',
@@ -108,6 +110,7 @@ function toInput(state: FormState): ProjectInput {
     experienceId: state.experienceId || null,
     title: state.title,
     ...(state.slug.trim() ? { slug: state.slug.trim() } : {}),
+    ...(state.category.trim() ? { category: state.category.trim() } : {}),
     excerpt: state.excerpt,
     description: state.description,
     ...(state.coverImage.trim() ? { coverImage: state.coverImage.trim() } : {}),
@@ -254,6 +257,17 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 autoComplete="off"
               />
               <small>Déjalo vacío para generarlo automáticamente.</small>
+            </label>
+            <label className={styles.field}>
+              <span>Categoría</span>
+              <input
+                value={state.category}
+                onChange={(event) => patch({ category: event.target.value })}
+                maxLength={60}
+                placeholder="Aplicaciones web, Automatización…"
+                autoComplete="off"
+              />
+              <small>Se usa como filtro en /casos-de-exito. Déjalo vacío si no aplica.</small>
             </label>
             <label className={styles.field}>
               <span>Orden</span>

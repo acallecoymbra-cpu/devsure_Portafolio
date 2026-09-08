@@ -1918,15 +1918,225 @@ sesiones anteriores para Technologies/CaseStudies.
   que no queden con aserciones obsoletas.
 - Sin borrado de archivos huérfanos en uploads (mismo pendiente de siempre).
 
+**Siguiente tarea recomendada — SUPERADA, ver sesión (17) más abajo:** el
+usuario probó la home apenas terminada y devolvió una lista de
+observaciones concretas en la misma sesión siguiente, antes de que se
+llegara a cargar contenido real. Ver sesión 17.
+
+### Sesión 2026-09-08 (17) — Fix de login (400 mal explicado) + observaciones del usuario sobre la home
+
+**Contexto — bug de login reportado antes de las observaciones:** el
+usuario no pudo entrar a `/admin/login` y vio "No pudimos iniciar sesión.
+Revisa la conexión e inténtalo nuevamente." — el mensaje genérico de
+`login-form.tsx`. Diagnóstico: `LoginDto.username` exige
+`^[a-zA-Z0-9._-]+$` (sin `@`); el usuario probablemente escribió su correo
+en el campo "Usuario" en vez del username real, lo que el API rechaza con
+`400 Bad Request`. El formulario solo distinguía 401 de "todo lo demás", así
+que un 400 de validación cae en el mismo mensaje que un fallo de red real.
+**Arreglado:** `apps/web/src/features/admin/components/login-form.tsx` ahora
+distingue 401 ("usuario o contraseña incorrectos"), 400 ("el usuario solo
+puede tener letras, números, puntos, guiones y guiones bajos, sin @ ni
+espacios") y 429 ("demasiados intentos, espera un minuto"), dejando el
+mensaje genérico solo para fallos de red reales (`fetch` que ni siquiera
+llega a responder).
+
+**Observaciones del usuario sobre la home recién construida** (archivo
+`observaciones.md` en la raíz del repo, más dos imágenes de referencia
+`casos de exito.png` y `casos de exito detallado.png`, y un documento
+histórico `PLAN-TECNOLOGIAS-Y-CASOS-DE-EXITO.md` de una fase anterior del
+proyecto — este último es contexto de fondo, no un plan vigente: describe
+una arquitectura `Technology`/`Project` distinta a la que ya existe hoy vía
+el CMS admin). Diagnóstico de cada observación contra el código y la BD
+real (`apps/api/.data/devsure.sqlite`) antes de tocar nada:
+
+1. **"Blog no se ve"** — bug real: nunca se construyó una sección de Blog en
+   la home (sinaloanube-master no la tiene en su referencia y se omitió por
+   error). El post real del usuario además seguía en borrador
+   (`published_at` vacío).
+2. **"Los enlaces no coinciden con la página"** — bug real: el menú no
+   reflejaba las secciones reales ni su orden.
+3. **"Experiencias no se ve"** — bug real: 1 registro real en la BD, sin
+   sección para mostrarlo.
+4. **"Proyectos no se ve"** — no es un bug: el proyecto existe y está
+   `featured`, pero **`published_at` está vacío** (borrador). Se le explicó
+   que debe publicarlo desde `/admin/projects`.
+5. **"Educación → orientarlo a capacidades/certificaciones del equipo"** —
+   bug real (sin sección) + pedido de reencuadre de producto: 1 registro
+   real, sin sección; el modelo de datos (institución/título/campo/fechas)
+   ya sirve para certificaciones/maestrías sin cambios de esquema, solo
+   cambia el copy de la sección.
+6. **"Tecnologías se ve muy grande/poco atractivo"** — pedido de diseño.
+   Decisión del usuario: mostrar una selección destacada en la home +
+   enlace "Ver todas" (opción recomendada, ver pregunta más abajo).
+7. **"Empresas que confían" + "casos de éxito" con la forma de las imágenes
+   de referencia** — pedido de diseño. Decisión del usuario: página nueva
+   completa `/casos-de-exito` con filtros por categoría (no solo mejorar la
+   sección de la home).
+
+**Decisiones de diseño:**
+
+- **Tecnologías**: `TechnologyCard.featured` ya existía (nadie lo usaba —
+  las 41 tecnologías sembradas tienen `featured: false`). La home ahora
+  muestra las `featured` si existen, si no las primeras 12 por `sortOrder`
+  (nunca una sección vacía), con un botón "Ver catálogo completo (N)" hacia
+  una página nueva `/tecnologias` que reutiliza `<TechnologyExplorer>`
+  (el buscador+filtros completo) tal cual, movido de la home a su propia
+  ruta. La home ya no importa `TechnologyExplorer` — el test estructural
+  correspondiente se actualizó (`assert.doesNotMatch(section,
+  /TechnologyExplorer/)` + nueva aserción sobre `/tecnologias`).
+- **Experiencia y Formación**: nuevas secciones
+  (`features/portfolio/components/experience-section.tsx`,
+  `studies-section.tsx`) usando `Translations.experienceHeading/Intro` y
+  `Translations.educationHeading` (ya existían, sin consumidor hasta
+  ahora). `StudiesSection` reencuadra el copy por defecto a "Formación y
+  certificaciones del equipo" — sin migración, el modelo ya encaja.
+- **Blog**: nueva sección `blog-section.tsx` usando
+  `Translations.blogHeading`; las tarjetas son informativas (sin enlace),
+  porque no existe todavía una página pública de detalle de post — no se
+  simula una funcionalidad que no existe.
+- **`Project.category`** (nuevo campo, texto libre, opcional): a diferencia
+  de `Post.category` (enum cerrado de 4 valores), las categorías de casos
+  de éxito son propias de DevSure y se espera que crezcan con su mezcla de
+  proyectos, así que se dejó texto libre en vez de un enum fijo. Migración
+  `AddProjectCategory1790035200000`. El filtro de categorías en
+  `/casos-de-exito` se arma dinámicamente a partir de los valores
+  realmente usados (mismo patrón que "Todos, X, Y, Z" de la referencia, sin
+  hardcodear categorías del negocio de otra empresa).
+- **Endpoints públicos nuevos**: `GET /api/v1/projects` (paginado,
+  solo publicados, filtro opcional `category`) y
+  `GET /api/v1/projects/:slug` (404 tanto para borrador como para slug
+  inexistente — nunca revela cuál de los dos es el caso). Ninguno requiere
+  sesión. Ambos resuelven "el" owner (CMS de un solo dueño) con un helper
+  nuevo compartido `apps/api/src/common/single-owner.service.ts`
+  (`SingleOwnerService`), extraído de la lógica que `PortfolioService` ya
+  tenía duplicada inline — `PortfolioService` se refactorizó para usarlo
+  también, sin cambiar su comportamiento (mismo `find({order:
+  {createdAt:'ASC'}, take:1})` de siempre).
+- **`CaseStudiesSection` (teaser de home) se simplificó**: ya no es un
+  client component con modal (el modal original tenía además una caja de
+  "comentarios" que no enviaba nada a ningún lado — funcionalidad simulada,
+  se eliminó sin migrar). Ahora cada tarjeta enlaza directamente a
+  `/casos-de-exito/[slug]`, y la sección volvió a ser un server component
+  simple. La franja de "empresas que confían" (`ClientLogosSection`) suma
+  el enlace "Ver casos de éxito" hacia la página nueva, tal como en
+  `casos de exito.png`.
+- **Copy propio, no traducido de la referencia**: el banner de cierre dice
+  "¿Tienes un reto parecido?" / "Cuéntanos tu proyecto" — inspirado en el
+  propósito del banner de `casos de exito detallado.png`
+  ("¿Tu negocio necesita algo parecido?"), no en su texto literal (regla de
+  AGENTS.md: nunca copiar copy/marca/composición exacta de la referencia).
+
+**Archivos modificados/creados:**
+
+```text
+apps/web/src/features/admin/components/login-form.tsx   (mensajes 400/429)
+apps/web/src/features/portfolio/lib/format-date-range.ts              (nuevo)
+apps/web/src/features/portfolio/components/experience-section.tsx     (nuevo)
+apps/web/src/features/portfolio/components/studies-section.tsx        (nuevo)
+apps/web/src/features/portfolio/components/blog-section.tsx           (nuevo)
+apps/web/src/features/technologies/components/technologies-section.tsx (reescrito: teaser)
+apps/web/src/app/tecnologias/page.tsx                                 (nuevo)
+apps/web/src/app/page.tsx                (+Experience/Studies/Blog, orden)
+apps/web/src/components/site-header.tsx  (nav: Nosotros/Tecnologías/
+                                           Casos/Blog reales)
+apps/web/tests/app-structure.test.mjs    (TechnologyExplorer movido a
+                                           /tecnologias)
+apps/api/src/common/single-owner.service.ts                           (nuevo)
+apps/api/src/portfolio/portfolio.service.ts (usa SingleOwnerService)
+apps/api/src/portfolio/portfolio.module.ts  (registra SingleOwnerService)
+apps/api/src/projects/entities/project.entity.ts        (+category)
+apps/api/src/database/migrations/1790035200000-AddProjectCategory.ts  (nuevo)
+apps/api/src/database/migrations/__tests__/1790035200000... (incluido en
+  1789171200000-CreateProjects.spec.ts, dividido up/down/up vs integridad)
+apps/api/src/projects/dto/project.dto.ts       (+category)
+apps/api/src/projects/dto/list-projects-query.dto.ts (+category)
+apps/api/src/projects/dto/list-public-projects-query.dto.ts           (nuevo)
+apps/api/src/projects/projects.service.ts (+category, +listPublic,
+                                            +getPublicBySlug)
+apps/api/src/projects/projects.service.spec.ts (+category, +listPublic/
+                                                 getPublicBySlug)
+apps/api/src/projects/public-projects.controller.ts                   (nuevo)
+apps/api/src/projects/projects.module.ts (registra AdminUser,
+                                           SingleOwnerService,
+                                           PublicProjectsController)
+apps/api/test/public-projects.e2e-spec.ts                             (nuevo)
+packages/contracts/src/index.ts          (Project.category,
+                                           ProjectInput.category)
+apps/web/src/features/admin/components/project-form.tsx (+campo Categoría)
+apps/web/src/features/projects/api/get-projects.ts                    (nuevo)
+apps/web/src/features/projects/components/projects-explorer.tsx       (nuevo)
+apps/web/src/app/casos-de-exito/page.tsx                              (nuevo)
+apps/web/src/app/casos-de-exito/[slug]/page.tsx                       (nuevo)
+apps/web/src/features/case-studies/components/case-studies-section.tsx
+  (reescrito: server component, sin modal, enlaza a /casos-de-exito/[slug])
+apps/web/src/features/portfolio/components/client-logos-section.tsx
+  (+enlace "Ver casos de éxito")
+apps/web/src/app/globals.css             (+estilos de las secciones nuevas,
+                                           /tecnologias, /casos-de-exito y
+                                           su detalle)
+```
+
+**Pruebas ejecutadas (todas verdes salvo el hueco preexistente ya
+conocido):**
+
+```text
+pnpm --filter @devsure/contracts build
+pnpm --filter @devsure/api lint / typecheck
+pnpm --filter @devsure/api test              (131 tests: incluye category
+                                               en projects.service.spec.ts,
+                                               listPublic/getPublicBySlug,
+                                               y la migración dividida
+                                               up/down/up vs integridad)
+pnpm --filter @devsure/api test:integration  (100 tests: incluye
+                                               public-projects.e2e-spec.ts
+                                               nuevo — sin auth, excluye
+                                               borradores, filtro por
+                                               categoría, 404 para borrador
+                                               y para slug inexistente)
+pnpm --filter @devsure/web lint / typecheck  (verdes)
+pnpm --filter @devsure/web test              (falla 1/17, el mismo hueco
+                                               preexistente ya documentado)
+pnpm --filter @devsure/web build             ✅ (incluye /tecnologias,
+                                               /casos-de-exito y
+                                               /casos-de-exito/[slug],
+                                               las tres como dinámicas por
+                                               `cache: 'no-store'`)
+pnpm build (raíz, turbo)                     ✅
+```
+
+No se pudo verificar visualmente en el navegador esta vez: la extensión de
+`claude-in-chrome` devolvió "Permission denied for this action on this
+domain" en un tab group nuevo (parece requerir una aprobación del usuario
+que no se pudo completar en esta sesión) — se dejó de insistir después de
+2 intentos, según la propia guía de la herramienta. La verificación se
+apoyó en lint + typecheck + tests + build de producción, todos contra
+código real (sin mocks).
+
+**Pendientes detectados:**
+
+- **Verificación visual en navegador pendiente** — el usuario debería
+  revisar `/`, `/tecnologias` y `/casos-de-exito` él mismo con `pnpm dev`.
+- El proyecto de prueba del usuario y su post de blog siguen en borrador
+  (`published_at` vacío) — necesita publicarlos desde `/admin` para verlos
+  en la home real.
+- No hay página pública de detalle de post (`/blog/[slug]`) — `BlogSection`
+  es intencionalmente informativa, sin enlaces, hasta que exista.
+- `admin-projects-structure.test.mjs`/lista de admin de proyectos no
+  muestra la columna `category` en la tabla (sí está en el formulario) —
+  se omitió por alcance, no es un bug.
+- `/cultura` sigue con la paleta morada anterior (mismo pendiente ya
+  anotado en la sesión 16).
+- Mismo hueco preexistente de siempre (`admin-structure.test.mjs`).
+
 **Siguiente tarea recomendada:**
 
-Con la home ya conectada al CMS, los próximos pasos naturales son: (1)
-cargar contenido real desde `/admin` (Services, Strengths, WorkStyleItems,
-Faqs, al menos un Project destacado y publicado, un ClientLogo) para ver la
-home completa con datos reales — tarea del usuario, no de código; (2) el
-módulo de **capacidades/expertise de empresa** (reemplazo de `Skills`,
-pendiente desde la sesión 13); (3) Redes e Inbox (bloque 4 de la spec,
-incluye el formulario de contacto real).
+(1) El usuario revisa visualmente `/`, `/tecnologias` y `/casos-de-exito`
+con `pnpm dev` y confirma si el diseño de los filtros/tarjetas se acerca a
+lo que buscaba con las imágenes de referencia. (2) Publicar contenido real
+(marcar tecnologías como `featured`, publicar el proyecto y el post de
+prueba, asignarle una categoría al proyecto) para ver todo funcionando de
+punta a punta. (3) Después: el módulo de **capacidades/expertise de
+empresa** (pendiente desde la sesión 13) y Redes e Inbox (bloque 4).
 
 ## Nueva dirección visual: rediseño de la home pública
 

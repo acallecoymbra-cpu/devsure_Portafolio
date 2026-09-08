@@ -219,6 +219,7 @@ export interface Project {
   experienceId?: string;
   title: TranslatableString;
   slug: string;
+  category?: string;
   excerpt: TranslatableString;
   description: TranslatableString;
   coverImage?: string;
@@ -238,6 +239,7 @@ export interface ProjectInput {
   experienceId?: string | null;
   title: TranslatableString;
   slug?: string;
+  category?: string;
   excerpt?: TranslatableString;
   description?: TranslatableString;
   coverImage?: string;

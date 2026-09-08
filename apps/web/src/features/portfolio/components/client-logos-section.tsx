@@ -1,4 +1,5 @@
 import type { ClientLogo } from '@devsure/contracts';
+import Link from 'next/link';
 import { getStorageUrl } from '@/lib/config';
 
 interface ClientLogosSectionProps {
@@ -30,6 +31,11 @@ export function ClientLogosSection({ clientLogos }: ClientLogosSectionProps) {
             </li>
           ))}
         </ul>
+        <p className="client-logos-cta">
+          <Link href="/casos-de-exito">
+            Ver casos de éxito <span aria-hidden="true">→</span>
+          </Link>
+        </p>
       </div>
     </section>
   );

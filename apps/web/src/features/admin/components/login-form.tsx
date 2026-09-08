@@ -40,7 +40,11 @@ export function LoginForm() {
       const message =
         caught instanceof AdminApiError && caught.status === 401
           ? 'El usuario o la contraseña no son correctos.'
-          : 'No pudimos iniciar sesión. Revisa la conexión e inténtalo nuevamente.';
+          : caught instanceof AdminApiError && caught.status === 400
+            ? 'El usuario solo puede tener letras, números, puntos, guiones y guiones bajos (sin @ ni espacios).'
+            : caught instanceof AdminApiError && caught.status === 429
+              ? 'Demasiados intentos. Espera un minuto e inténtalo nuevamente.'
+              : 'No pudimos iniciar sesión. Revisa la conexión e inténtalo nuevamente.';
       setError(message);
       setSubmitting(false);
       requestAnimationFrame(() => usernameRef.current?.focus());

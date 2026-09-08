@@ -8,6 +8,7 @@ import { RequireAdminPasswordChange1788739200000 } from '../database/migrations/
 import { AddAdminUsername1788825600000 } from '../database/migrations/1788825600000-AddAdminUsername';
 import { CreateExperiences1789084800000 } from '../database/migrations/1789084800000-CreateExperiences';
 import { CreateProjects1789171200000 } from '../database/migrations/1789171200000-CreateProjects';
+import { AddProjectCategory1790035200000 } from '../database/migrations/1790035200000-AddProjectCategory';
 import { Experience } from '../experiences/entities/experience.entity';
 import { Project } from './entities/project.entity';
 import { ProjectsService } from './projects.service';
@@ -31,6 +32,7 @@ describe('ProjectsService', () => {
         AddAdminUsername1788825600000,
         CreateExperiences1789084800000,
         CreateProjects1789171200000,
+        AddProjectCategory1790035200000,
       ],
     });
     await dataSource.initialize();
@@ -145,5 +147,55 @@ describe('ProjectsService', () => {
     await expect(service.get(otherOwnerId, mine.id)).rejects.toBeInstanceOf(NotFoundException);
     await expect(service.update(otherOwnerId, mine.id, { sortOrder: 9 })).rejects.toBeInstanceOf(NotFoundException);
     await expect(service.remove(otherOwnerId, mine.id)).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('persists and updates the optional category', async () => {
+    const created = await service.create(ownerId, minimalInput({ category: 'Aplicaciones web' }));
+    expect(created.category).toBe('Aplicaciones web');
+
+    const updated = await service.update(ownerId, created.id, { category: 'Automatización' });
+    expect(updated.category).toBe('Automatización');
+  });
+
+  describe('listPublic / getPublicBySlug', () => {
+    it('only returns published projects, optionally filtered by category', async () => {
+      const published = await service.create(
+        ownerId,
+        minimalInput({ title: { en: 'Published' }, category: 'Web', publishedAt: '2026-01-01T00:00:00.000Z' }),
+      );
+      await service.create(ownerId, minimalInput({ title: { en: 'Draft' }, category: 'Web' }));
+      await service.create(
+        ownerId,
+        minimalInput({ title: { en: 'Other category' }, category: 'QA', publishedAt: '2026-01-01T00:00:00.000Z' }),
+      );
+
+      const all = await service.listPublic(ownerId, { page: 1, limit: 50 });
+      expect(all.items.map((item) => item.id)).toEqual(
+        expect.arrayContaining([published.id]),
+      );
+      expect(all.items).toHaveLength(2);
+
+      const byCategory = await service.listPublic(ownerId, { page: 1, limit: 50, category: 'Web' });
+      expect(byCategory.items.map((item) => item.id)).toEqual([published.id]);
+    });
+
+    it('rejects a draft or another owner\'s slug', async () => {
+      const draft = await service.create(ownerId, minimalInput({ title: { en: 'Draft' } }));
+      await expect(service.getPublicBySlug(ownerId, draft.slug)).rejects.toBeInstanceOf(NotFoundException);
+
+      const published = await service.create(
+        otherOwnerId,
+        minimalInput({ title: { en: 'Theirs' }, publishedAt: '2026-01-01T00:00:00.000Z' }),
+      );
+      await expect(service.getPublicBySlug(ownerId, published.slug)).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('returns a published project by slug', async () => {
+      const created = await service.create(
+        ownerId,
+        minimalInput({ title: { en: 'Published' }, publishedAt: '2026-01-01T00:00:00.000Z' }),
+      );
+      await expect(service.getPublicBySlug(ownerId, created.slug)).resolves.toMatchObject({ id: created.id });
+    });
   });
 });

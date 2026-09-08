@@ -18,6 +18,7 @@ export class Project {
 
   @Column({ type: 'simple-json' }) title!: TranslatableString;
   @Column({ type: 'varchar', length: 160 }) slug!: string;
+  @Column({ type: 'varchar', length: 60, nullable: true }) category!: string | null;
   @Column({ type: 'simple-json', nullable: true }) excerpt!: TranslatableString | null;
   @Column({ type: 'simple-json', nullable: true }) description!: TranslatableString | null;
   @Column({ name: 'cover_image', type: 'varchar', length: 255, nullable: true }) coverImage!: string | null;

@@ -9,8 +9,9 @@ import { RequireAdminPasswordChange1788739200000 } from '../1788739200000-Requir
 import { AddAdminUsername1788825600000 } from '../1788825600000-AddAdminUsername';
 import { CreateExperiences1789084800000 } from '../1789084800000-CreateExperiences';
 import { CreateProjects1789171200000 } from '../1789171200000-CreateProjects';
+import { AddProjectCategory1790035200000 } from '../1790035200000-AddProjectCategory';
 
-describe('projects migration', () => {
+describe('projects migration (up/down/up)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -41,6 +42,33 @@ describe('projects migration', () => {
     await expect(tableExists(dataSource, 'projects')).resolves.toBe(false);
     await dataSource.runMigrations();
     await expect(tableExists(dataSource, 'projects')).resolves.toBe(true);
+  });
+});
+
+describe('projects migration (data integrity, with category column applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [AdminUser, AdminSession, Experience, Project],
+      migrations: [
+        CreateAdminAuth1788480000000,
+        RequireAdminPasswordChange1788739200000,
+        AddAdminUsername1788825600000,
+        CreateExperiences1789084800000,
+        CreateProjects1789171200000,
+        AddProjectCategory1790035200000,
+      ],
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
   });
 
   it('cascades the delete of the owning admin user and enforces a unique slug', async () => {
@@ -81,6 +109,22 @@ describe('projects migration', () => {
 
     const reloaded = await projects.findOneByOrFail({ id: project.id });
     expect(reloaded.experienceId).toBeNull();
+  });
+
+  it('persists and reloads the category column through the Project entity', async () => {
+    const { id: ownerId } = await seedAdmin(dataSource.manager, {
+      username: 'eduardo',
+      email: 'eduardo@example.com',
+      password: 'correct-horse-battery',
+    });
+
+    const projects = dataSource.getRepository(Project);
+    const saved = await projects.save(
+      projects.create({ ownerId, title: { en: 'Acme App' }, slug: 'acme-app', category: 'Aplicaciones web' }),
+    );
+
+    const reloaded = await projects.findOneByOrFail({ id: saved.id });
+    expect(reloaded.category).toBe('Aplicaciones web');
   });
 });
 

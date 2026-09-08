@@ -38,6 +38,10 @@ export class CreateProjectDto implements ProjectInput {
   @optional() @IsString() @MaxLength(160)
   slug?: string;
 
+  @ApiPropertyOptional({ maxLength: 60, example: 'Aplicaciones web' })
+  @optional() @IsString() @MaxLength(60)
+  category?: string;
+
   @ApiPropertyOptional({ type: 'object', additionalProperties: { type: 'string' } })
   @optional() @IsTranslatableString(300)
   excerpt?: TranslatableString;
@@ -90,6 +94,7 @@ export class ProjectDto implements Project {
   @ApiPropertyOptional({ format: 'uuid' }) experienceId?: string;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) title!: TranslatableString;
   @ApiProperty() slug!: string;
+  @ApiPropertyOptional() category?: string;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) excerpt!: TranslatableString;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) description!: TranslatableString;
   @ApiPropertyOptional() coverImage?: string;

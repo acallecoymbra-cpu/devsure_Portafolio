@@ -1,5 +1,5 @@
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, MaxLength, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 function trimSearch({ value }: TransformFnParams): unknown {
@@ -32,6 +32,10 @@ export class ListProjectsQueryDto {
   @ApiPropertyOptional({ enum: ['draft', 'published'] })
   @IsOptional() @IsIn(['draft', 'published'])
   published?: 'draft' | 'published';
+
+  @ApiPropertyOptional({ maxLength: 60 })
+  @IsOptional() @Transform(trimSearch) @IsString() @MaxLength(60)
+  category?: string;
 
   @ApiPropertyOptional({ minLength: 2, maxLength: 100 })
   @IsOptional() @Transform(trimSearch) @IsString() @Length(2, 100)

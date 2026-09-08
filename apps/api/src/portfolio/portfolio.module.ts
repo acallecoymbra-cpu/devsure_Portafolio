@@ -14,6 +14,7 @@ import { Testimonial } from '../testimonials/entities/testimonial.entity';
 import { Post } from '../posts/entities/post.entity';
 import { PortfolioController } from './portfolio.controller';
 import { PortfolioService } from './portfolio.service';
+import { SingleOwnerService } from '../common/single-owner.service';
 import { ProfileService } from '../profile/profile.service';
 import { TranslationsService } from '../profile/translations.service';
 import { ClientLogosService } from '../client-logos/client-logos.service';
@@ -54,6 +55,7 @@ import { PostsService } from '../posts/posts.service';
   controllers: [PortfolioController],
   providers: [
     PortfolioService,
+    SingleOwnerService,
     ProfileService,
     TranslationsService,
     ClientLogosService,

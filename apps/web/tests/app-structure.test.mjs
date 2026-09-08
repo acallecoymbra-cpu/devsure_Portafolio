@@ -60,6 +60,8 @@ test('the technologies slice consumes the shared contract and models every publi
     'src/features/technologies/components/technologies-skeleton.tsx',
     'src/features/technologies/components/technologies-error-boundary.tsx',
     'src/features/technologies/components/technology-image.tsx',
+    'src/features/technologies/components/technology-explorer.tsx',
+    'src/app/tecnologias/page.tsx',
     'playwright.config.ts',
     'tests/e2e/technologies.spec.ts',
   ];
@@ -82,6 +84,7 @@ test('the technologies slice consumes the shared contract and models every publi
     new URL('src/features/technologies/components/technologies-section.tsx', root),
     'utf8',
   );
+  const technologiesPage = await readFile(new URL('src/app/tecnologias/page.tsx', root), 'utf8');
   const imageComponent = await readFile(
     new URL('src/features/technologies/components/technology-image.tsx', root),
     'utf8',
@@ -106,7 +109,13 @@ test('the technologies slice consumes the shared contract and models every publi
   assert.equal((categories.match(/\{ key:/g) ?? []).length, 10);
   assert.match(icons, /fallbackIcon/);
   assert.match(section, /technologies.length > 0/);
-  assert.match(section, /TechnologyExplorer/);
+  // The full filterable explorer lives on its own page now (spec follow-up:
+  // showing all 41+ technologies inline in the home was overwhelming); the
+  // home section is a teaser linking to it.
+  assert.doesNotMatch(section, /TechnologyExplorer/);
+  assert.match(section, /featured/);
+  assert.match(section, /href="\/tecnologias"/);
+  assert.match(technologiesPage, /TechnologyExplorer/);
   assert.equal(imageAssets.length, 41);
   assert.equal(new Set(imageAssets).size, imageAssets.length);
   assert.equal(new Set(imageSlugs).size, imageSlugs.length);

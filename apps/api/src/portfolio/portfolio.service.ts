@@ -1,8 +1,6 @@
 import type { PublicPortfolio } from '@devsure/contracts';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AdminUser } from '../auth/entities/admin-user.entity';
+import { Injectable } from '@nestjs/common';
+import { SingleOwnerService } from '../common/single-owner.service';
 import { ProfileService } from '../profile/profile.service';
 import { TranslationsService } from '../profile/translations.service';
 import { ClientLogosService } from '../client-logos/client-logos.service';
@@ -23,7 +21,7 @@ const RECENT_POSTS_LIMIT = 3;
 @Injectable()
 export class PortfolioService {
   constructor(
-    @InjectRepository(AdminUser) private readonly users: Repository<AdminUser>,
+    private readonly singleOwner: SingleOwnerService,
     private readonly profile: ProfileService,
     private readonly translations: TranslationsService,
     private readonly clientLogos: ClientLogosService,
@@ -39,9 +37,7 @@ export class PortfolioService {
   ) {}
 
   async get(): Promise<PublicPortfolio> {
-    const [owner] = await this.users.find({ order: { createdAt: 'ASC' }, take: 1 });
-    if (!owner) throw new NotFoundException();
-    const ownerId = owner.id;
+    const ownerId = await this.singleOwner.resolve();
 
     // Profile and Translations back onto the same `profiles` row, and each
     // get-or-creates it on first read. Read Profile first, sequentially, so

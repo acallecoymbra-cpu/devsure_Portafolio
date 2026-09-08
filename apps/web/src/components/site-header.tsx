@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 
 const navigation = [
   { href: '/', label: 'Inicio' },
+  { href: '/#nosotros', label: 'Nosotros' },
   { href: '/#servicios', label: 'Servicios' },
-  { href: '/#trabajos-realizados', label: 'Casos de éxito' },
-  { href: '/#tecnologias', label: 'Tecnologías' },
+  { href: '/tecnologias', label: 'Tecnologías' },
+  { href: '/casos-de-exito', label: 'Casos de éxito' },
+  { href: '/#blog', label: 'Blog' },
   { href: '/#preguntas', label: 'Preguntas' },
   { href: '/#contacto', label: 'Contacto' },
   { href: '/cultura', label: 'CULTURA', emphasized: true },

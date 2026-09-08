@@ -1808,3 +1808,395 @@ input {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Slice 3: Tecnologías (teaser de home + /tecnologias), Experiencia,
+   Formación/certificaciones y Blog (observaciones del usuario 2026-09-08). */
+
+.technologies-teaser-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.experience-list,
+.studies-list {
+  display: grid;
+  gap: 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.experience-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.6rem;
+}
+
+.experience-card-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.experience-logo,
+.study-logo {
+  background: #fff;
+  border-radius: 0.6rem;
+  flex: 0 0 3rem;
+  height: 3rem;
+  object-fit: contain;
+  padding: 0.4rem;
+  width: 3rem;
+}
+
+.experience-card-header h3 {
+  margin-bottom: 0.3rem;
+}
+
+.experience-card-header p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.experience-levels {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 1.2rem 0 0;
+}
+
+.experience-level-heading {
+  align-items: baseline;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.experience-level-heading strong {
+  font-size: 0.98rem;
+}
+
+.experience-level-heading span {
+  color: var(--accent-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.experience-levels p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0.3rem 0 0;
+}
+
+.study-card {
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  display: flex;
+  gap: 1.2rem;
+  padding: 1.5rem;
+}
+
+.study-period {
+  color: var(--accent-soft);
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+}
+
+.study-card h3 {
+  margin-bottom: 0.25rem;
+}
+
+.study-institution {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.study-card > div > p:last-child {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-bottom: 0;
+}
+
+.blog-grid {
+  display: grid;
+  gap: 1.1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.blog-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.blog-card-image {
+  aspect-ratio: 16 / 9;
+  background: #fff;
+  display: block;
+  overflow: hidden;
+}
+
+.blog-card-image img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.blog-card-content {
+  padding: 1.4rem;
+}
+
+.blog-card-tag {
+  color: var(--accent-soft);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+.blog-card-content h3 {
+  margin-bottom: 0.5rem;
+}
+
+.blog-card-content p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+@media (min-width: 48rem) {
+  .blog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .blog-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Slice 4: /casos-de-exito (listado con filtros + detalle) y su enlace
+   desde la franja de clientes (observaciones del usuario 2026-09-08). */
+
+.client-logos-cta {
+  margin: 1.75rem 0 0;
+  text-align: center;
+}
+
+.client-logos-cta a {
+  align-items: center;
+  color: var(--accent-soft);
+  display: inline-flex;
+  font-weight: 700;
+  gap: 0.5rem;
+}
+
+.back-link {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+.case-grid {
+  display: grid;
+  gap: 1.1rem;
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+}
+
+.case-card a {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.case-card a:hover {
+  border-color: rgba(60, 216, 197, 0.65);
+  transform: translateY(-0.2rem);
+}
+
+.case-card-image {
+  aspect-ratio: 16 / 9;
+  background: #fff;
+  display: block;
+  overflow: hidden;
+}
+
+.case-card-image img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.case-card-content {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.4rem;
+}
+
+.case-card-tag {
+  color: var(--accent-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case-card-content strong {
+  font-size: 1.15rem;
+}
+
+.case-card-excerpt {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.case-card-cta {
+  color: var(--accent-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-top: 0.3rem;
+}
+
+.cta-banner {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+  margin-top: 3rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.cta-banner h2 {
+  margin-bottom: 0;
+}
+
+.case-detail-layout {
+  max-width: 52rem;
+}
+
+.case-detail-cover {
+  aspect-ratio: 16 / 8;
+  background: #fff;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.case-detail-cover img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.case-detail-header h1 {
+  max-width: none;
+}
+
+.case-detail-description {
+  color: var(--muted);
+  font-size: 1.05rem;
+  margin-top: 1rem;
+}
+
+.case-detail-apps {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.case-detail-app {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.case-detail-app h2 {
+  font-size: 1.15rem;
+  margin-bottom: 0.6rem;
+}
+
+.case-detail-app p {
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.case-detail-app-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.case-detail-app-links a {
+  color: var(--accent-soft);
+  font-weight: 700;
+}
+
+.case-detail-gallery {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 2rem;
+}
+
+.case-detail-gallery img {
+  background: #fff;
+  border-radius: 0.7rem;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+@media (min-width: 48rem) {
+  .case-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .case-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
