@@ -45,6 +45,13 @@ button:focus-visible {
   margin-inline: auto;
 }
 
+.cursor-water-canvas {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 60;
+}
+
 .site-header {
   border-bottom: 1px solid var(--line);
   background: rgba(8, 13, 29, 0.82);
@@ -1057,12 +1064,6 @@ input {
     border-color 180ms ease,
     transform 180ms ease,
     box-shadow 180ms ease;
-}
-
-.case-study-card:hover {
-  border-color: rgba(60, 216, 197, 0.65);
-  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.25);
-  transform: translateY(-0.25rem);
 }
 
 .case-study-image-wrap,
@@ -2363,52 +2364,114 @@ input {
 }
 
 /*
- * Scroll-driven reveal: cards/list items fade and settle into place as they
- * cross into the viewport while scrolling. Pure CSS (no JS), so unsupported
- * browsers just see the elements fully visible from the start — never hidden.
+ * Scroll reveal: `SiteChrome` adds `.reveal-init` to cards/list items via
+ * IntersectionObserver, then `.is-revealed` once they scroll into view. The
+ * hidden state only ever exists once JS is running (see site-chrome.tsx), so
+ * content is never invisible without a script able to bring it back.
  */
-@keyframes reveal-in {
-  from {
-    opacity: 0;
-    transform: translateY(1.75rem) scale(0.98);
+.reveal-init {
+  opacity: 0;
+  transform: translateY(1.75rem) scale(0.98);
+  transition:
+    opacity 700ms var(--ease-out),
+    transform 700ms var(--ease-out);
+}
+
+.reveal-init.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+ * Hover and press feedback for cards, links, and clickable rows across the
+ * home page. `hover: hover` keeps this to devices with a real pointer, so
+ * touch taps don't get stuck in a "hovered" state.
+ */
+.offer-card,
+.experience-card,
+.study-card,
+.case-study-card,
+.blog-card,
+.testimonial-card,
+.contact-card {
+  transition:
+    border-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+
+.case-study-image-wrap img,
+.blog-card-image img {
+  transition: transform 420ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .offer-card:hover,
+  .experience-card:hover,
+  .study-card:hover,
+  .case-study-card:hover,
+  .blog-card:hover,
+  .testimonial-card:hover,
+  .contact-card:hover {
+    border-color: var(--line-strong);
+    box-shadow: 0 1rem 2.5rem rgba(1, 4, 14, 0.38);
+    transform: translateY(-0.35rem);
   }
 
-  to {
+  .case-study-card:hover .case-study-image-wrap img,
+  .blog-card:hover .blog-card-image img {
+    transform: scale(1.06);
+  }
+
+  .client-logo-item img {
+    filter: grayscale(1);
+    opacity: 0.7;
+    transition:
+      filter 220ms var(--ease-out),
+      opacity 220ms var(--ease-out);
+  }
+
+  .client-logo-item:hover img {
+    filter: grayscale(0);
     opacity: 1;
-    transform: none;
   }
 }
 
-@supports (animation-timeline: view()) {
+.offer-card:active,
+.experience-card:active,
+.study-card:active,
+.case-study-card:active,
+.blog-card:active,
+.testimonial-card:active,
+.contact-card:active,
+.technology-flip-card:active,
+.client-logo-item a:active {
+  transform: scale(0.98);
+}
+
+.faq-item summary {
+  transition: color 180ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .faq-item summary:hover {
+    color: var(--accent-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init,
   .offer-card,
   .experience-card,
   .study-card,
-  .process-item,
-  .faq-item,
   .case-study-card,
   .blog-card,
   .testimonial-card,
-  .technology-tile,
   .contact-card,
-  .client-logo-item {
-    animation: reveal-in linear both;
-    animation-range: entry 0% cover 30%;
-    animation-timeline: view();
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .offer-card,
-    .experience-card,
-    .study-card,
-    .process-item,
-    .faq-item,
-    .case-study-card,
-    .blog-card,
-    .testimonial-card,
-    .technology-tile,
-    .contact-card,
-    .client-logo-item {
-      animation: none;
-    }
+  .case-study-image-wrap img,
+  .blog-card-image img,
+  .client-logo-item img,
+  .faq-item summary {
+    transition: none;
   }
 }

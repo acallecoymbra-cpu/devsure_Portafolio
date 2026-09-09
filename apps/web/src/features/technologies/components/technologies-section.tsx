@@ -4,7 +4,9 @@ import { getAllTechnologies } from '@/features/technologies/api/get-technologies
 import { TechnologiesErrorState } from './technologies-error-boundary';
 import { TechnologyTile } from './technology-tile';
 
-const TEASER_LIMIT = 12;
+// 6 = two full rows on the 3-column grid used from tablet width up (see
+// `.technology-grid` in globals.css).
+const TEASER_LIMIT = 6;
 
 /**
  * Home teaser only (spec follow-up): showing all 41+ technologies at once

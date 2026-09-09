@@ -1,5 +1,6 @@
 import type { Post, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { Reveal } from '@/components/reveal';
 import { getStorageUrl } from '@/lib/config';
 
 interface BlogSectionProps {
@@ -35,7 +36,7 @@ export function BlogSection({ posts, translations, locale }: BlogSectionProps) {
             const excerpt = translateValue(post.excerpt, locale);
 
             return (
-              <li key={post.id} className="blog-card">
+              <Reveal as="li" key={post.id} className="blog-card">
                 {post.coverImage ? (
                   <span className="blog-card-image">
                     <img src={getStorageUrl(post.coverImage)} alt="" loading="lazy" />
@@ -48,7 +49,7 @@ export function BlogSection({ posts, translations, locale }: BlogSectionProps) {
                   <h3>{title}</h3>
                   {excerpt ? <p>{excerpt}</p> : null}
                 </div>
-              </li>
+              </Reveal>
             );
           })}
         </ul>

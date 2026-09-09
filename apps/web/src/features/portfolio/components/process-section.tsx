@@ -1,6 +1,7 @@
 import type { Translations, WorkStyleItem } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 
 interface ProcessSectionProps {
   workStyleItems: WorkStyleItem[];
@@ -29,9 +30,9 @@ export function ProcessSection({ workStyleItems, translations, locale }: Process
 
         <ol className="process-list">
           {workStyleItems.map((item) => (
-            <li key={item.id} className="process-item">
+            <Reveal as="li" key={item.id} className="process-item">
               <p>{translateValue(item.text, locale)}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </div>

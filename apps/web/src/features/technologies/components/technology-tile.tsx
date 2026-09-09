@@ -2,6 +2,7 @@
 
 import type { TechnologyCard } from '@devsure/contracts';
 import { useState } from 'react';
+import { Reveal } from '@/components/reveal';
 import { TechnologyImage } from './technology-image';
 
 export function TechnologyTile({ technology }: { technology: TechnologyCard }) {
@@ -9,10 +10,10 @@ export function TechnologyTile({ technology }: { technology: TechnologyCard }) {
 
   if (!summary) {
     return (
-      <li className="technology-tile" data-testid="technology-card" data-technology-id={technology.id}>
+      <Reveal as="li" className="technology-tile" data-testid="technology-card" data-technology-id={technology.id}>
         <TechnologyImage technology={technology} />
         <span>{technology.name}</span>
-      </li>
+      </Reveal>
     );
   }
 
@@ -25,7 +26,8 @@ function FlippableTechnologyTile({ technology, summary }: { technology: Technolo
   const summaryId = `technology-summary-${technology.id}`;
 
   return (
-    <li
+    <Reveal
+      as="li"
       className="technology-tile technology-tile-flip"
       data-testid="technology-card"
       data-technology-id={technology.id}
@@ -48,6 +50,6 @@ function FlippableTechnologyTile({ technology, summary }: { technology: Technolo
           <p id={summaryId}>{summary}</p>
         </span>
       </button>
-    </li>
+    </Reveal>
   );
 }

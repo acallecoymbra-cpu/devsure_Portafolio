@@ -1,6 +1,7 @@
 import type { Study, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 import { getStorageUrl } from '@/lib/config';
 import { formatDateRange } from '../lib/format-date-range';
 
@@ -37,7 +38,7 @@ export function StudiesSection({ studies, translations, locale }: StudiesSection
             const description = translateValue(study.description, locale);
 
             return (
-              <li key={study.id} className="study-card">
+              <Reveal as="li" key={study.id} className="study-card">
                 {study.logo ? (
                   <img className="study-logo" src={getStorageUrl(study.logo)} alt="" loading="lazy" />
                 ) : null}
@@ -52,7 +53,7 @@ export function StudiesSection({ studies, translations, locale }: StudiesSection
                   </p>
                   {description ? <p>{description}</p> : null}
                 </div>
-              </li>
+              </Reveal>
             );
           })}
         </ul>

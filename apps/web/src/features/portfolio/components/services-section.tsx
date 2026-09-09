@@ -1,6 +1,7 @@
 import type { Service, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 
 interface ServicesSectionProps {
   services: Service[];
@@ -37,13 +38,13 @@ export function ServicesSection({ services, translations, locale }: ServicesSect
 
         <div className="card-grid">
           {services.map((service, index) => (
-            <article key={service.id} className="offer-card">
+            <Reveal as="article" key={service.id} className="offer-card">
               <span className="offer-card-badge" aria-hidden="true">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <h3>{translateValue(service.title, locale)}</h3>
               <p>{translateValue(service.description, locale)}</p>
-            </article>
+            </Reveal>
           ))}
         </div>
       </div>

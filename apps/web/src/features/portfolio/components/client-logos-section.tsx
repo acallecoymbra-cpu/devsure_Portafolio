@@ -1,5 +1,6 @@
 import type { ClientLogo } from '@devsure/contracts';
 import Link from 'next/link';
+import { Reveal } from '@/components/reveal';
 import { getStorageUrl } from '@/lib/config';
 
 interface ClientLogosSectionProps {
@@ -18,7 +19,7 @@ export function ClientLogosSection({ clientLogos }: ClientLogosSectionProps) {
         </p>
         <ul className="client-logos-row">
           {clientLogos.map((logo) => (
-            <li key={logo.id} className="client-logo-item">
+            <Reveal as="li" key={logo.id} className="client-logo-item">
               {logo.websiteUrl ? (
                 <a href={logo.websiteUrl} target="_blank" rel="noreferrer" title={logo.name}>
                   <img src={getStorageUrl(logo.logo)} alt={logo.name} loading="lazy" />
@@ -28,7 +29,7 @@ export function ClientLogosSection({ clientLogos }: ClientLogosSectionProps) {
                   <img src={getStorageUrl(logo.logo)} alt={logo.name} loading="lazy" />
                 </span>
               )}
-            </li>
+            </Reveal>
           ))}
         </ul>
         <p className="client-logos-cta">

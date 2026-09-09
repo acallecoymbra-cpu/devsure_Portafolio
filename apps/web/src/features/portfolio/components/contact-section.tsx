@@ -1,6 +1,7 @@
 import type { Profile, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 
 interface ContactSectionProps {
   profile: Profile;
@@ -31,14 +32,14 @@ export function ContactSection({ profile, translations, locale }: ContactSection
           </a>
         </div>
 
-        <dl className="contact-card">
+        <Reveal as="dl" className="contact-card">
           <div>
             <dt>Correo</dt>
             <dd>
               <a href={`mailto:${profile.email}`}>{profile.email}</a>
             </dd>
           </div>
-        </dl>
+        </Reveal>
       </div>
     </section>
   );

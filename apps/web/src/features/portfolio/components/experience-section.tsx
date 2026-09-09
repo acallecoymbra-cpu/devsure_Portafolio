@@ -1,6 +1,7 @@
 import type { Experience, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 import { getStorageUrl } from '@/lib/config';
 import { formatDateRange } from '../lib/format-date-range';
 
@@ -33,7 +34,7 @@ export function ExperienceSection({ experiences, translations, locale }: Experie
             const summary = translateValue(experience.summary, locale);
 
             return (
-              <li key={experience.id} className="experience-card">
+              <Reveal as="li" key={experience.id} className="experience-card">
                 <div className="experience-card-header">
                   {experience.logo ? (
                     <img className="experience-logo" src={getStorageUrl(experience.logo)} alt="" loading="lazy" />
@@ -70,7 +71,7 @@ export function ExperienceSection({ experiences, translations, locale }: Experie
                     ))}
                   </ul>
                 ) : null}
-              </li>
+              </Reveal>
             );
           })}
         </ul>

@@ -1,6 +1,7 @@
 import type { Project, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import Link from 'next/link';
+import { Reveal } from '@/components/reveal';
 import { getStorageUrl } from '@/lib/config';
 
 interface CaseStudiesSectionProps {
@@ -38,7 +39,12 @@ export function CaseStudiesSection({ projects, translations, locale }: CaseStudi
             const image = project.coverImage ?? project.gallery[0];
 
             return (
-              <Link key={project.id} className="case-study-card" href={`/casos-de-exito/${project.slug}`}>
+              <Reveal
+                as={Link}
+                key={project.id}
+                className="case-study-card"
+                href={`/casos-de-exito/${project.slug}`}
+              >
                 {image ? (
                   <span className="case-study-image-wrap">
                     <img src={getStorageUrl(image)} alt={`Logotipo de ${title}`} loading="lazy" />
@@ -51,7 +57,7 @@ export function CaseStudiesSection({ projects, translations, locale }: CaseStudi
                     Ver el caso <span aria-hidden="true">→</span>
                   </span>
                 </span>
-              </Link>
+              </Reveal>
             );
           })}
         </div>

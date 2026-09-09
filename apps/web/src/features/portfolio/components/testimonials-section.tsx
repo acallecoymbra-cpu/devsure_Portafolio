@@ -1,6 +1,7 @@
 import type { Testimonial, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 import { getStorageUrl } from '@/lib/config';
 
 interface TestimonialsSectionProps {
@@ -25,7 +26,7 @@ export function TestimonialsSection({ testimonials, translations, locale }: Test
 
         <ul className="testimonial-grid">
           {testimonials.map((testimonial) => (
-            <li key={testimonial.id} className="testimonial-card">
+            <Reveal as="li" key={testimonial.id} className="testimonial-card">
               <p className="testimonial-quote">{testimonial.quote}</p>
               <div className="testimonial-author">
                 {testimonial.avatar ? (
@@ -45,7 +46,7 @@ export function TestimonialsSection({ testimonials, translations, locale }: Test
                   ) : null}
                 </div>
               </div>
-            </li>
+            </Reveal>
           ))}
         </ul>
       </div>

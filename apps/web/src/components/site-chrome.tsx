@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { CursorWater } from './cursor-water';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header';
 
@@ -23,6 +24,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <CursorWater />
       <a className="skip-link" href="#contenido-principal">
         Saltar al contenido
       </a>

@@ -1,6 +1,7 @@
 import type { Faq, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 
 interface FaqSectionProps {
   faqs: Faq[];
@@ -24,10 +25,10 @@ export function FaqSection({ faqs, translations, locale }: FaqSectionProps) {
 
         <div className="faq-list">
           {faqs.map((faq) => (
-            <details key={faq.id} className="faq-item">
+            <Reveal as="details" key={faq.id} className="faq-item">
               <summary>{translateValue(faq.question, locale)}</summary>
               <p>{translateValue(faq.answer, locale)}</p>
-            </details>
+            </Reveal>
           ))}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import type { Strength, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
 import { ParallaxBackground } from '@/components/parallax-background';
+import { Reveal } from '@/components/reveal';
 
 interface StrengthsSectionProps {
   strengths: Strength[];
@@ -29,7 +30,7 @@ export function StrengthsSection({ strengths, translations, locale }: StrengthsS
 
         <div className="card-grid">
           {strengths.map((strength) => (
-            <article key={strength.id} className="offer-card">
+            <Reveal as="article" key={strength.id} className="offer-card">
               <span className="offer-card-tag">{translateValue(strength.label, locale)}</span>
               <h3>{translateValue(strength.title, locale)}</h3>
               <p>{translateValue(strength.body, locale)}</p>
@@ -42,7 +43,7 @@ export function StrengthsSection({ strengths, translations, locale }: StrengthsS
                   ))}
                 </ul>
               ) : null}
-            </article>
+            </Reveal>
           ))}
         </div>
       </div>
