@@ -149,9 +149,11 @@ export function TechnologyForm({ technology }: TechnologyFormProps) {
                 name="category"
                 defaultValue={technology?.category}
                 maxLength={64}
+                pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
                 required
                 autoComplete="off"
               />
+              <small>Solo minúsculas, números y guiones (igual que el slug), ej. "testing" o "cloud-devops".</small>
             </label>
             <label className={styles.field}>
               <span>Clave de icono <em aria-hidden="true">*</em></span>
