@@ -37,7 +37,13 @@ export class AuthController {
     response.clearCookie('devsure_session', this.cookieOptions());
   }
   private cookieOptions() {
-    return { httpOnly: true, sameSite: 'lax' as const, secure: this.config.getOrThrow<boolean>('auth.secureCookies'), path: '/' };
+    const secure = this.config.getOrThrow<boolean>('auth.secureCookies');
+    // Web and API deploy to different subdomains in production (e.g. Railway),
+    // so the session cookie needs SameSite=None to survive a cross-site fetch.
+    // SameSite=None requires Secure, which only holds in production — local
+    // dev keeps Lax.
+    const sameSite: 'none' | 'lax' = secure ? 'none' : 'lax';
+    return { httpOnly: true, sameSite, secure, path: '/' };
   }
   private setCookie(response: Response, value: string): void {
     response.setHeader('Cache-Control', 'no-store');
