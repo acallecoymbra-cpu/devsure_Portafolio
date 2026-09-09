@@ -1,5 +1,6 @@
 import type { Profile, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 import styles from '@/features/home/home-hero.module.css';
 
 interface HomeHeroProps {
@@ -19,10 +20,8 @@ export function HomeHero({ profile, translations, locale }: HomeHeroProps) {
 
   return (
     <section className={styles.hero} aria-labelledby="hero-title" data-testid="home-hero">
-      <div className={styles.environment} aria-hidden="true">
-        <span className={styles.environmentGrid} />
-        <span className={styles.environmentGlow} data-testid="home-hero-glow" />
-      </div>
+      <ParallaxBackground src="/photos/night-code.webp" priority />
+      <span className={styles.environmentGlow} aria-hidden="true" data-testid="home-hero-glow" />
 
       <div className={`shell ${styles.layout}`}>
         <div className={styles.copy}>
@@ -53,29 +52,43 @@ export function HomeHero({ profile, translations, locale }: HomeHeroProps) {
           </div>
           <h2 id="certainty-signal-title">Cada entrega deja una base más segura.</h2>
 
-          <ol className={styles.signalSteps}>
-            <li>
-              <span className={styles.stepNumber}>01</span>
-              <div>
-                <h3>Entender</h3>
-                <p>Objetivo, contexto y riesgos antes de construir.</p>
-              </div>
-            </li>
-            <li>
-              <span className={styles.stepNumber}>02</span>
-              <div>
-                <h3>Construir</h3>
-                <p>Una solución proporcional al problema real.</p>
-              </div>
-            </li>
-            <li>
-              <span className={styles.stepNumber}>03</span>
-              <div>
-                <h3>Verificar</h3>
-                <p>Calidad visible antes de seguir avanzando.</p>
-              </div>
-            </li>
-          </ol>
+          <div className={styles.pathWrap}>
+            <svg
+              className={styles.pathSvg}
+              viewBox="0 0 2 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path className={styles.pathTrack} d="M1,0 L1,100" pathLength={100} vectorEffect="non-scaling-stroke" />
+              <path className={styles.pathDraw} d="M1,0 L1,100" pathLength={100} vectorEffect="non-scaling-stroke" />
+            </svg>
+            <span className={styles.pathPulse} aria-hidden="true" />
+
+            <ol className={styles.signalSteps}>
+              <li>
+                <span className={styles.stepNumber}>01</span>
+                <div>
+                  <h3>Entender</h3>
+                  <p>Objetivo, contexto y riesgos antes de construir.</p>
+                </div>
+              </li>
+              <li>
+                <span className={styles.stepNumber}>02</span>
+                <div>
+                  <h3>Construir</h3>
+                  <p>Una solución proporcional al problema real.</p>
+                </div>
+              </li>
+              <li>
+                <span className={styles.stepNumber}>03</span>
+                <div>
+                  <h3>Verificar</h3>
+                  <p>Calidad visible antes de seguir avanzando.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
 
           <p className={styles.signalResult}>
             <span aria-hidden="true" />

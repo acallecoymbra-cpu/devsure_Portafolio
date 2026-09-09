@@ -1,5 +1,6 @@
 import type { Experience, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 import { getStorageUrl } from '@/lib/config';
 import { formatDateRange } from '../lib/format-date-range';
 
@@ -16,7 +17,8 @@ export function ExperienceSection({ experiences, translations, locale }: Experie
   const intro = translateValue(translations.experienceIntro, locale);
 
   return (
-    <section className="section" id="experiencia" aria-labelledby="experience-title">
+    <section className="section experience-section" id="experiencia" aria-labelledby="experience-title">
+      <ParallaxBackground src="/photos/trajectory.webp" />
       <div className="shell">
         <div className="section-heading section-heading-wide">
           <div>

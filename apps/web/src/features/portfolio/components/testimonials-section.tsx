@@ -1,5 +1,6 @@
 import type { Testimonial, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 import { getStorageUrl } from '@/lib/config';
 
 interface TestimonialsSectionProps {
@@ -15,6 +16,7 @@ export function TestimonialsSection({ testimonials, translations, locale }: Test
 
   return (
     <section className="section testimonials-section" id="testimonios" aria-labelledby="testimonials-title">
+      <ParallaxBackground src="/photos/testimonials.webp" />
       <div className="shell">
         <div className="section-heading">
           <p className="eyebrow">Testimonios</p>

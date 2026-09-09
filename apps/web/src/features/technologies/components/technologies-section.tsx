@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ParallaxBackground } from '@/components/parallax-background';
 import { getAllTechnologies } from '@/features/technologies/api/get-technologies';
 import { TechnologiesErrorState } from './technologies-error-boundary';
 import { TechnologyTile } from './technology-tile';
@@ -27,6 +28,7 @@ export async function TechnologiesSection() {
       id="tecnologias"
       aria-labelledby="technologies-title"
     >
+      <ParallaxBackground src="/photos/tech-world.webp" />
       <div className="shell">
         <div className="section-heading section-heading-wide">
           <div>

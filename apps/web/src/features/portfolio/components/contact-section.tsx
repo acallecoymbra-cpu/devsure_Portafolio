@@ -1,5 +1,6 @@
 import type { Profile, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 
 interface ContactSectionProps {
   profile: Profile;
@@ -19,6 +20,7 @@ export function ContactSection({ profile, translations, locale }: ContactSection
 
   return (
     <section className="section contact-section" id="contacto" aria-labelledby="contact-title">
+      <ParallaxBackground src="/photos/office-window.webp" />
       <div className="shell contact-layout">
         <div>
           <p className="eyebrow">Contacto</p>

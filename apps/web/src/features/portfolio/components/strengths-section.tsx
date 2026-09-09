@@ -1,5 +1,6 @@
 import type { Strength, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 
 interface StrengthsSectionProps {
   strengths: Strength[];
@@ -15,7 +16,8 @@ export function StrengthsSection({ strengths, translations, locale }: StrengthsS
   const intro = translateValue(translations.strengthsIntro, locale);
 
   return (
-    <section className="section" id="diferenciadores" aria-labelledby="strengths-title">
+    <section className="section strengths-section" id="diferenciadores" aria-labelledby="strengths-title">
+      <ParallaxBackground src="/photos/portrait-focused.webp" />
       <div className="shell">
         <div className="section-heading section-heading-wide">
           <div>

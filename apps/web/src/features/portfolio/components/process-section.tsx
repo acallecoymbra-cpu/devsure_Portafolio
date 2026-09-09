@@ -1,5 +1,6 @@
 import type { Translations, WorkStyleItem } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 
 interface ProcessSectionProps {
   workStyleItems: WorkStyleItem[];
@@ -15,7 +16,8 @@ export function ProcessSection({ workStyleItems, translations, locale }: Process
   const intro = translateValue(translations.workstyleIntro, locale);
 
   return (
-    <section className="section" id="proceso" aria-labelledby="process-title">
+    <section className="section process-section" id="proceso" aria-labelledby="process-title">
+      <ParallaxBackground src="/photos/conference-room.webp" />
       <div className="shell">
         <div className="section-heading section-heading-wide">
           <div>

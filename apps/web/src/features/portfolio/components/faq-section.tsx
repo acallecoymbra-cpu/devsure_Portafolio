@@ -1,5 +1,6 @@
 import type { Faq, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 
 interface FaqSectionProps {
   faqs: Faq[];
@@ -14,6 +15,7 @@ export function FaqSection({ faqs, translations, locale }: FaqSectionProps) {
 
   return (
     <section className="section faq-section" id="preguntas" aria-labelledby="faq-title">
+      <ParallaxBackground src="/photos/faq-support.webp" />
       <div className="shell">
         <div className="section-heading">
           <p className="eyebrow">Preguntas frecuentes</p>

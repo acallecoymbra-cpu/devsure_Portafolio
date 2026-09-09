@@ -1,5 +1,6 @@
 import type { Service, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 
 interface ServicesSectionProps {
   services: Service[];
@@ -23,7 +24,8 @@ export function ServicesSection({ services, translations, locale }: ServicesSect
   const intro = translateValue(translations.skillsIntro, locale);
 
   return (
-    <section className="section" id="servicios" aria-labelledby="services-title">
+    <section className="section services-section" id="servicios" aria-labelledby="services-title">
+      <ParallaxBackground src="/photos/professional-tablet.webp" />
       <div className="shell">
         <div className="section-heading section-heading-wide">
           <div>

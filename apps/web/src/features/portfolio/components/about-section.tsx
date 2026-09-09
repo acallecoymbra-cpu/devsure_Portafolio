@@ -1,5 +1,7 @@
 import type { Profile, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
+import { AboutStats } from '@/features/portfolio/components/about-stats';
 
 interface AboutSectionProps {
   profile: Profile;
@@ -14,6 +16,7 @@ export function AboutSection({ profile, translations, locale }: AboutSectionProp
 
   return (
     <section className="section about-section" id="nosotros" aria-labelledby="about-title">
+      <ParallaxBackground src="/photos/office-window.webp" />
       <div className="shell about-layout">
         <div className="about-copy">
           <p className="eyebrow">Nosotros</p>
@@ -21,19 +24,7 @@ export function AboutSection({ profile, translations, locale }: AboutSectionProp
           {body ? <p>{body}</p> : null}
         </div>
 
-        {profile.stats.length > 0 ? (
-          <ul className="about-stats">
-            {profile.stats.map((stat, index) => (
-              <li key={index} className="about-stat">
-                <strong>
-                  {stat.value}
-                  {stat.suffix ?? ''}
-                </strong>
-                <span>{translateValue(stat.label, locale)}</span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {profile.stats.length > 0 ? <AboutStats stats={profile.stats} locale={locale} /> : null}
       </div>
     </section>
   );

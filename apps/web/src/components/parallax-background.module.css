@@ -1,0 +1,40 @@
+.wrap {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.imageLayer {
+  inset: -26% 0;
+  position: absolute;
+  width: 100%;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.scrim {
+  background: linear-gradient(
+    115deg,
+    rgba(4, 8, 18, 0.92) 0%,
+    rgba(6, 11, 23, 0.84) 38%,
+    rgba(7, 12, 26, 0.58) 68%,
+    rgba(7, 12, 26, 0.76) 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
+.edgeFade {
+  background: linear-gradient(
+    180deg,
+    var(--background) 0%,
+    transparent 16%,
+    transparent 84%,
+    var(--background) 100%
+  );
+  inset: 0;
+  position: absolute;
+}

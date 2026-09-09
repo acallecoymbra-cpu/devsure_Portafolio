@@ -1,5 +1,6 @@
 import type { Study, Translations } from '@devsure/contracts';
 import { translateValue } from '@devsure/contracts';
+import { ParallaxBackground } from '@/components/parallax-background';
 import { getStorageUrl } from '@/lib/config';
 import { formatDateRange } from '../lib/format-date-range';
 
@@ -22,7 +23,8 @@ export function StudiesSection({ studies, translations, locale }: StudiesSection
   const heading = translateValue(translations.educationHeading, locale) ?? 'Formación y certificaciones del equipo';
 
   return (
-    <section className="section" id="formacion" aria-labelledby="studies-title">
+    <section className="section studies-section" id="formacion" aria-labelledby="studies-title">
+      <ParallaxBackground src="/photos/certifications.webp" />
       <div className="shell">
         <div className="section-heading">
           <p className="eyebrow">Formación</p>

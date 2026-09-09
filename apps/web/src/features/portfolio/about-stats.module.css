@@ -1,0 +1,23 @@
+.barTrack {
+  background: rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  display: block;
+  height: 0.3rem;
+  margin-top: 0.85rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.barFill {
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  transition: width 900ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barFill {
+    transition: none;
+  }
+}

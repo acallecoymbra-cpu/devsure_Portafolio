@@ -776,8 +776,10 @@ input {
 }
 
 .technologies-section {
-  background: rgba(13, 20, 38, 0.7);
   border-block: 1px solid var(--line);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
   scroll-margin-top: 5rem;
 }
 
@@ -1478,8 +1480,10 @@ input {
 }
 
 .about-section {
-  background: rgba(17, 26, 39, 0.55);
   border-block: 1px solid var(--line);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
   scroll-margin-top: 5rem;
 }
 
@@ -1523,6 +1527,14 @@ input {
   display: block;
   font-size: 0.82rem;
   margin-top: 0.5rem;
+}
+
+.services-section,
+.strengths-section {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  scroll-margin-top: 5rem;
 }
 
 .card-grid {
@@ -1587,6 +1599,9 @@ input {
 }
 
 .testimonials-section {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
   scroll-margin-top: 5rem;
 }
 
@@ -1647,6 +1662,13 @@ input {
   font-size: 0.82rem;
 }
 
+.process-section {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  scroll-margin-top: 5rem;
+}
+
 .process-list {
   counter-reset: process;
   display: grid;
@@ -1687,6 +1709,9 @@ input {
 }
 
 .faq-section {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
   scroll-margin-top: 5rem;
 }
 
@@ -1737,8 +1762,10 @@ input {
 }
 
 .contact-section {
-  background: rgba(17, 26, 39, 0.55);
   border-block: 1px solid var(--line);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
   scroll-margin-top: 5rem;
 }
 
@@ -1816,6 +1843,14 @@ input {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
+}
+
+.experience-section,
+.studies-section {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  scroll-margin-top: 5rem;
 }
 
 .experience-list,
@@ -2324,5 +2359,56 @@ input {
 @media (prefers-reduced-motion: reduce) {
   .technology-flip-face {
     transition: none;
+  }
+}
+
+/*
+ * Scroll-driven reveal: cards/list items fade and settle into place as they
+ * cross into the viewport while scrolling. Pure CSS (no JS), so unsupported
+ * browsers just see the elements fully visible from the start — never hidden.
+ */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.75rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .offer-card,
+  .experience-card,
+  .study-card,
+  .process-item,
+  .faq-item,
+  .case-study-card,
+  .blog-card,
+  .testimonial-card,
+  .technology-tile,
+  .contact-card,
+  .client-logo-item {
+    animation: reveal-in linear both;
+    animation-range: entry 0% cover 30%;
+    animation-timeline: view();
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .offer-card,
+    .experience-card,
+    .study-card,
+    .process-item,
+    .faq-item,
+    .case-study-card,
+    .blog-card,
+    .testimonial-card,
+    .technology-tile,
+    .contact-card,
+    .client-logo-item {
+      animation: none;
+    }
   }
 }
