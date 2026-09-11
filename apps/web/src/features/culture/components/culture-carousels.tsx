@@ -2,12 +2,8 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import type { CompanyStory, CultureStory } from '@/features/culture/culture-content';
+import type { CompanyStory } from '@/features/culture/culture-content';
 import styles from '@/features/culture/culture.module.css';
-
-type CultureCarouselProps = {
-  stories: readonly CultureStory[];
-};
 
 type CompanyCarouselProps = {
   companies: readonly CompanyStory[];
@@ -51,108 +47,6 @@ function useCarousel(itemCount: number, interval = 7000, autoplay = true) {
     previous: () => setActiveIndex((current) => (current - 1 + itemCount) % itemCount),
     next: () => setActiveIndex((current) => (current + 1) % itemCount),
   };
-}
-
-export function CultureCarousel({ stories }: CultureCarouselProps) {
-  const carousel = useCarousel(stories.length);
-  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
-  const story = stories[carousel.activeIndex];
-
-  if (!story) {
-    return (
-      <p className={styles.emptyState} role="status">
-        Estamos preparando nuevas historias sobre nuestra forma de trabajar.
-      </p>
-    );
-  }
-
-  return (
-    <div
-      className={styles.carousel}
-      role="region"
-      aria-roledescription="carrusel"
-      aria-label="Historias de nuestra cultura"
-      onMouseEnter={() => carousel.setIsInteractionPaused(true)}
-      onMouseLeave={() => carousel.setIsInteractionPaused(false)}
-      onFocusCapture={() => carousel.setIsInteractionPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          carousel.setIsInteractionPaused(false);
-        }
-      }}
-    >
-      <article className={styles.storySlide} key={story.id} aria-labelledby={`story-${story.id}`}>
-        <div className={styles.storyMedia}>
-          {failedImages[story.id] ? (
-            <div className={styles.mediaFallback} role="img" aria-label={story.image.alt}>
-              <span>Imagen editorial no disponible</span>
-            </div>
-          ) : (
-            <Image
-              src={story.image.src}
-              alt={story.image.alt}
-              fill
-              priority={carousel.activeIndex === 0}
-              sizes="(min-width: 1024px) 65vw, 100vw"
-              onError={() => {
-                setFailedImages((current) => ({ ...current, [story.id]: true }));
-              }}
-            />
-          )}
-          <span className={styles.imageLabel}>Ilustración editorial</span>
-        </div>
-        <div className={styles.storyCopy}>
-          <p>{story.kicker}</p>
-          <h3 id={`story-${story.id}`}>{story.title}</h3>
-          <p>{story.description}</p>
-          <span className={styles.storyCount} aria-hidden="true">
-            {String(carousel.activeIndex + 1).padStart(2, '0')} /{' '}
-            {String(stories.length).padStart(2, '0')}
-          </span>
-        </div>
-      </article>
-
-      <div className={styles.carouselToolbar}>
-        <div className={styles.arrowControls}>
-          <button type="button" onClick={carousel.previous} aria-label="Historia anterior">
-            <span aria-hidden="true">←</span>
-          </button>
-          <button type="button" onClick={carousel.next} aria-label="Siguiente historia">
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
-
-        <div className={styles.indicators} role="group" aria-label="Seleccionar historia">
-          {stories.map((item, index) => (
-            <button
-              type="button"
-              key={item.id}
-              aria-label={`Ir a la historia ${index + 1}: ${item.title}`}
-              aria-current={index === carousel.activeIndex ? 'true' : undefined}
-              onClick={() => carousel.setActiveIndex(index)}
-            />
-          ))}
-        </div>
-
-        <button
-          className={styles.playControl}
-          type="button"
-          aria-label={carousel.isPlaying ? 'Pausar carrusel' : 'Reproducir carrusel'}
-          onClick={() => carousel.setIsPlaying((current) => !current)}
-        >
-          <span aria-hidden="true">{carousel.isPlaying ? 'Ⅱ' : '▶'}</span>
-          {carousel.isPlaying ? 'Pausar' : 'Reproducir'}
-        </button>
-      </div>
-
-      <p
-        className="sr-only"
-        aria-live={carousel.isPlaying && !carousel.isInteractionPaused ? 'off' : 'polite'}
-      >
-        Historia {carousel.activeIndex + 1} de {stories.length}: {story.title}
-      </p>
-    </div>
-  );
 }
 
 export function CompanyCarousel({ companies }: CompanyCarouselProps) {

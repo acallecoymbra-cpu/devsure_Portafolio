@@ -1,8 +1,14 @@
 .hero {
+  /* Slice 9.6: the dark linear-gradient layer was rgba(20, 27, 54, 0.82) —
+     near-opaque, which made sense as a plain page background but now sits
+     over the pinned 3D column (spineBackgroundRegion), so it's lightened
+     enough to let the column show through while keeping some of the
+     original top-to-bottom tint for text contrast. The radial purple glow
+     is untouched — decorative, not something the column needs to compete
+     with. */
   background:
     radial-gradient(circle at 78% 28%, rgba(169, 152, 255, 0.22), transparent 25rem),
-    linear-gradient(180deg, rgba(20, 27, 54, 0.82), rgba(7, 11, 23, 0));
-  border-bottom: 1px solid var(--line);
+    linear-gradient(180deg, rgba(20, 27, 54, 0.3), rgba(7, 11, 23, 0));
   min-height: min(43rem, calc(100vh - 4.25rem));
   padding-block: clamp(5rem, 12vw, 9rem) 4rem;
 }
@@ -252,9 +258,312 @@
   padding: 0.55rem 0.9rem;
 }
 
+/*
+ * Slice 9: the rotating column now stays pinned behind "Lo que cuidamos" /
+ * "Nuestra medida" / "Confianza compartida" too, not just its own 3 story
+ * cards — a "sticky background behind scrolling foreground" layout, done
+ * with a CSS grid overlap instead of the older single-purpose 300vh
+ * wrapper: `spineBackgroundRegion` is a 1-column grid, and its two children
+ * (`spineStickyLayer`, `spineForegroundLayer`) both occupy that same single
+ * cell, stacking visually via z-index instead of siblings in normal flow.
+ * The cell's height is set by whichever child is taller — always
+ * `spineForegroundLayer` here, since it holds real page content — and
+ * `spineStickyLayer`'s own `position: sticky; top: 0` keeps it pinned to
+ * the viewport for exactly that cell's height minus its own 100vh, exactly
+ * like the old wrapper/sticky-child pair did for just the story cards.
+ * `three/spine-engine.ts` reads scroll progress from
+ * `spineBackgroundRegion`'s bounding rect (the whole combined range), not
+ * the sticky layer's own rect (which would read a constant `top: 0` once
+ * stuck).
+ */
+.spineBackgroundRegion {
+  display: grid;
+  grid-template-columns: 1fr;
+  position: relative;
+}
+
+.spineStickyLayer,
+.spineForegroundLayer {
+  grid-area: 1 / 1;
+}
+
+.spineStickyLayer {
+  height: 100vh;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 0;
+}
+
+.spineForegroundLayer {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * Slice 9: faded in by `three/spine-engine.ts` (via inline `opacity`, driven
+ * by scroll progress — no CSS transition here, the value is already
+ * continuous frame to frame) once scrolling moves past the 3 story cards,
+ * so the column's particle/ring detail doesn't fight with the text in "Lo
+ * que cuidamos"/"Nuestra medida"/"Confianza compartida". Sits inside
+ * `.spineStickyLayer` (which is a positioned element via `position: sticky`,
+ * so it's a valid containing block for this `absolute` child) above the
+ * canvas but below the foreground content's own z-index.
+ */
+.spineScrim {
+  background: linear-gradient(180deg, rgba(7, 11, 23, 0.35), rgba(7, 11, 23, 0.9));
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+}
+
+/* Slice 9: the artificial scroll room for the 3 story cards — see `three/spine-engine.ts`'s `computeStoryFraction`. Nothing renders here; it's pure spacing so the cards keep the same scroll distance they had before the column extended into the sections that follow. */
+.spineStorySpacer {
+  height: 240vh;
+}
+
+.spineCanvasMount {
+  height: 100%;
+  width: 100%;
+}
+
+.spineCanvasMount canvas {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+@keyframes spineCaptionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.spineCaptionOverlay {
+  background: linear-gradient(180deg, transparent, rgba(7, 11, 23, 0.88) 70%);
+  bottom: 0;
+  left: 0;
+  padding: clamp(1.5rem, 6vw, 4rem) clamp(1rem, 6vw, 4rem);
+  position: absolute;
+  right: 0;
+}
+
+.spineCaption {
+  animation: spineCaptionFadeIn 420ms var(--ease-out);
+  display: grid;
+  gap: 0.65rem;
+  margin-inline: auto;
+  max-width: 34rem;
+}
+
+.spineCaption > p:first-child {
+  color: var(--accent-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.spineCaption h3 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  margin-bottom: 0;
+}
+
+.spineCaption > p:last-child {
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+.spineTrack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.spineTrack::before {
+  background: linear-gradient(180deg, transparent, var(--line) 6%, var(--line) 94%, transparent);
+  bottom: 0.5rem;
+  content: '';
+  left: 1.1rem;
+  position: absolute;
+  top: 0.5rem;
+  width: 2px;
+}
+
+.spineItem {
+  column-gap: 1.25rem;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  padding-block: 1.5rem;
+  position: relative;
+  row-gap: 0;
+}
+
+.spineItem:first-child {
+  padding-top: 0;
+}
+
+.spineItem:last-child {
+  padding-bottom: 0;
+}
+
+.spineDot {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  grid-column: 1;
+  height: 0.85rem;
+  justify-self: center;
+  margin-top: 0.45rem;
+  transition:
+    background-color 260ms var(--ease-out),
+    border-color 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out);
+  width: 0.85rem;
+}
+
+.spineItemRevealed .spineDot {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 5px rgba(60, 216, 197, 0.18);
+}
+
+.spineCard {
+  background: rgba(16, 24, 43, 0.86);
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  grid-column: 2;
+  min-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(1.5rem);
+  transition:
+    opacity 550ms var(--ease-out),
+    transform 550ms var(--ease-out);
+}
+
+.spineItemRevealed .spineCard {
+  opacity: 1;
+  transform: none;
+}
+
+.spineMedia {
+  aspect-ratio: 16 / 10;
+  background: #0b1122;
+  overflow: hidden;
+  position: relative;
+}
+
+.spineMedia img {
+  object-fit: cover;
+}
+
+.spineCopy {
+  display: grid;
+  gap: 0.65rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.spineCopy > p:first-child {
+  color: var(--accent-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.spineCopy h3 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  margin-bottom: 0;
+}
+
+.spineCopy > p:last-child {
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+@keyframes spineMediaGlitch {
+  0%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    filter: none;
+  }
+
+  12% {
+    clip-path: inset(8% 0 46% 0);
+    filter: hue-rotate(45deg) saturate(2.2);
+  }
+
+  28% {
+    clip-path: inset(58% 0 6% 0);
+    filter: hue-rotate(-35deg) saturate(1.6);
+  }
+
+  44% {
+    clip-path: inset(22% 0 52% 0);
+    filter: hue-rotate(20deg);
+  }
+
+  60% {
+    clip-path: inset(4% 0 18% 0);
+    filter: hue-rotate(-10deg) saturate(1.3);
+  }
+
+  78% {
+    clip-path: inset(0 0 0 0);
+    filter: none;
+  }
+}
+
+@keyframes spineTextGlitch {
+  0% {
+    text-shadow:
+      -3px 0 var(--accent),
+      3px 0 #ff5fae;
+    transform: translateX(-4px);
+  }
+
+  35% {
+    text-shadow:
+      3px 0 var(--accent),
+      -3px 0 #ff5fae;
+    transform: translateX(3px);
+  }
+
+  65% {
+    text-shadow:
+      -1px 0 var(--accent),
+      1px 0 #ff5fae;
+    transform: translateX(-1px);
+  }
+
+  100% {
+    text-shadow: none;
+    transform: none;
+  }
+}
+
+.spineItemRevealed .spineMedia img {
+  animation: spineMediaGlitch 700ms steps(1, end) 1;
+}
+
+.spineItemRevealed .spineCopy h3 {
+  animation: spineTextGlitch 550ms steps(1, end) 1;
+}
+
 .principlesSection {
-  background: rgba(13, 20, 38, 0.7);
-  border-block: 1px solid var(--line);
+  /* Slice 9: was a near-opaque rgba(13, 20, 38, 0.7) — now sits over the
+     pinned 3D column (see spineBackgroundRegion), so the section itself
+     stays transparent and lets the column show through the gaps around
+     the (still solidly-backed, per .principlesGrid li) principle cards. */
+  background: transparent;
 }
 
 .principlesIntro {
@@ -314,8 +623,11 @@
 }
 
 .companiesSection {
-  background: linear-gradient(180deg, rgba(25, 20, 61, 0.32), transparent);
-  border-top: 1px solid var(--line);
+  /* Slice 9: dropped the border-top and lightened the gradient — this
+     section now sits over the pinned 3D column (see spineBackgroundRegion)
+     rather than a plain page background, and a hard edge/heavier tint would
+     read as a seam interrupting it. */
+  background: linear-gradient(180deg, rgba(25, 20, 61, 0.16), transparent);
 }
 
 .companyCard {
@@ -436,6 +748,29 @@
   .storyCopy {
     min-height: 34rem;
   }
+
+  .spineTrack::before {
+    left: 50%;
+    margin-left: -1px;
+  }
+
+  .spineItem {
+    column-gap: 2.5rem;
+    grid-template-columns: minmax(0, 1fr) 2.5rem minmax(0, 1fr);
+  }
+
+  .spineDot {
+    grid-column: 2;
+    margin-top: 0;
+  }
+
+  .spineItem[data-align='left'] .spineCard {
+    grid-column: 1;
+  }
+
+  .spineItem[data-align='right'] .spineCard {
+    grid-column: 3;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -453,5 +788,19 @@
   .playControl:active,
   .indicators button:active {
     transform: none;
+  }
+
+  .spineCard,
+  .spineDot {
+    transition: none;
+  }
+
+  .spineItemRevealed .spineMedia img,
+  .spineItemRevealed .spineCopy h3 {
+    animation: none;
+  }
+
+  .spineCaption {
+    animation: none;
   }
 }
