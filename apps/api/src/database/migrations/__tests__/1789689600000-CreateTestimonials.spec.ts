@@ -7,8 +7,9 @@ import { CreateAdminAuth1788480000000 } from '../1788480000000-CreateAdminAuth';
 import { RequireAdminPasswordChange1788739200000 } from '../1788739200000-RequireAdminPasswordChange';
 import { AddAdminUsername1788825600000 } from '../1788825600000-AddAdminUsername';
 import { CreateTestimonials1789689600000 } from '../1789689600000-CreateTestimonials';
+import { AddTestimonialHighlights1790121600000 } from '../1790121600000-AddTestimonialHighlights';
 
-describe('testimonials migration', () => {
+describe('testimonials migration (table lifecycle)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -38,6 +39,32 @@ describe('testimonials migration', () => {
     await expect(tableExists(dataSource, 'testimonials')).resolves.toBe(false);
     await dataSource.runMigrations();
     await expect(tableExists(dataSource, 'testimonials')).resolves.toBe(true);
+  });
+});
+
+describe('testimonials migration (with later columns applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [AdminUser, AdminSession, Testimonial],
+      migrations: [
+        CreateAdminAuth1788480000000,
+        RequireAdminPasswordChange1788739200000,
+        AddAdminUsername1788825600000,
+        CreateTestimonials1789689600000,
+        AddTestimonialHighlights1790121600000,
+      ],
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
   });
 
   it('cascades the delete of the owning admin user', async () => {

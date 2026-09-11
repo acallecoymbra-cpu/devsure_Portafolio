@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { AiOrbCompanion } from '@/components/ai-orb-companion';
 import { CaseStudiesSection } from '@/features/case-studies/components/case-studies-section';
 import { HomeHero } from '@/features/home/components/home-hero';
 import { AboutSection } from '@/features/portfolio/components/about-section';
@@ -38,6 +39,8 @@ export default async function HomePage() {
           __html: JSON.stringify(organizationJsonLd).replace(/</g, '\\u003c'),
         }}
       />
+
+      <AiOrbCompanion />
 
       <HomeHero profile={profile} translations={translations} locale={locale} />
 

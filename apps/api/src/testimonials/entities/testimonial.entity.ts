@@ -1,4 +1,4 @@
-import type { TestimonialSource } from '@devsure/contracts';
+import type { TestimonialHighlightIcon, TestimonialSource } from '@devsure/contracts';
 import {
   Column,
   CreateDateColumn,
@@ -19,6 +19,10 @@ export class Testimonial {
   @Column({ type: 'varchar', length: 150, nullable: true }) company!: string | null;
   @Column({ type: 'text' }) quote!: string;
   @Column({ type: 'varchar', length: 255, nullable: true }) avatar!: string | null;
+  @Column({ type: 'float', default: 5 }) rating!: number;
+  @Column({ name: 'highlight_text', type: 'varchar', length: 120, nullable: true }) highlightText!: string | null;
+  @Column({ name: 'highlight_icon', type: 'varchar', length: 20, nullable: true })
+  highlightIcon!: TestimonialHighlightIcon | null;
   @Column({ type: 'varchar', length: 20, nullable: true }) source!: TestimonialSource | null;
   @Column({ name: 'source_url', type: 'varchar', length: 500, nullable: true }) sourceUrl!: string | null;
   @Column({ name: 'sort_order', type: 'integer', default: 0 }) sortOrder!: number;

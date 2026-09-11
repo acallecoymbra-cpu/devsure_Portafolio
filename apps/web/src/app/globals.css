@@ -1606,9 +1606,89 @@ input {
   scroll-margin-top: 5rem;
 }
 
+.testimonials-heading {
+  text-align: center;
+}
+
+.testimonials-heading h2 {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 26ch;
+}
+
+.testimonials-intro {
+  color: var(--muted);
+  margin: 0 auto;
+  max-width: 34rem;
+}
+
+.testimonials-carousel {
+  align-items: stretch;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.testimonials-nav {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--accent-soft);
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 1.3rem;
+  height: 2.4rem;
+  justify-content: center;
+  line-height: 1;
+  transition:
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out);
+  width: 2.4rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .testimonials-nav:hover {
+    background: rgba(60, 216, 197, 0.12);
+    border-color: var(--accent);
+  }
+}
+
+@media (min-width: 48rem) {
+  .testimonials-nav {
+    height: 3rem;
+    width: 3rem;
+  }
+}
+
+.testimonials-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.8rem;
+}
+
+.testimonials-dot {
+  background: rgba(148, 163, 184, 0.35);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 0.5rem;
+  padding: 0;
+  transition: all 220ms var(--ease-out);
+  width: 0.5rem;
+}
+
+.testimonials-dot.is-active {
+  background: var(--accent);
+  width: 1.6rem;
+}
+
 .testimonial-grid {
   display: grid;
+  flex: 1;
   gap: 1.1rem;
+  min-width: 0;
 }
 
 .testimonial-card {
@@ -1617,29 +1697,12 @@ input {
   border-radius: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1rem;
   justify-content: space-between;
   padding: 1.6rem;
 }
 
-.testimonial-quote {
-  color: var(--text);
-  font-size: 1.02rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.testimonial-quote::before {
-  color: var(--accent-soft);
-  content: '\201C';
-}
-
-.testimonial-quote::after {
-  color: var(--accent-soft);
-  content: '\201D';
-}
-
-.testimonial-author {
+.testimonial-card-header {
   align-items: center;
   display: flex;
   gap: 0.8rem;
@@ -1648,12 +1711,23 @@ input {
 .testimonial-avatar {
   background: var(--surface-raised);
   border-radius: 50%;
+  flex: 0 0 auto;
   height: 2.6rem;
   object-fit: cover;
   width: 2.6rem;
 }
 
+.testimonial-avatar--placeholder {
+  align-items: center;
+  color: var(--accent-soft);
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  justify-content: center;
+}
+
 .testimonial-author-name {
+  display: block;
   font-weight: 700;
 }
 
@@ -1661,6 +1735,94 @@ input {
   color: var(--muted);
   display: block;
   font-size: 0.82rem;
+}
+
+.testimonial-quote-icon {
+  color: var(--accent);
+  display: block;
+  font-size: 2.4rem;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.testimonial-quote {
+  color: var(--text);
+  flex: 1;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  margin: -0.6rem 0 0;
+}
+
+.testimonial-rating {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.testimonial-stars {
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.testimonial-star {
+  fill: none;
+  height: 1rem;
+  stroke: rgba(251, 191, 36, 0.4);
+  stroke-width: 1;
+  width: 1rem;
+}
+
+.testimonial-star.is-filled {
+  fill: #fbbf24;
+  stroke: #fbbf24;
+}
+
+.testimonial-rating-value {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.testimonial-tag {
+  align-items: center;
+  align-self: flex-start;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+}
+
+.testimonial-tag svg {
+  fill: none;
+  flex: 0 0 auto;
+  height: 0.9rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+  width: 0.9rem;
+}
+
+.testimonial-tag--delivery {
+  background: rgba(60, 216, 197, 0.14);
+  color: var(--accent-soft);
+}
+
+.testimonial-tag--quality {
+  background: rgba(96, 165, 250, 0.14);
+  color: #93c5fd;
+}
+
+.testimonial-tag--infrastructure {
+  background: rgba(167, 139, 250, 0.14);
+  color: #c4b5fd;
+}
+
+.testimonial-tag--support {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fcd34d;
 }
 
 .process-section {
@@ -2472,6 +2634,74 @@ input {
   .blog-card-image img,
   .client-logo-item img,
   .faq-item summary {
+    transition: none;
+  }
+}
+
+/*
+ * Floating "AI companion" video (home page only, see AiOrbCompanion) that
+ * sits just outside the `.shell` content column's own edge (not the
+ * viewport edge) and slides between the right/left edge as `data-side`
+ * changes, so it reads as "beside the text" rather than "pinned to the
+ * corner of the screen".
+ *
+ * `--content-gutter` mirrors `.shell`'s own
+ * `max(1rem, (100vw - var(--max-width)) / 2)` padding formula exactly, so
+ * `left`/`right` below always land `--gap` past whatever `.shell`'s real
+ * rendered edge is — including sections like "Nosotros" whose heading runs
+ * flush to that edge with no card/box buffering it — regardless of how
+ * `--orb-size` itself gets clamped. (Deriving both from the same formula,
+ * rather than mirroring one side into the other via `100vw` + `transform`,
+ * also sidesteps the few-px drift `100vw` vs. the real scrollbar-adjusted
+ * viewport can otherwise introduce.) Below ~100rem that gutter collapses
+ * toward `.shell`'s 1rem floor, too tight to fit anything beside the
+ * content, so the companion simply doesn't render.
+ */
+.ai-orb-companion {
+  --content-gutter: max(1rem, calc((100vw - var(--max-width)) / 2));
+  --gap: 2rem;
+  --orb-size: 25rem;
+  bottom: auto;
+  display: none;
+  height: var(--orb-size);
+  left: calc(100vw - var(--content-gutter) + var(--gap));
+  pointer-events: none;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left 700ms var(--ease-in-out);
+  width: var(--orb-size);
+  z-index: 9;
+}
+
+.ai-orb-companion[data-side='left'] {
+  left: calc(var(--content-gutter) - var(--gap) - var(--orb-size));
+}
+
+.ai-orb-companion-video {
+  display: block;
+  height: 100%;
+  /* The clip's own footage is a dark server room — `screen` drops those
+     near-black pixels out entirely (screen-blending with black is a no-op),
+     so only the glowing orb reads against the page, with no visible video
+     rectangle/circle behind it. The mask then feathers that glow's own edge
+     to fully transparent instead of a hard circular cutoff. */
+  mask-image: radial-gradient(circle, #000 55%, transparent 78%);
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 78%);
+  mix-blend-mode: screen;
+  object-fit: cover;
+  width: 100%;
+}
+
+@media (min-width: 100rem) {
+  .ai-orb-companion {
+    display: block;
+    --orb-size: clamp(8rem, calc(var(--content-gutter) - var(--gap) - 1rem), 25rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-orb-companion {
     transition: none;
   }
 }

@@ -7,6 +7,7 @@ import { CreateAdminAuth1788480000000 } from '../database/migrations/17884800000
 import { RequireAdminPasswordChange1788739200000 } from '../database/migrations/1788739200000-RequireAdminPasswordChange';
 import { AddAdminUsername1788825600000 } from '../database/migrations/1788825600000-AddAdminUsername';
 import { CreateTestimonials1789689600000 } from '../database/migrations/1789689600000-CreateTestimonials';
+import { AddTestimonialHighlights1790121600000 } from '../database/migrations/1790121600000-AddTestimonialHighlights';
 import { Testimonial } from './entities/testimonial.entity';
 import { TestimonialsService } from './testimonials.service';
 import { CreateTestimonialDto } from './dto/testimonial.dto';
@@ -28,6 +29,7 @@ describe('TestimonialsService', () => {
         RequireAdminPasswordChange1788739200000,
         AddAdminUsername1788825600000,
         CreateTestimonials1789689600000,
+        AddTestimonialHighlights1790121600000,
       ],
     });
     await dataSource.initialize();
@@ -53,10 +55,12 @@ describe('TestimonialsService', () => {
 
   it('creates a testimonial with the owner injected and defaults applied', async () => {
     const created = await service.create(ownerId, minimalInput());
-    expect(created).toMatchObject({ author: 'Jane Doe', quote: 'Great work.', sortOrder: 0 });
+    expect(created).toMatchObject({ author: 'Jane Doe', quote: 'Great work.', sortOrder: 0, rating: 5 });
     expect(created).not.toHaveProperty('role');
     expect(created).not.toHaveProperty('company');
     expect(created).not.toHaveProperty('avatar');
+    expect(created).not.toHaveProperty('highlightText');
+    expect(created).not.toHaveProperty('highlightIcon');
     expect(created).not.toHaveProperty('source');
     expect(created).not.toHaveProperty('sourceUrl');
   });
@@ -68,6 +72,9 @@ describe('TestimonialsService', () => {
         role: 'CTO',
         company: 'Acme Inc.',
         avatar: 'testimonials/jane.png',
+        rating: 4.8,
+        highlightText: 'Proyecto completado con éxito',
+        highlightIcon: 'delivery',
         source: 'linkedin',
         sourceUrl: 'https://linkedin.com/in/jane',
         sortOrder: 3,
@@ -77,6 +84,9 @@ describe('TestimonialsService', () => {
       role: 'CTO',
       company: 'Acme Inc.',
       avatar: 'testimonials/jane.png',
+      rating: 4.8,
+      highlightText: 'Proyecto completado con éxito',
+      highlightIcon: 'delivery',
       source: 'linkedin',
       sourceUrl: 'https://linkedin.com/in/jane',
       sortOrder: 3,

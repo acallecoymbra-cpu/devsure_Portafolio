@@ -347,6 +347,10 @@ export interface FaqInput {
 export const TESTIMONIAL_SOURCES = ['workana', 'linkedin', 'upwork', 'email', 'other'] as const;
 export type TestimonialSource = (typeof TESTIMONIAL_SOURCES)[number];
 
+/** Backs the colored result badge on the public testimonial card (icon + label pair chosen in admin). */
+export const TESTIMONIAL_HIGHLIGHT_ICONS = ['delivery', 'quality', 'infrastructure', 'support'] as const;
+export type TestimonialHighlightIcon = (typeof TESTIMONIAL_HIGHLIGHT_ICONS)[number];
+
 export interface Testimonial {
   id: string;
   author: string;
@@ -354,6 +358,9 @@ export interface Testimonial {
   company?: string;
   quote: string;
   avatar?: string;
+  rating: number;
+  highlightText?: string;
+  highlightIcon?: TestimonialHighlightIcon;
   source?: TestimonialSource;
   sourceUrl?: string;
   sortOrder: number;
@@ -367,6 +374,9 @@ export interface TestimonialInput {
   company?: string;
   quote: string;
   avatar?: string;
+  rating?: number;
+  highlightText?: string;
+  highlightIcon?: TestimonialHighlightIcon;
   source?: TestimonialSource;
   sourceUrl?: string;
   sortOrder?: number;

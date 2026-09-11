@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { AdminApiError, createTestimonial, getTestimonial, updateTestimonial } from '../api/admin-api';
-import { TESTIMONIAL_SOURCES } from '../types';
+import { TESTIMONIAL_HIGHLIGHT_ICONS, TESTIMONIAL_SOURCES } from '../types';
 import type { Testimonial, TestimonialInput } from '../types';
 import { FileUploadField } from './file-upload-field';
 import styles from '../admin.module.css';
@@ -15,6 +15,13 @@ const SOURCE_LABELS: Record<string, string> = {
   upwork: 'Upwork',
   email: 'Correo electrónico',
   other: 'Otro',
+};
+
+const HIGHLIGHT_ICON_LABELS: Record<string, string> = {
+  delivery: 'Entrega (maletín)',
+  quality: 'Calidad y velocidad (gráfico)',
+  infrastructure: 'Infraestructura y escalabilidad (cohete)',
+  support: 'Soporte y confianza (acuerdo)',
 };
 
 interface TestimonialFormProps {
@@ -138,6 +145,38 @@ export function TestimonialForm({ testimonial }: TestimonialFormProps) {
               <span>Orden</span>
               <input type="number" name="sortOrder" min={0} step={1} defaultValue={testimonial?.sortOrder ?? 0} />
             </label>
+            <label className={styles.field}>
+              <span>Calificación (1-5)</span>
+              <input
+                type="number"
+                name="rating"
+                min={1}
+                max={5}
+                step={0.1}
+                defaultValue={testimonial?.rating ?? 5}
+              />
+            </label>
+            <label className={styles.field}>
+              <span>Icono del resultado</span>
+              <select name="highlightIcon" defaultValue={testimonial?.highlightIcon ?? ''}>
+                <option value="">Sin etiqueta</option>
+                {TESTIMONIAL_HIGHLIGHT_ICONS.map((value) => (
+                  <option key={value} value={value}>
+                    {HIGHLIGHT_ICON_LABELS[value] ?? value}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.field}>
+              <span>Texto del resultado</span>
+              <input
+                name="highlightText"
+                defaultValue={testimonial?.highlightText}
+                maxLength={120}
+                placeholder="Proyecto completado con éxito"
+                autoComplete="off"
+              />
+            </label>
             <div className={styles.fullField}>
               <FileUploadField
                 label="Avatar"
@@ -174,6 +213,8 @@ function formDataToInput(data: FormData): TestimonialInput {
   const role = String(data.get('role') ?? '').trim();
   const company = String(data.get('company') ?? '').trim();
   const avatar = String(data.get('avatar') ?? '').trim();
+  const highlightText = String(data.get('highlightText') ?? '').trim();
+  const highlightIcon = String(data.get('highlightIcon') ?? '').trim();
   const source = String(data.get('source') ?? '').trim();
   const sourceUrl = String(data.get('sourceUrl') ?? '').trim();
 
@@ -183,6 +224,9 @@ function formDataToInput(data: FormData): TestimonialInput {
     ...(role ? { role } : {}),
     ...(company ? { company } : {}),
     ...(avatar ? { avatar } : {}),
+    rating: Number(data.get('rating') ?? 5),
+    ...(highlightText ? { highlightText } : {}),
+    ...(highlightIcon ? { highlightIcon: highlightIcon as TestimonialInput['highlightIcon'] } : {}),
     ...(source ? { source: source as TestimonialInput['source'] } : {}),
     ...(sourceUrl ? { sourceUrl } : {}),
     sortOrder: Number(data.get('sortOrder') ?? 0),

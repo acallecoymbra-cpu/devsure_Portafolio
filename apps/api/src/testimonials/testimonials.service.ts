@@ -41,6 +41,9 @@ export class TestimonialsService {
       company: input.company || null,
       quote: input.quote,
       avatar: input.avatar || null,
+      rating: input.rating ?? 5,
+      highlightText: input.highlightText || null,
+      highlightIcon: input.highlightIcon ?? null,
       source: input.source ?? null,
       sourceUrl: input.sourceUrl || null,
       sortOrder: input.sortOrder ?? 0,
@@ -55,6 +58,9 @@ export class TestimonialsService {
     if (input.company !== undefined) entity.company = input.company || null;
     if (input.quote !== undefined) entity.quote = input.quote;
     if (input.avatar !== undefined) entity.avatar = input.avatar || null;
+    if (input.rating !== undefined) entity.rating = input.rating;
+    if (input.highlightText !== undefined) entity.highlightText = input.highlightText || null;
+    if (input.highlightIcon !== undefined) entity.highlightIcon = input.highlightIcon ?? null;
     if (input.source !== undefined) entity.source = input.source ?? null;
     if (input.sourceUrl !== undefined) entity.sourceUrl = input.sourceUrl || null;
     if (input.sortOrder !== undefined) entity.sortOrder = input.sortOrder;
@@ -81,6 +87,9 @@ function toTestimonial(entity: Testimonial): TestimonialContract {
     ...(entity.company ? { company: entity.company } : {}),
     quote: entity.quote,
     ...(entity.avatar ? { avatar: entity.avatar } : {}),
+    rating: entity.rating,
+    ...(entity.highlightText ? { highlightText: entity.highlightText } : {}),
+    ...(entity.highlightIcon ? { highlightIcon: entity.highlightIcon } : {}),
     ...(entity.source ? { source: entity.source } : {}),
     ...(entity.sourceUrl ? { sourceUrl: entity.sourceUrl } : {}),
     sortOrder: entity.sortOrder,

@@ -1,10 +1,23 @@
-import type { Testimonial, TestimonialInput, TestimonialSource } from '@devsure/contracts';
+import type { Testimonial, TestimonialHighlightIcon, TestimonialInput, TestimonialSource } from '@devsure/contracts';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { IsIn, IsInt, IsString, IsUrl, Length, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsString,
+  IsUrl,
+  Length,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { PaginationMetaDto } from '../../technologies/dto/technology-response.dto';
 
 /** Kept local, not imported from @devsure/contracts, to avoid the ESM/CJS runtime-import issue under Jest (see SUPPORTED_LOCALES precedent). */
 const TESTIMONIAL_SOURCES = ['workana', 'linkedin', 'upwork', 'email', 'other'] as const;
+const TESTIMONIAL_HIGHLIGHT_ICONS = ['delivery', 'quality', 'infrastructure', 'support'] as const;
 
 const optional = () => ValidateIf((_object: object, value: unknown) => value !== undefined);
 
@@ -29,6 +42,18 @@ export class CreateTestimonialDto implements TestimonialInput {
   @optional() @IsString() @MaxLength(255)
   avatar?: string;
 
+  @ApiPropertyOptional({ minimum: 1, maximum: 5, default: 5 })
+  @optional() @IsNumber({ maxDecimalPlaces: 1 }) @Min(1) @Max(5)
+  rating?: number;
+
+  @ApiPropertyOptional({ maxLength: 120 })
+  @optional() @IsString() @MaxLength(120)
+  highlightText?: string;
+
+  @ApiPropertyOptional({ enum: TESTIMONIAL_HIGHLIGHT_ICONS })
+  @optional() @IsIn(TESTIMONIAL_HIGHLIGHT_ICONS)
+  highlightIcon?: TestimonialHighlightIcon;
+
   @ApiPropertyOptional({ enum: TESTIMONIAL_SOURCES })
   @optional() @IsIn(TESTIMONIAL_SOURCES)
   source?: TestimonialSource;
@@ -51,6 +76,9 @@ export class TestimonialDto implements Testimonial {
   @ApiPropertyOptional() company?: string;
   @ApiProperty() quote!: string;
   @ApiPropertyOptional() avatar?: string;
+  @ApiProperty({ minimum: 1, maximum: 5 }) rating!: number;
+  @ApiPropertyOptional() highlightText?: string;
+  @ApiPropertyOptional({ enum: TESTIMONIAL_HIGHLIGHT_ICONS }) highlightIcon?: TestimonialHighlightIcon;
   @ApiPropertyOptional({ enum: TESTIMONIAL_SOURCES }) source?: TestimonialSource;
   @ApiPropertyOptional() sourceUrl?: string;
   @ApiProperty() sortOrder!: number;

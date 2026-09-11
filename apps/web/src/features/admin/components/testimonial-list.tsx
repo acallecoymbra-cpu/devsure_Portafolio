@@ -128,6 +128,7 @@ export function TestimonialList() {
                 <tr>
                   <th scope="col">Autor</th>
                   <th scope="col">Empresa</th>
+                  <th scope="col">Calificación</th>
                   <th scope="col">Fuente</th>
                   <th scope="col">Orden</th>
                   <th scope="col"><span className={styles.srOnly}>Acciones</span></th>
@@ -141,6 +142,7 @@ export function TestimonialList() {
                       {testimonial.role ? <small>{testimonial.role}</small> : null}
                     </td>
                     <td data-label="Empresa">{testimonial.company ?? '—'}</td>
+                    <td data-label="Calificación">{testimonial.rating.toFixed(1)}</td>
                     <td data-label="Fuente">{testimonial.source ?? '—'}</td>
                     <td data-label="Orden">{testimonial.sortOrder}</td>
                     <td className={styles.rowActions}>

@@ -48,6 +48,7 @@ export type {
   Testimonial,
   TestimonialInput,
   TestimonialSource,
+  TestimonialHighlightIcon,
   Post,
   PostInput,
   PostCategory,
@@ -55,7 +56,7 @@ export type {
   ClientLogoInput,
 } from '@devsure/contracts';
 
-export { TESTIMONIAL_SOURCES } from '@devsure/contracts';
+export { TESTIMONIAL_SOURCES, TESTIMONIAL_HIGHLIGHT_ICONS } from '@devsure/contracts';
 
 export { POST_CATEGORIES } from '@devsure/contracts';
 
