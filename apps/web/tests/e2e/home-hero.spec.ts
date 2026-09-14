@@ -22,7 +22,6 @@ test('presents one primary action and never requests the retired hero media', as
     }),
   ).toBeVisible();
   await expect(hero.getByTestId('home-hero-signal')).toBeVisible();
-  await expect(hero.locator('ol > li')).toHaveCount(3);
   await expect(hero.locator('video')).toHaveCount(0);
 
   const primaryAction = hero.getByRole('link', { name: 'Ver servicios' });

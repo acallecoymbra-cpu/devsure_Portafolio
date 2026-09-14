@@ -193,6 +193,16 @@ export function ProfileForm() {
                 helpText="PNG, JPEG, WEBP o SVG, hasta 1 MB. Idealmente con fondo transparente. Va al lado del icono; mientras no se suba, se muestra el texto 'DevSure'."
               />
             </div>
+            <div className={styles.fullField}>
+              <FileUploadField
+                label="Visual del hero (imagen)"
+                folder="hero-visual"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                hiddenName="heroVisual"
+                value={profile.heroVisual}
+                helpText="PNG, JPEG, WEBP o SVG, hasta 4 MB. Ilustración decorativa junto al título de la home; mientras no se suba, se muestra el orbe animado."
+              />
+            </div>
           </div>
         </fieldset>
 
@@ -376,6 +386,7 @@ function formDataToInput(
   const avatar = String(data.get('avatar') ?? '').trim();
   const logo = String(data.get('logo') ?? '').trim();
   const logoWordmark = String(data.get('logoWordmark') ?? '').trim();
+  const heroVisual = String(data.get('heroVisual') ?? '').trim();
   const phone = String(data.get('phone') ?? '').trim();
   const address = String(data.get('address') ?? '').trim();
   const businessHours = String(data.get('businessHours') ?? '').trim();
@@ -389,6 +400,7 @@ function formDataToInput(
     ...(avatar ? { avatar } : {}),
     ...(logo ? { logo } : {}),
     ...(logoWordmark ? { logoWordmark } : {}),
+    ...(heroVisual ? { heroVisual } : {}),
     ...(phone ? { phone } : {}),
     ...(address ? { address } : {}),
     ...(businessHours ? { businessHours } : {}),

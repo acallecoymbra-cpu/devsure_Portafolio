@@ -66,6 +66,7 @@ export class Profile {
   // reads the same in every locale.
   @Column({ type: 'varchar', length: 255, nullable: true }) logo!: string | null;
   @Column({ name: 'logo_wordmark', type: 'varchar', length: 255, nullable: true }) logoWordmark!: string | null;
+  @Column({ name: 'hero_visual', type: 'varchar', length: 255, nullable: true }) heroVisual!: string | null;
   @Column({ type: 'varchar', length: 40, nullable: true }) phone!: string | null;
   @Column({ type: 'varchar', length: 255, nullable: true }) address!: string | null;
   @Column({ name: 'business_hours', type: 'varchar', length: 255, nullable: true }) businessHours!: string | null;

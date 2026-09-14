@@ -11,6 +11,7 @@ import { AddProfileTranslations1788998400000 } from '../1788998400000-AddProfile
 import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
 import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
 import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
+import { AddProfileHeroVisual1790380800000 } from '../1790380800000-AddProfileHeroVisual';
 
 describe('profile logo wordmark migration (up/down/up)', () => {
   let dataSource: DataSource;
@@ -52,8 +53,38 @@ describe('profile logo wordmark migration (up/down/up)', () => {
     expect(await columns()).toEqual(expect.arrayContaining(['logo_wordmark']));
   });
 
-  it('persists and reloads logoWordmark through the Profile entity', async () => {
+});
+
+describe('profile logo wordmark migration (data integrity, with hero visual applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [AdminUser, AdminSession, Profile],
+      migrations: [
+        CreateAdminAuth1788480000000,
+        RequireAdminPasswordChange1788739200000,
+        AddAdminUsername1788825600000,
+        CreateProfiles1788912000000,
+        AddProfileTranslations1788998400000,
+        AddProfileStats1789948800000,
+        AddProfileFooterFields1790208000000,
+        AddProfileLogoWordmark1790294400000,
+        AddProfileHeroVisual1790380800000,
+      ],
+    });
+    await dataSource.initialize();
     await dataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
+  });
+
+  it('persists and reloads logoWordmark through the Profile entity', async () => {
     const { id: ownerId } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',

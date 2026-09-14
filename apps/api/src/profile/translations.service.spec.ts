@@ -10,6 +10,7 @@ import { AddProfileTranslations1788998400000 } from '../database/migrations/1788
 import { AddProfileStats1789948800000 } from '../database/migrations/1789948800000-AddProfileStats';
 import { AddProfileFooterFields1790208000000 } from '../database/migrations/1790208000000-AddProfileFooterFields';
 import { AddProfileLogoWordmark1790294400000 } from '../database/migrations/1790294400000-AddProfileLogoWordmark';
+import { AddProfileHeroVisual1790380800000 } from '../database/migrations/1790380800000-AddProfileHeroVisual';
 import { Profile } from './entities/profile.entity';
 import { TranslationsService } from './translations.service';
 
@@ -33,6 +34,7 @@ describe('TranslationsService', () => {
         AddProfileStats1789948800000,
         AddProfileFooterFields1790208000000,
         AddProfileLogoWordmark1790294400000,
+        AddProfileHeroVisual1790380800000,
       ],
     });
     await dataSource.initialize();

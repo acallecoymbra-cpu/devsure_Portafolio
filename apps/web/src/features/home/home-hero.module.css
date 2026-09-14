@@ -77,6 +77,42 @@
   transition: transform 180ms var(--ease-out);
 }
 
+.orbCard {
+  align-items: center;
+  animation: hero-enter 620ms 100ms var(--ease-out) both;
+  display: flex;
+  justify-content: center;
+  justify-self: center;
+  position: relative;
+  width: min(100%, 30rem);
+}
+
+.orbCanvas {
+  aspect-ratio: 1;
+  width: 100%;
+}
+
+/*
+ * The uploaded hero visual (as opposed to `.orbCard`, the procedural orb's
+ * own grid slot) isn't meant to share column width with `.copy` — sharing a
+ * column is what was squeezing the headline narrow. Instead it sits behind
+ * the copy text (z-index 1 vs. `.layout`'s 2) and, from `64rem` up, breaks
+ * out of the grid entirely via `position: absolute` so it can be large
+ * without taking space away from the text column at all. Below that
+ * breakpoint there's no room to overlap anything behind the text without
+ * hurting legibility, so it stays in normal flow underneath at a modest
+ * size instead.
+ */
+.heroVisual {
+  display: block;
+  height: auto;
+  margin: 2rem auto 0;
+  max-width: 26rem;
+  position: relative;
+  width: 90%;
+  z-index: 1;
+}
+
 .signalCard {
   animation: hero-enter 620ms 100ms var(--ease-out) both;
   background:
@@ -315,6 +351,22 @@
     justify-self: end;
     width: min(100%, 30rem);
   }
+
+  .orbCard {
+    justify-self: end;
+    width: min(100%, 32rem);
+  }
+
+  .heroVisual {
+    height: min(72%, 40rem);
+    left: calc(max(1rem, (100vw - var(--max-width)) / 2) + 38rem);
+    margin: 0;
+    max-width: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+  }
 }
 
 @keyframes hero-enter {
@@ -418,6 +470,7 @@
   .copy,
   .environmentGlow,
   .signalCard,
+  .orbCard,
   .signalResult span::after,
   .signalSteps li,
   .pathDraw,

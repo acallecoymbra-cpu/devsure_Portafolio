@@ -81,6 +81,11 @@ export class UpdateProfileDto implements UpdateProfileInput {
   @IsString() @MaxLength(255)
   logoWordmark?: string;
 
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  heroVisual?: string;
+
   @ApiPropertyOptional({ maxLength: 40 })
   @ValidateIf((_object, value) => value !== undefined)
   @IsString() @MaxLength(40)
@@ -122,6 +127,7 @@ export class ProfileDto implements Profile {
   @ApiProperty() defaultLocale!: string;
   @ApiPropertyOptional() logo?: string;
   @ApiPropertyOptional() logoWordmark?: string;
+  @ApiPropertyOptional() heroVisual?: string;
   @ApiPropertyOptional() phone?: string;
   @ApiPropertyOptional() address?: string;
   @ApiPropertyOptional() businessHours?: string;

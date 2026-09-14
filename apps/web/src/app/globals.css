@@ -2808,9 +2808,14 @@ input {
   transform: translateY(-50%);
   transition:
     left 700ms var(--ease-in-out),
-    right 700ms var(--ease-in-out);
+    right 700ms var(--ease-in-out),
+    opacity 400ms var(--ease-in-out);
   width: var(--orb-size);
   z-index: 9;
+}
+
+.ai-orb-companion[data-hidden='true'] {
+  opacity: 0;
 }
 
 .ai-orb-companion[data-side='left'] {

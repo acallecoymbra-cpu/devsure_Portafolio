@@ -23,6 +23,7 @@ export const FOLDER_CONFIG: Readonly<Record<UploadFolder, FolderConfig>> = {
   'network-icons': { directory: 'network-icons', maxBytes: 512 * 1024, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
   'client-logos': { directory: 'client-logos', maxBytes: 512 * 1024, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
   'site-logo': { directory: 'site-logo', maxBytes: 1 * MB, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
+  'hero-visual': { directory: 'hero-visual', maxBytes: 4 * MB, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
 };
 
 export const UPLOAD_FOLDER_KEYS = Object.keys(FOLDER_CONFIG) as UploadFolder[];

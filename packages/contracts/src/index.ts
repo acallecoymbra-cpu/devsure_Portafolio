@@ -111,6 +111,8 @@ export interface Profile {
   logo?: string;
   /** Site-wide "DevSure" wordmark image, shown beside `logo`; falls back to plain text while unset. */
   logoWordmark?: string;
+  /** Decorative hero visual (home page); falls back to the procedural orb while unset. */
+  heroVisual?: string;
   phone?: string;
   address?: string;
   businessHours?: string;
@@ -131,6 +133,7 @@ export interface UpdateProfileInput {
   defaultLocale?: string;
   logo?: string;
   logoWordmark?: string;
+  heroVisual?: string;
   phone?: string;
   address?: string;
   businessHours?: string;
@@ -185,7 +188,8 @@ export type UploadFolder =
   | 'posts-covers'
   | 'network-icons'
   | 'client-logos'
-  | 'site-logo';
+  | 'site-logo'
+  | 'hero-visual';
 
 export interface UploadResult {
   path: string;
