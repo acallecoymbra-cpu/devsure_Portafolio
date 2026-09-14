@@ -481,6 +481,28 @@ export interface ClientLogoInput {
   sortOrder?: number;
 }
 
+/** Fixed vertical menu on the far right edge of every page (spec follow-up). */
+export interface SocialLink {
+  id: string;
+  name: string;
+  url: string;
+  /** Selects the bundled glyph (e.g. 'facebook', 'linkedin') shown until `icon` is set. */
+  iconKey: string;
+  /** Admin-uploaded PNG/SVG icon; overrides the bundled glyph when set. */
+  icon?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SocialLinkInput {
+  name: string;
+  url: string;
+  iconKey: string;
+  icon?: string;
+  sortOrder?: number;
+}
+
 /**
  * Single aggregate read for the public home page (spec §10.7, §12): every
  * section the home renders in one request, in the order the page shows them
@@ -493,6 +515,7 @@ export interface PublicPortfolio {
   profile: Profile;
   translations: Translations;
   clientLogos: ClientLogo[];
+  socialLinks: SocialLink[];
   experiences: Experience[];
   projects: Project[];
   studies: Study[];

@@ -47,6 +47,7 @@ export default async function RootLayout({
           profile={siteChrome?.profile}
           services={siteChrome?.services}
           translations={siteChrome?.translations}
+          socialLinks={siteChrome?.socialLinks}
           locale={siteChrome?.locale}
         >
           {children}

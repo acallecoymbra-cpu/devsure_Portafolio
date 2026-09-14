@@ -4,6 +4,7 @@ import { SingleOwnerService } from '../common/single-owner.service';
 import { ProfileService } from '../profile/profile.service';
 import { TranslationsService } from '../profile/translations.service';
 import { ClientLogosService } from '../client-logos/client-logos.service';
+import { SocialLinksService } from '../social-links/social-links.service';
 import { ExperiencesService } from '../experiences/experiences.service';
 import { ProjectsService } from '../projects/projects.service';
 import { StudiesService } from '../studies/studies.service';
@@ -25,6 +26,7 @@ export class PortfolioService {
     private readonly profile: ProfileService,
     private readonly translations: TranslationsService,
     private readonly clientLogos: ClientLogosService,
+    private readonly socialLinks: SocialLinksService,
     private readonly experiences: ExperiencesService,
     private readonly projects: ProjectsService,
     private readonly studies: StudiesService,
@@ -49,6 +51,7 @@ export class PortfolioService {
     const [
       translations,
       clientLogos,
+      socialLinks,
       experiences,
       projects,
       studies,
@@ -61,6 +64,7 @@ export class PortfolioService {
     ] = await Promise.all([
       this.translations.get(ownerId),
       this.clientLogos.listAll(ownerId),
+      this.socialLinks.listAll(ownerId),
       this.experiences.list(ownerId, LIST_ALL).then((page) => page.items),
       this.projects.list(ownerId, { ...LIST_ALL, featured: true, published: 'published' }).then((page) => page.items),
       this.studies.list(ownerId, LIST_ALL).then((page) => page.items),
@@ -78,6 +82,7 @@ export class PortfolioService {
       profile,
       translations,
       clientLogos,
+      socialLinks,
       experiences,
       projects,
       studies,

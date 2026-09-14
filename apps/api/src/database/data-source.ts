@@ -15,6 +15,7 @@ import { Faq } from '../faqs/entities/faq.entity';
 import { Testimonial } from '../testimonials/entities/testimonial.entity';
 import { Post } from '../posts/entities/post.entity';
 import { ClientLogo } from '../client-logos/entities/client-logo.entity';
+import { SocialLink } from '../social-links/entities/social-link.entity';
 
 const environment = validateEnvironment(process.env);
 
@@ -25,5 +26,5 @@ export default new DataSource({
   synchronize: false,
   migrationsRun: false,
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
-  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo],
+  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo, SocialLink],
 });

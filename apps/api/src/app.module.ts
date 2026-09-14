@@ -32,6 +32,8 @@ import { PostsModule } from './posts/posts.module';
 import { Post } from './posts/entities/post.entity';
 import { ClientLogosModule } from './client-logos/client-logos.module';
 import { ClientLogo } from './client-logos/entities/client-logo.entity';
+import { SocialLinksModule } from './social-links/social-links.module';
+import { SocialLink } from './social-links/entities/social-link.entity';
 import { PortfolioModule } from './portfolio/portfolio.module';
 
 @Module({
@@ -51,7 +53,7 @@ import { PortfolioModule } from './portfolio/portfolio.module';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo],
+        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo, SocialLink],
       }),
     }),
     HealthModule,
@@ -69,6 +71,7 @@ import { PortfolioModule } from './portfolio/portfolio.module';
     TestimonialsModule,
     PostsModule,
     ClientLogosModule,
+    SocialLinksModule,
     PortfolioModule,
   ],
 })

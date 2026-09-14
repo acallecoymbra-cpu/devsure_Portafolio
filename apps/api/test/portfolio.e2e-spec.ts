@@ -64,6 +64,9 @@ describe('Public portfolio (e2e)', () => {
     await admin('patch', '/api/v1/admin/profile').send({ name: 'DevSure', stats: [{ value: 8, suffix: '+', label: { en: 'Years' } }] }).expect(200);
     await admin('patch', '/api/v1/admin/translations').send({ heroTitle: { en: 'Reliable software' } }).expect(200);
     await admin('post', '/api/v1/admin/client-logos').send({ name: 'Acme Inc.', logo: 'client-logos/acme.png' }).expect(201);
+    await admin('post', '/api/v1/admin/social-links')
+      .send({ name: 'LinkedIn', url: 'https://www.linkedin.com/company/devsure', iconKey: 'linkedin' })
+      .expect(201);
     await admin('post', '/api/v1/admin/experiences')
       .send({ company: 'Acme Corp', levels: [{ role: 'Backend Engineer', startDate: '2024-01-01' }] })
       .expect(201);
@@ -102,6 +105,9 @@ describe('Public portfolio (e2e)', () => {
     expect(response.body.translations).toMatchObject({ heroTitle: { en: 'Reliable software' } });
     expect(response.body.clientLogos).toEqual(
       expect.arrayContaining([expect.objectContaining({ name: 'Acme Inc.' })]),
+    );
+    expect(response.body.socialLinks).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'LinkedIn', iconKey: 'linkedin' })]),
     );
     expect(response.body.experiences).toEqual(
       expect.arrayContaining([expect.objectContaining({ company: 'Acme Corp' })]),

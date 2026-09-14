@@ -220,6 +220,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <span aria-hidden="true">⌘</span>
             Tecnologías
           </Link>
+          <Link
+            href="/admin/social-links"
+            aria-current={pathname.startsWith('/admin/social-links') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">⤴</span>
+            Redes sociales
+          </Link>
         </nav>
         <div className={styles.sidebarAccount}>
           <span title={user?.email}>{user?.username}</span>

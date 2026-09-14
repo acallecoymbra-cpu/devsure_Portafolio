@@ -1,4 +1,4 @@
-import type { Profile, Service, Translations } from '@devsure/contracts';
+import type { Profile, Service, SocialLink, Translations } from '@devsure/contracts';
 import type { PublicPortfolio } from '@devsure/contracts';
 import { getApiBaseUrl } from '@/lib/config';
 
@@ -16,6 +16,7 @@ export interface SiteChromeData {
   profile: Profile;
   services: Service[];
   translations: Translations;
+  socialLinks: SocialLink[];
   locale: string;
 }
 
@@ -27,8 +28,8 @@ export interface SiteChromeData {
  */
 export async function getSiteChromeData(): Promise<SiteChromeData | null> {
   try {
-    const { profile, services, translations } = await getPortfolio();
-    return { profile, services, translations, locale: profile.defaultLocale || 'es' };
+    const { profile, services, translations, socialLinks } = await getPortfolio();
+    return { profile, services, translations, socialLinks, locale: profile.defaultLocale || 'es' };
   } catch {
     return null;
   }

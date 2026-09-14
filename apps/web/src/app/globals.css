@@ -542,6 +542,66 @@ h3 {
   color: var(--accent-soft);
 }
 
+.social-links-menu {
+  display: none;
+}
+
+/* Fixed vertical stack pinned to the far right edge (reference: qalified.com's
+   `.redes.redes-menu.just-lg`), vertically centered and always visible while
+   scrolling. Hidden below `lg` — mobile already has the WhatsApp button and
+   the Ultron orb competing for the right edge, and the reference site hides
+   its own menu at that breakpoint too. */
+@media (min-width: 64rem) {
+  .social-links-menu {
+    display: block;
+    position: fixed;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 45;
+  }
+}
+
+.social-links-menu ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.social-links-menu a {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  display: flex;
+  height: 2.5rem;
+  justify-content: center;
+  transition: color 200ms var(--ease-out), transform 200ms var(--ease-out), border-color 200ms var(--ease-out);
+  width: 2.5rem;
+}
+
+.social-links-menu a img {
+  height: 1.1rem;
+  width: 1.1rem;
+}
+
+.social-links-menu a:hover,
+.social-links-menu a:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-soft);
+  transform: scale(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-links-menu a {
+    transition: none;
+  }
+}
+
 .whatsapp-button {
   align-items: center;
   background: #25d366;

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminUser } from '../auth/entities/admin-user.entity';
 import { Profile } from '../profile/entities/profile.entity';
 import { ClientLogo } from '../client-logos/entities/client-logo.entity';
+import { SocialLink } from '../social-links/entities/social-link.entity';
 import { Experience } from '../experiences/entities/experience.entity';
 import { Project } from '../projects/entities/project.entity';
 import { Study } from '../studies/entities/study.entity';
@@ -18,6 +19,7 @@ import { SingleOwnerService } from '../common/single-owner.service';
 import { ProfileService } from '../profile/profile.service';
 import { TranslationsService } from '../profile/translations.service';
 import { ClientLogosService } from '../client-logos/client-logos.service';
+import { SocialLinksService } from '../social-links/social-links.service';
 import { ExperiencesService } from '../experiences/experiences.service';
 import { ProjectsService } from '../projects/projects.service';
 import { StudiesService } from '../studies/studies.service';
@@ -41,6 +43,7 @@ import { PostsService } from '../posts/posts.service';
       AdminUser,
       Profile,
       ClientLogo,
+      SocialLink,
       Experience,
       Project,
       Study,
@@ -59,6 +62,7 @@ import { PostsService } from '../posts/posts.service';
     ProfileService,
     TranslationsService,
     ClientLogosService,
+    SocialLinksService,
     ExperiencesService,
     ProjectsService,
     StudiesService,

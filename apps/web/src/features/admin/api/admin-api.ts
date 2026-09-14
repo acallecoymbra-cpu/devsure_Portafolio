@@ -19,6 +19,9 @@ import type {
   ServiceContent,
   ServiceInput,
   ServicePage,
+  SocialLink,
+  SocialLinkInput,
+  SocialLinkPage,
   Strength,
   StrengthInput,
   StrengthPage,
@@ -442,6 +445,34 @@ export function updateClientLogo(id: string, input: Partial<ClientLogoInput>): P
 
 export function deleteClientLogo(id: string): Promise<void> {
   return request<void>(`/admin/client-logos/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listSocialLinks(page = 1, limit = 50): Promise<SocialLinkPage> {
+  return request<SocialLinkPage>(`/admin/social-links?page=${page}&limit=${limit}`);
+}
+
+export function getSocialLink(id: string): Promise<SocialLink> {
+  return request<SocialLink>(`/admin/social-links/${encodeURIComponent(id)}`);
+}
+
+export function createSocialLink(input: SocialLinkInput): Promise<SocialLink> {
+  return request<SocialLink>('/admin/social-links', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateSocialLink(id: string, input: Partial<SocialLinkInput>): Promise<SocialLink> {
+  return request<SocialLink>(`/admin/social-links/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteSocialLink(id: string): Promise<void> {
+  return request<void>(`/admin/social-links/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

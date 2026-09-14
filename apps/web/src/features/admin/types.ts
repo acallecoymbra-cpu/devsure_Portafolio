@@ -7,6 +7,7 @@
   Post,
   Project,
   Service,
+  SocialLink,
   Strength,
   Study,
   Testimonial,
@@ -54,6 +55,8 @@ export type {
   PostCategory,
   ClientLogo,
   ClientLogoInput,
+  SocialLink,
+  SocialLinkInput,
 } from '@devsure/contracts';
 
 export { TESTIMONIAL_SOURCES, TESTIMONIAL_HIGHLIGHT_ICONS } from '@devsure/contracts';
@@ -73,3 +76,4 @@ export type FaqPage = PaginatedResponse<Faq>;
 export type TestimonialPage = PaginatedResponse<Testimonial>;
 export type PostPage = PaginatedResponse<Post>;
 export type ClientLogoPage = PaginatedResponse<ClientLogo>;
+export type SocialLinkPage = PaginatedResponse<SocialLink>;
