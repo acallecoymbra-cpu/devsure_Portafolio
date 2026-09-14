@@ -114,10 +114,10 @@ export function ClientLogoForm({ clientLogo }: ClientLogoFormProps) {
               <FileUploadField
                 label="Logo"
                 folder="client-logos"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                accept="image/png"
                 hiddenName="logo"
                 value={clientLogo?.logo}
-                helpText="PNG, JPEG, WEBP o SVG, hasta 512 KB."
+                helpText="Solo PNG, hasta 512 KB. Usa fondo transparente para que se funda con la franja de logos."
               />
             </div>
           </div>

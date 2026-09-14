@@ -29,15 +29,6 @@ export function HomeHero({ profile, translations, locale }: HomeHeroProps) {
       <ParallaxBackground src="/photos/night-code.webp" priority />
       <span className={styles.environmentGlow} aria-hidden="true" data-testid="home-hero-glow" />
 
-      {profile.heroVisual ? (
-        <img
-          className={styles.heroVisual}
-          src={getStorageUrl(profile.heroVisual)}
-          alt=""
-          data-testid="home-hero-signal"
-        />
-      ) : null}
-
       <div className={`shell ${styles.layout}`}>
         <div className={styles.copy}>
           <p className="eyebrow">{eyebrow}</p>
@@ -60,6 +51,21 @@ export function HomeHero({ profile, translations, locale }: HomeHeroProps) {
           </div>
         )}
       </div>
+
+      {/* Rendered after `.copy` so on narrow screens (normal flow, no
+          absolute positioning below `64rem`) it lands below the hero text
+          instead of above it. On wide screens `position: absolute` pulls it
+          out of flow and its own explicit `z-index` — not DOM order —
+          decides the stacking against `.layout`, so moving it here doesn't
+          change the desktop look. */}
+      {profile.heroVisual ? (
+        <img
+          className={styles.heroVisual}
+          src={getStorageUrl(profile.heroVisual)}
+          alt=""
+          data-testid="home-hero-signal"
+        />
+      ) : null}
     </section>
   );
 }

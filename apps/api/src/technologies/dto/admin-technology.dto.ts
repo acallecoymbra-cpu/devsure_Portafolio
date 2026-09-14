@@ -9,6 +9,7 @@ export class CreateTechnologyDto implements TechnologyInput {
   @ApiProperty({ maxLength: 64 }) @IsString() @MaxLength(64) @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) category!: string;
   @ApiPropertyOptional({ maxLength: 300 }) @ValidateIf((_object, value) => value !== undefined) @IsString() @MaxLength(300) summary?: string;
   @ApiProperty({ maxLength: 64 }) @IsString() @MaxLength(64) @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) iconKey!: string;
+  @ApiPropertyOptional({ maxLength: 255 }) @ValidateIf((_object, value) => value !== undefined) @IsString() @MaxLength(255) icon?: string;
   @ApiProperty() @IsBoolean() featured!: boolean;
   @ApiProperty({ minimum: 0, maximum: 2147483647 }) @IsInt() @Min(0) @Max(2147483647) sortOrder!: number;
   @ApiProperty({ enum: ['draft', 'published'] }) @IsIn(['draft', 'published']) publicationStatus!: TechnologyPublicationStatus;

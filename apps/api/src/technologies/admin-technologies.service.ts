@@ -52,6 +52,7 @@ export class AdminTechnologiesService {
 export function toAdminTechnology(entity: Technology): AdminTechnology {
   return { id: entity.id, name: entity.name, slug: entity.slug, category: entity.category,
     ...(entity.summary === null ? {} : { summary: entity.summary }), iconKey: entity.iconKey,
+    ...(entity.icon ? { icon: entity.icon } : {}),
     featured: entity.featured, sortOrder: entity.sortOrder, publicationStatus: entity.publicationStatus,
     publishedAt: entity.publishedAt?.toISOString() ?? null, createdAt: entity.createdAt.toISOString(), updatedAt: entity.updatedAt.toISOString() };
 }

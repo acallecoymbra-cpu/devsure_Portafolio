@@ -20,6 +20,9 @@ export class TechnologyCardDto implements TechnologyCard {
   @ApiProperty({ example: 'code' })
   iconKey!: string;
 
+  @ApiPropertyOptional({ example: 'technology-icons/typescript.png' })
+  icon?: string;
+
   @ApiProperty({ example: false })
   featured!: boolean;
 

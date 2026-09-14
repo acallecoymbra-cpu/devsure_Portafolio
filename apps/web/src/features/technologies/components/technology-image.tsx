@@ -3,6 +3,7 @@
 import type { TechnologyCard } from '@devsure/contracts';
 import Image from 'next/image';
 import { useState } from 'react';
+import { getStorageUrl } from '@/lib/config';
 import { TechnologyIcon } from './technology-icon';
 
 export const TECHNOLOGY_IMAGE_BY_SLUG: Readonly<Record<string, string>> = {
@@ -50,23 +51,34 @@ export const TECHNOLOGY_IMAGE_BY_SLUG: Readonly<Record<string, string>> = {
 };
 
 export function TechnologyImage({ technology }: { technology: TechnologyCard }) {
-  const image = TECHNOLOGY_IMAGE_BY_SLUG[technology.slug];
+  // Admin-uploaded PNG (see the "Icono (imagen)" field in the technology
+  // form) wins when present; otherwise fall back to the bundled logo keyed
+  // by slug, then to the generic SVG badge keyed by `iconKey`.
+  const uploaded = technology.icon;
+  const bundled = TECHNOLOGY_IMAGE_BY_SLUG[technology.slug];
   const [failedImage, setFailedImage] = useState<string | null>(null);
-  const showImage = image !== undefined && image !== failedImage;
+  const showUploaded = uploaded !== undefined && uploaded !== failedImage;
+  const showBundled = !showUploaded && bundled !== undefined && bundled !== failedImage;
 
   return (
     <div
       className="technology-image"
       data-testid="technology-image"
-      data-image-status={showImage ? 'available' : 'fallback'}
+      data-image-status={showUploaded || showBundled ? 'available' : 'fallback'}
     >
-      {showImage ? (
+      {showUploaded ? (
+        // Plain `<img>`, not `next/image`: the optimizer only allows
+        // relative/bundled sources unless the API's storage host is added
+        // to `next.config`'s remote patterns, which nothing else in this
+        // app's admin-uploaded images relies on either.
+        <img src={getStorageUrl(uploaded)} alt="" onError={() => setFailedImage(uploaded)} />
+      ) : showBundled ? (
         <Image
-          src={image}
+          src={bundled}
           alt=""
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 768px) 7.5rem, 50vw"
-          onError={() => setFailedImage(image)}
+          onError={() => setFailedImage(bundled)}
         />
       ) : (
         <TechnologyIcon iconKey={technology.iconKey} slug={technology.slug} />

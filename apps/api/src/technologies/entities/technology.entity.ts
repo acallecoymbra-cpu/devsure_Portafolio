@@ -43,6 +43,9 @@ export class Technology {
   @Column({ name: 'icon_key', type: 'varchar', length: 64 })
   iconKey!: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  icon!: string | null;
+
   @Column({ type: 'boolean', default: false })
   featured!: boolean;
 

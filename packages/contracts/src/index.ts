@@ -30,6 +30,8 @@ export interface TechnologyCard {
   category: string;
   summary?: string;
   iconKey: string;
+  /** Admin-uploaded PNG icon; falls back to the bundled/SVG icon while unset. */
+  icon?: string;
   featured: boolean;
   sortOrder: number;
 }
@@ -189,7 +191,8 @@ export type UploadFolder =
   | 'network-icons'
   | 'client-logos'
   | 'site-logo'
-  | 'hero-visual';
+  | 'hero-visual'
+  | 'technology-icons';
 
 export interface UploadResult {
   path: string;
@@ -445,6 +448,7 @@ export interface TechnologyInput {
   category: string;
   summary?: string;
   iconKey: string;
+  icon?: string;
   featured: boolean;
   sortOrder: number;
   publicationStatus: TechnologyPublicationStatus;

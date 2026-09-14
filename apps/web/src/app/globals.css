@@ -1063,6 +1063,56 @@ input {
   font-weight: 700;
 }
 
+/*
+ * Home teaser only — deliberately a separate class from `.technology-grid`
+ * below, which the full `/tecnologias` catalog also uses: forcing that
+ * shared grid into one line here would have broken the catalog's own
+ * multi-row layout. `overflow-x: auto` keeps it a single line even when
+ * there isn't room for every icon, rather than wrapping to a second row.
+ */
+.technologies-teaser-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.75rem;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem;
+}
+
+.technologies-teaser-item {
+  flex-shrink: 0;
+  transition: transform 200ms var(--ease-out);
+}
+
+.technologies-teaser-item:hover,
+.technologies-teaser-item:focus-within {
+  transform: scale(1.12);
+}
+
+.technologies-teaser-item .technology-image {
+  background: none;
+  border-radius: 0.6rem;
+  height: 3.75rem;
+  width: 3.75rem;
+}
+
+.technologies-teaser-item .technology-image::after {
+  display: none;
+}
+
+.technologies-teaser-item .technology-image img {
+  padding: 0.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .technologies-teaser-item {
+    transition: none;
+  }
+}
+
 .technology-grid {
   display: grid;
   gap: 0.65rem;
@@ -1563,40 +1613,55 @@ input {
 }
 
 .client-logos-heading {
-  color: var(--muted);
-  font-size: 0.8rem;
+  /* Matches the `.eyebrow` caption used above every other section heading
+     (accent teal, uppercase, wide letter-spacing) instead of the plain
+     muted/sentence-case label this had — reads as a deliberate label, not
+     an afterthought. */
+  color: var(--accent-soft);
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  margin: 0 0 1.6rem;
+  letter-spacing: 0.14em;
+  margin: 0 0 2rem;
   text-align: center;
+  text-transform: uppercase;
+}
+
+/*
+ * Deliberately full-bleed: unlike everything else on the home page, this
+ * band is meant to read as edge-to-edge regardless of viewport, so it lives
+ * outside `.shell` (see ClientLogosSection) rather than using a negative-
+ * margin/100vw escape hatch — full width is just its natural block width.
+ * The (typically few) logos inside just sit centered and still; each one
+ * grows slightly on hover as the only motion.
+ */
+.client-logos-track-wrap {
+  padding-block: 1.75rem;
 }
 
 .client-logos-row {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem 2.75rem;
+  gap: 2.75rem;
   justify-content: center;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding-inline: 1.375rem;
 }
 
 .client-logo-item a,
 .client-logo-item span {
   align-items: center;
   display: flex;
-  filter: grayscale(1) brightness(1.7) opacity(0.68);
-  height: 2.3rem;
+  height: 4rem;
   justify-content: center;
-  transition:
-    filter 200ms ease,
-    opacity 200ms ease;
+  transition: transform 200ms var(--ease-out);
 }
 
-.client-logo-item a:hover,
+.client-logo-item:hover a,
+.client-logo-item:hover span,
 .client-logo-item a:focus-visible {
-  filter: none;
+  transform: scale(1.15);
 }
 
 .client-logo-item img {
@@ -1607,9 +1672,15 @@ input {
 
 .client-logo-item span {
   color: var(--muted);
-  filter: none;
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .client-logo-item a,
+  .client-logo-item span {
+    transition: none;
+  }
 }
 
 .about-section {
@@ -2715,18 +2786,6 @@ input {
     transform: scale(1.06);
   }
 
-  .client-logo-item img {
-    filter: grayscale(1);
-    opacity: 0.7;
-    transition:
-      filter 220ms var(--ease-out),
-      opacity 220ms var(--ease-out);
-  }
-
-  .client-logo-item:hover img {
-    filter: grayscale(0);
-    opacity: 1;
-  }
 }
 
 .offer-card:active,
@@ -2762,7 +2821,6 @@ input {
   .contact-card,
   .case-study-image-wrap img,
   .blog-card-image img,
-  .client-logo-item img,
   .faq-item summary {
     transition: none;
   }

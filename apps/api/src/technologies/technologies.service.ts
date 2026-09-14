@@ -30,6 +30,7 @@ export class TechnologiesService {
       category: technology.category,
       ...(technology.summary === null ? {} : { summary: technology.summary }),
       iconKey: technology.iconKey,
+      ...(technology.icon ? { icon: technology.icon } : {}),
       featured: technology.featured,
       sortOrder: technology.sortOrder,
     };

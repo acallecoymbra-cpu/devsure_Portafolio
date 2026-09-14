@@ -2,10 +2,11 @@ import { DataSource } from 'typeorm';
 import { Technology } from '../../technologies/entities/technology.entity';
 import { CreateTechnologies1787616000000 } from '../migrations/1787616000000-CreateTechnologies';
 import { InitialFoundation1700000000000 } from '../migrations/1700000000000-InitialFoundation';
+import { AddTechnologyIcon1790467200000 } from '../migrations/1790467200000-AddTechnologyIcon';
 import { seedTechnologies } from './seed-technologies';
 import { TECHNOLOGY_SEED_DATA } from './technology.seed-data';
 
-describe('technology migrations and seed', () => {
+describe('technology migration (up/down/up)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -32,6 +33,29 @@ describe('technology migrations and seed', () => {
 
     await dataSource.runMigrations();
     await expect(tableExists(dataSource, 'technologies')).resolves.toBe(true);
+  });
+});
+
+describe('technology seed (with icon column applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [Technology],
+      migrations: [
+        InitialFoundation1700000000000,
+        CreateTechnologies1787616000000,
+        AddTechnologyIcon1790467200000,
+      ],
+    });
+    await dataSource.initialize();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
   });
 
   it('seeds the exact catalog repeatedly without duplicates or invented summaries', async () => {

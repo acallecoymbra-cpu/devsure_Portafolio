@@ -21,9 +21,15 @@ export const FOLDER_CONFIG: Readonly<Record<UploadFolder, FolderConfig>> = {
   testimonials: { directory: 'testimonials', maxBytes: 1 * MB, mimeTypes: IMAGE_TYPES },
   'posts-covers': { directory: 'posts/covers', maxBytes: 4 * MB, mimeTypes: IMAGE_TYPES },
   'network-icons': { directory: 'network-icons', maxBytes: 512 * 1024, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
-  'client-logos': { directory: 'client-logos', maxBytes: 512 * 1024, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
+  // PNG-only (spec follow-up): the logo wall blends each logo into its dark
+  // strip via a transparent background, which only a PNG's alpha channel
+  // guarantees — JPEG can't be transparent and SVG isn't rasterized here.
+  'client-logos': { directory: 'client-logos', maxBytes: 512 * 1024, mimeTypes: ['image/png'] },
   'site-logo': { directory: 'site-logo', maxBytes: 1 * MB, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
   'hero-visual': { directory: 'hero-visual', maxBytes: 4 * MB, mimeTypes: [...IMAGE_TYPES, 'image/svg+xml'] },
+  // PNG-only (spec follow-up), same reasoning as `client-logos`: these sit
+  // in a single-row strip and need real transparency to blend into it.
+  'technology-icons': { directory: 'technology-icons', maxBytes: 512 * 1024, mimeTypes: ['image/png'] },
 };
 
 export const UPLOAD_FOLDER_KEYS = Object.keys(FOLDER_CONFIG) as UploadFolder[];

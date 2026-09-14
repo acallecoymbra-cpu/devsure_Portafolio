@@ -10,6 +10,7 @@ import {
   updateTechnology,
 } from '../api/admin-api';
 import type { AdminTechnology, PublicationStatus, TechnologyInput } from '../types';
+import { FileUploadField } from './file-upload-field';
 import styles from '../admin.module.css';
 
 interface TechnologyFormProps {
@@ -166,6 +167,16 @@ export function TechnologyForm({ technology }: TechnologyFormProps) {
               />
               <small>Identificador del icono usado por el sitio.</small>
             </label>
+            <div className={styles.fullField}>
+              <FileUploadField
+                label="Icono (imagen)"
+                folder="technology-icons"
+                accept="image/png"
+                hiddenName="icon"
+                value={technology?.icon}
+                helpText="Solo PNG, hasta 512 KB, con fondo transparente. Si no se sube, se usa el icono genérico."
+              />
+            </div>
             <label className={`${styles.field} ${styles.fullField}`}>
               <span>Resumen</span>
               <textarea
@@ -287,6 +298,7 @@ export function TechnologyEditor({ id }: { id: string }) {
 function formDataToInput(data: FormData): TechnologyInput {
   const slug = String(data.get('slug') ?? '').trim();
   const summary = String(data.get('summary') ?? '').trim();
+  const icon = String(data.get('icon') ?? '').trim();
 
   return {
     name: String(data.get('name') ?? '').trim(),
@@ -294,6 +306,7 @@ function formDataToInput(data: FormData): TechnologyInput {
     category: String(data.get('category') ?? '').trim(),
     summary,
     iconKey: String(data.get('iconKey') ?? '').trim(),
+    ...(icon ? { icon } : {}),
     featured: data.get('featured') === 'on',
     sortOrder: Number(data.get('sortOrder') ?? 0),
     publicationStatus: String(data.get('publicationStatus')) as PublicationStatus,

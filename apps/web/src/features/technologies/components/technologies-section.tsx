@@ -1,12 +1,15 @@
 import Link from 'next/link';
 import { ParallaxBackground } from '@/components/parallax-background';
 import { getAllTechnologies } from '@/features/technologies/api/get-technologies';
+import { Reveal } from '@/components/reveal';
 import { TechnologiesErrorState } from './technologies-error-boundary';
-import { TechnologyTile } from './technology-tile';
+import { TechnologyImage } from './technology-image';
 
-// 6 = two full rows on the 3-column grid used from tablet width up (see
-// `.technology-grid` in globals.css).
-const TEASER_LIMIT = 6;
+// The teaser is a single icon-only row (see `.technologies-teaser-row` in
+// globals.css) — deliberately not the `.technology-grid` cards the full
+// `/tecnologias` catalog uses, so this limit is just "how many comfortably
+// fit one line on a wide screen" rather than a row/column multiple.
+const TEASER_LIMIT = 10;
 
 /**
  * Home teaser only (spec follow-up): showing all 41+ technologies at once
@@ -45,9 +48,19 @@ export async function TechnologiesSection() {
 
         {technologies.length > 0 ? (
           <>
-            <ul className="technology-grid">
+            <ul className="technologies-teaser-row">
               {teaserOf(technologies).map((technology) => (
-                <TechnologyTile technology={technology} key={technology.id} />
+                <Reveal
+                  as="li"
+                  key={technology.id}
+                  className="technologies-teaser-item"
+                  title={technology.name}
+                  data-testid="technology-card"
+                  data-technology-id={technology.id}
+                >
+                  <TechnologyImage technology={technology} />
+                  <span className="sr-only">{technology.name}</span>
+                </Reveal>
               ))}
             </ul>
             <div className="technologies-teaser-footer">
