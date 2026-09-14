@@ -783,7 +783,6 @@ input {
 }
 
 .technologies-section {
-  border-block: 1px solid var(--line);
   isolation: isolate;
   overflow: hidden;
   position: relative;
@@ -1481,7 +1480,6 @@ input {
 }
 
 .about-section {
-  border-block: 1px solid var(--line);
   isolation: isolate;
   overflow: hidden;
   position: relative;
@@ -1925,7 +1923,6 @@ input {
 }
 
 .contact-section {
-  border-block: 1px solid var(--line);
   isolation: isolate;
   overflow: hidden;
   position: relative;
@@ -2647,35 +2644,45 @@ input {
  *
  * `--content-gutter` mirrors `.shell`'s own
  * `max(1rem, (100vw - var(--max-width)) / 2)` padding formula exactly, so
- * `left`/`right` below always land `--gap` past whatever `.shell`'s real
+ * on wide screens `left`/`right` land `--gap` past whatever `.shell`'s real
  * rendered edge is — including sections like "Nosotros" whose heading runs
  * flush to that edge with no card/box buffering it — regardless of how
  * `--orb-size` itself gets clamped. (Deriving both from the same formula,
  * rather than mirroring one side into the other via `100vw` + `transform`,
  * also sidesteps the few-px drift `100vw` vs. the real scrollbar-adjusted
- * viewport can otherwise introduce.) Below ~100rem that gutter collapses
- * toward `.shell`'s 1rem floor, too tight to fit anything beside the
- * content, so the companion simply doesn't render.
+ * viewport can otherwise introduce.)
+ *
+ * Below ~100rem that gutter collapses toward `.shell`'s 1rem floor, too
+ * tight to fit anything beside the content without overlapping it — so
+ * below that breakpoint the orb instead pins to the viewport edge itself
+ * (not the content edge) and shrinks with `14vw`, staying small enough to
+ * read as a corner companion instead of covering the page. It's harmless to
+ * overlap content at that size since `pointer-events: none` lets clicks/taps
+ * pass straight through.
  */
 .ai-orb-companion {
   --content-gutter: max(1rem, calc((100vw - var(--max-width)) / 2));
   --gap: 2rem;
-  --orb-size: 25rem;
+  --orb-size: clamp(4rem, 14vw, 25rem);
   bottom: auto;
-  display: none;
+  display: block;
   height: var(--orb-size);
-  left: calc(100vw - var(--content-gutter) + var(--gap));
+  left: auto;
+  right: 0.5rem;
   pointer-events: none;
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  transition: left 700ms var(--ease-in-out);
+  transition:
+    left 700ms var(--ease-in-out),
+    right 700ms var(--ease-in-out);
   width: var(--orb-size);
   z-index: 9;
 }
 
 .ai-orb-companion[data-side='left'] {
-  left: calc(var(--content-gutter) - var(--gap) - var(--orb-size));
+  left: 0.5rem;
+  right: auto;
 }
 
 .ai-orb-companion-video {
@@ -2695,8 +2702,14 @@ input {
 
 @media (min-width: 100rem) {
   .ai-orb-companion {
-    display: block;
     --orb-size: clamp(8rem, calc(var(--content-gutter) - var(--gap) - 1rem), 25rem);
+    left: calc(100vw - var(--content-gutter) + var(--gap));
+    right: auto;
+  }
+
+  .ai-orb-companion[data-side='left'] {
+    left: calc(var(--content-gutter) - var(--gap) - var(--orb-size));
+    right: auto;
   }
 }
 

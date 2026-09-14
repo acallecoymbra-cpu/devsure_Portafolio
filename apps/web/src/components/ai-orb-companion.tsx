@@ -11,8 +11,10 @@ const SKIP_SECTION_CLASSES = ['client-logos-section'];
  * client-logos strip is skipped so the alternation lines up with the named
  * content sections, not that transitional bar.
  *
- * Hidden on narrow viewports via CSS — see `.ai-orb-companion` — since
- * there's no room "beside" the content on a phone.
+ * Always visible — see `.ai-orb-companion` — but sized and positioned
+ * differently depending on viewport: on phones/tablets it pins to the
+ * viewport edge and scales down with it; on wide desktops it moves beside
+ * the content column instead, where there's room for it.
  */
 export function AiOrbCompanion() {
   const [side, setSide] = useState<'left' | 'right'>('right');
