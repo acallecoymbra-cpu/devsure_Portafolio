@@ -58,6 +58,19 @@ export class Profile {
   @Column({ name: 'blog_heading', type: 'simple-json', nullable: true }) blogHeading!: TranslatableString | null;
   @Column({ name: 'contact_heading', type: 'simple-json', nullable: true }) contactHeading!: TranslatableString | null;
   @Column({ name: 'contact_intro', type: 'simple-json', nullable: true }) contactIntro!: TranslatableString | null;
+  @Column({ name: 'footer_about_primary', type: 'simple-json', nullable: true }) footerAboutPrimary!: TranslatableString | null;
+  @Column({ name: 'footer_about_secondary', type: 'simple-json', nullable: true }) footerAboutSecondary!: TranslatableString | null;
+
+  // Site-wide footer contact details (spec follow-up: footer §5.16). Plain,
+  // non-translatable strings like `email` — a phone number or street address
+  // reads the same in every locale.
+  @Column({ type: 'varchar', length: 255, nullable: true }) logo!: string | null;
+  @Column({ name: 'logo_wordmark', type: 'varchar', length: 255, nullable: true }) logoWordmark!: string | null;
+  @Column({ type: 'varchar', length: 40, nullable: true }) phone!: string | null;
+  @Column({ type: 'varchar', length: 255, nullable: true }) address!: string | null;
+  @Column({ name: 'business_hours', type: 'varchar', length: 255, nullable: true }) businessHours!: string | null;
+  @Column({ name: 'facebook_url', type: 'varchar', length: 255, nullable: true }) facebookUrl!: string | null;
+  @Column({ name: 'linkedin_url', type: 'varchar', length: 255, nullable: true }) linkedinUrl!: string | null;
 
   @CreateDateColumn({ name: 'created_at' }) createdAt!: Date;
   @UpdateDateColumn({ name: 'updated_at' }) updatedAt!: Date;

@@ -1,8 +1,10 @@
 'use client';
 
+import type { Profile } from '@devsure/contracts';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { getStorageUrl } from '@/lib/config';
 
 const navigation = [
   { href: '/', label: 'Inicio' },
@@ -16,7 +18,7 @@ const navigation = [
   { href: '/cultura', label: 'CULTURA', emphasized: true },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ profile }: { profile?: Profile }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -35,10 +37,18 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="wordmark" href="/" aria-label="DevSure, inicio">
-          <span className="wordmark-mark" aria-hidden="true">
-            DS
-          </span>
-          <span>DevSure</span>
+          {profile?.logo ? (
+            <img className="wordmark-logo" src={getStorageUrl(profile.logo)} alt="" aria-hidden="true" />
+          ) : (
+            <span className="wordmark-mark" aria-hidden="true">
+              DS
+            </span>
+          )}
+          {profile?.logoWordmark ? (
+            <img className="wordmark-image" src={getStorageUrl(profile.logoWordmark)} alt="DevSure" />
+          ) : (
+            <span>DevSure</span>
+          )}
         </Link>
         <button
           className="menu-button"

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { SiteChrome } from '@/components/site-chrome';
+import { getSiteChromeData } from '@/features/portfolio/api/get-portfolio';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -32,15 +33,24 @@ export const viewport: Viewport = {
   colorScheme: 'dark',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteChrome = await getSiteChromeData();
+
   return (
     <html lang="es">
       <body>
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome
+          profile={siteChrome?.profile}
+          services={siteChrome?.services}
+          translations={siteChrome?.translations}
+          locale={siteChrome?.locale}
+        >
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

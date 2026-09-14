@@ -12,7 +12,7 @@ import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
 import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
 import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
 
-describe('profile translations migration (up/down/up)', () => {
+describe('profile footer fields migration (up/down/up)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -27,6 +27,8 @@ describe('profile translations migration (up/down/up)', () => {
         AddAdminUsername1788825600000,
         CreateProfiles1788912000000,
         AddProfileTranslations1788998400000,
+        AddProfileStats1789948800000,
+        AddProfileFooterFields1790208000000,
       ],
     });
     await dataSource.initialize();
@@ -36,23 +38,26 @@ describe('profile translations migration (up/down/up)', () => {
     await dataSource.destroy();
   });
 
-  it('adds and removes every translation column up/down/up', async () => {
+  it('adds and removes every footer column up/down/up', async () => {
     await dataSource.runMigrations();
     const columns = async () => (await dataSource.createQueryRunner().getTable('profiles'))?.columns.map((c) => c.name) ?? [];
 
-    expect(await columns()).toEqual(expect.arrayContaining(['hero_tag', 'hero_title', 'about_body', 'contact_intro']));
+    expect(await columns()).toEqual(
+      expect.arrayContaining(['logo', 'phone', 'address', 'business_hours', 'facebook_url', 'linkedin_url', 'footer_about_primary', 'footer_about_secondary']),
+    );
 
     await dataSource.undoLastMigration();
     const afterDown = await columns();
-    expect(afterDown).not.toEqual(expect.arrayContaining(['hero_tag']));
+    expect(afterDown).not.toEqual(expect.arrayContaining(['phone']));
     expect(afterDown).toEqual(expect.arrayContaining(['id', 'owner_id', 'name']));
 
     await dataSource.runMigrations();
-    expect(await columns()).toEqual(expect.arrayContaining(['hero_tag', 'contact_intro']));
+    expect(await columns()).toEqual(expect.arrayContaining(['phone', 'footer_about_secondary']));
   });
+
 });
 
-describe('profile translations migration (data integrity, with stats column applied)', () => {
+describe('profile footer fields migration (data integrity, with logo wordmark applied)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -80,7 +85,7 @@ describe('profile translations migration (data integrity, with stats column appl
     await dataSource.destroy();
   });
 
-  it('persists and reloads translation fields through the Profile entity', async () => {
+  it('persists and reloads footer fields through the Profile entity', async () => {
     const { id: ownerId } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',
@@ -94,16 +99,25 @@ describe('profile translations migration (data integrity, with stats column appl
         name: 'Eduardo',
         activeLocales: ['en'],
         defaultLocale: 'en',
-        heroTag: 'WEB APPS / LARAVEL',
-        heroTitle: { en: 'Building reliable systems' },
-        aboutBody: { en: 'Backend engineer.', es: 'Ingeniero backend.' },
+        logo: 'site-logo/devsure.svg',
+        phone: '+591 2 2445566',
+        address: 'Av. Arce 2856, La Paz, Bolivia',
+        businessHours: 'Lunes a viernes, 9:00 a 18:00',
+        facebookUrl: 'https://facebook.com/devsure',
+        linkedinUrl: 'https://www.linkedin.com/company/devsure',
+        footerAboutPrimary: { en: 'DevSure builds reliable software.' },
+        footerAboutSecondary: { en: 'We keep engineering clear and maintainable.' },
       }),
     );
 
     const reloaded = await profiles.findOneByOrFail({ ownerId });
-    expect(reloaded.heroTag).toBe('WEB APPS / LARAVEL');
-    expect(reloaded.heroTitle).toEqual({ en: 'Building reliable systems' });
-    expect(reloaded.aboutBody).toEqual({ en: 'Backend engineer.', es: 'Ingeniero backend.' });
-    expect(reloaded.contactIntro).toBeNull();
+    expect(reloaded.logo).toBe('site-logo/devsure.svg');
+    expect(reloaded.phone).toBe('+591 2 2445566');
+    expect(reloaded.address).toBe('Av. Arce 2856, La Paz, Bolivia');
+    expect(reloaded.businessHours).toBe('Lunes a viernes, 9:00 a 18:00');
+    expect(reloaded.facebookUrl).toBe('https://facebook.com/devsure');
+    expect(reloaded.linkedinUrl).toBe('https://www.linkedin.com/company/devsure');
+    expect(reloaded.footerAboutPrimary).toEqual({ en: 'DevSure builds reliable software.' });
+    expect(reloaded.footerAboutSecondary).toEqual({ en: 'We keep engineering clear and maintainable.' });
   });
 });

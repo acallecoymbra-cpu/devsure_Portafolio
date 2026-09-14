@@ -51,6 +51,9 @@ export class UpdateTranslationsDto implements UpdateTranslationsInput {
 
   @ApiPropertyOptional({ type: 'object', additionalProperties: { type: 'string' } }) @optional() @heading() contactHeading?: TranslatableString;
   @ApiPropertyOptional({ type: 'object', additionalProperties: { type: 'string' } }) @optional() @intro() contactIntro?: TranslatableString;
+
+  @ApiPropertyOptional({ type: 'object', additionalProperties: { type: 'string' } }) @optional() @intro() footerAboutPrimary?: TranslatableString;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: { type: 'string' } }) @optional() @intro() footerAboutSecondary?: TranslatableString;
 }
 
 export class TranslationsDto implements Translations {
@@ -76,4 +79,6 @@ export class TranslationsDto implements Translations {
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) blogHeading!: TranslatableString;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) contactHeading!: TranslatableString;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) contactIntro!: TranslatableString;
+  @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) footerAboutPrimary!: TranslatableString;
+  @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } }) footerAboutSecondary!: TranslatableString;
 }

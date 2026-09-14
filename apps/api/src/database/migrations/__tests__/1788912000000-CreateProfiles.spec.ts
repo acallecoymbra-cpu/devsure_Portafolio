@@ -8,6 +8,8 @@ import { AddAdminUsername1788825600000 } from '../1788825600000-AddAdminUsername
 import { CreateProfiles1788912000000 } from '../1788912000000-CreateProfiles';
 import { AddProfileTranslations1788998400000 } from '../1788998400000-AddProfileTranslations';
 import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
+import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
+import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
 import { seedAdmin } from '../../seeds/seed-admin';
 
 describe('profiles migration (table lifecycle)', () => {
@@ -61,6 +63,8 @@ describe('profiles migration (data integrity, with translation columns applied)'
         CreateProfiles1788912000000,
         AddProfileTranslations1788998400000,
         AddProfileStats1789948800000,
+        AddProfileFooterFields1790208000000,
+        AddProfileLogoWordmark1790294400000,
       ],
     });
     await dataSource.initialize();

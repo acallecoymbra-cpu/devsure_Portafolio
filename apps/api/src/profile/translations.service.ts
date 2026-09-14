@@ -66,5 +66,7 @@ function toTranslations(profile: Profile): TranslationsContract {
     blogHeading: profile.blogHeading ?? {},
     contactHeading: profile.contactHeading ?? {},
     contactIntro: profile.contactIntro ?? {},
+    footerAboutPrimary: profile.footerAboutPrimary ?? {},
+    footerAboutSecondary: profile.footerAboutSecondary ?? {},
   };
 }

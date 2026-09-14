@@ -1,10 +1,19 @@
 'use client';
 
+import type { Profile, Service, Translations } from '@devsure/contracts';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CursorWater } from './cursor-water';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header';
+
+interface SiteChromeProps {
+  children: ReactNode;
+  profile?: Profile;
+  services?: Service[];
+  translations?: Translations;
+  locale?: string;
+}
 
 /**
  * The admin panel manages its own full-page layout (see AdminShell) and must
@@ -14,7 +23,7 @@ import { SiteHeader } from './site-header';
  * header/footer kept rendering around `/admin/*` anyway. Deciding this in
  * React (by pathname) is what the CSS was trying, and failing, to do.
  */
-export function SiteChrome({ children }: { children: ReactNode }) {
+export function SiteChrome({ children, profile, services, translations, locale }: SiteChromeProps) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith('/admin') ?? false;
 
@@ -28,9 +37,9 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       <a className="skip-link" href="#contenido-principal">
         Saltar al contenido
       </a>
-      <SiteHeader />
+      <SiteHeader profile={profile} />
       <main id="contenido-principal">{children}</main>
-      <SiteFooter />
+      <SiteFooter profile={profile} services={services} translations={translations} locale={locale} />
     </>
   );
 }

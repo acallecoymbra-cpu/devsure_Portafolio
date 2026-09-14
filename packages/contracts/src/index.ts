@@ -107,6 +107,15 @@ export interface Profile {
   stats: ProfileStat[];
   activeLocales: string[];
   defaultLocale: string;
+  /** Site-wide icon mark (header + footer); falls back to the "DS" badge while unset. */
+  logo?: string;
+  /** Site-wide "DevSure" wordmark image, shown beside `logo`; falls back to plain text while unset. */
+  logoWordmark?: string;
+  phone?: string;
+  address?: string;
+  businessHours?: string;
+  facebookUrl?: string;
+  linkedinUrl?: string;
 }
 
 export interface UpdateProfileInput {
@@ -120,6 +129,13 @@ export interface UpdateProfileInput {
   stats?: ProfileStat[];
   activeLocales?: string[];
   defaultLocale?: string;
+  logo?: string;
+  logoWordmark?: string;
+  phone?: string;
+  address?: string;
+  businessHours?: string;
+  facebookUrl?: string;
+  linkedinUrl?: string;
 }
 
 export interface Translations {
@@ -145,6 +161,9 @@ export interface Translations {
   blogHeading: TranslatableString;
   contactHeading: TranslatableString;
   contactIntro: TranslatableString;
+  /** Two-paragraph "about" copy under the footer logo. */
+  footerAboutPrimary: TranslatableString;
+  footerAboutSecondary: TranslatableString;
 }
 
 export type UpdateTranslationsInput = Partial<Translations>;
@@ -165,7 +184,8 @@ export type UploadFolder =
   | 'testimonials'
   | 'posts-covers'
   | 'network-icons'
-  | 'client-logos';
+  | 'client-logos'
+  | 'site-logo';
 
 export interface UploadResult {
   path: string;

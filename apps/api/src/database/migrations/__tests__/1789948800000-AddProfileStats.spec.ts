@@ -9,6 +9,8 @@ import { AddAdminUsername1788825600000 } from '../1788825600000-AddAdminUsername
 import { CreateProfiles1788912000000 } from '../1788912000000-CreateProfiles';
 import { AddProfileTranslations1788998400000 } from '../1788998400000-AddProfileTranslations';
 import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
+import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
+import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
 
 describe('profile stats migration', () => {
   let dataSource: DataSource;
@@ -47,9 +49,37 @@ describe('profile stats migration', () => {
     await dataSource.runMigrations();
     expect(await columns()).toEqual(expect.arrayContaining(['stats']));
   });
+});
+
+describe('profile stats migration (data integrity, with footer fields applied)', () => {
+  let dataSource: DataSource;
+
+  beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'better-sqlite3',
+      database: ':memory:',
+      synchronize: false,
+      entities: [AdminUser, AdminSession, Profile],
+      migrations: [
+        CreateAdminAuth1788480000000,
+        RequireAdminPasswordChange1788739200000,
+        AddAdminUsername1788825600000,
+        CreateProfiles1788912000000,
+        AddProfileTranslations1788998400000,
+        AddProfileStats1789948800000,
+        AddProfileFooterFields1790208000000,
+        AddProfileLogoWordmark1790294400000,
+      ],
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await dataSource.destroy();
+  });
 
   it('persists and reloads the stats array through the Profile entity', async () => {
-    await dataSource.runMigrations();
     const { id: ownerId } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',

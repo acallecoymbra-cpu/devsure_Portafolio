@@ -179,6 +179,39 @@ export function TranslationsForm() {
           </LocaleTabs>
         </details>
 
+        <details className={styles.collapsible}>
+          <summary>Footer</summary>
+          <p className={styles.muted}>
+            Los dos párrafos bajo el logo en la primera columna del footer.
+          </p>
+          <LocaleTabs idPrefix="footerAboutPrimary" locales={activeLocales}>
+            {(locale) => (
+              <label className={styles.field}>
+                <span>Párrafo 1 ({LOCALE_LABELS[locale] ?? locale})</span>
+                <textarea
+                  name={`footerAboutPrimary.${locale}`}
+                  defaultValue={translations.footerAboutPrimary[locale] ?? ''}
+                  maxLength={500}
+                  rows={3}
+                />
+              </label>
+            )}
+          </LocaleTabs>
+          <LocaleTabs idPrefix="footerAboutSecondary" locales={activeLocales}>
+            {(locale) => (
+              <label className={styles.field}>
+                <span>Párrafo 2 ({LOCALE_LABELS[locale] ?? locale})</span>
+                <textarea
+                  name={`footerAboutSecondary.${locale}`}
+                  defaultValue={translations.footerAboutSecondary[locale] ?? ''}
+                  maxLength={500}
+                  rows={3}
+                />
+              </label>
+            )}
+          </LocaleTabs>
+        </details>
+
         {SECTIONS.map((section) => (
           <details key={section.id} className={styles.collapsible}>
             <summary>{section.title}</summary>
@@ -230,6 +263,8 @@ function formDataToInput(data: FormData, locales: string[]): Partial<Translation
     heroTitle: collectTranslatable(data, 'heroTitle', locales),
     heroCopy: collectTranslatable(data, 'heroCopy', locales),
     heroNote: collectTranslatable(data, 'heroNote', locales),
+    footerAboutPrimary: collectTranslatable(data, 'footerAboutPrimary', locales),
+    footerAboutSecondary: collectTranslatable(data, 'footerAboutSecondary', locales),
   };
 
   for (const section of SECTIONS) {

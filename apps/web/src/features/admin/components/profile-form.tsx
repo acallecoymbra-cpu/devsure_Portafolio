@@ -173,6 +173,55 @@ export function ProfileForm() {
                 helpText="PNG, JPEG o WEBP, hasta 2 MB."
               />
             </div>
+            <div className={styles.fullField}>
+              <FileUploadField
+                label="Icono del sitio"
+                folder="site-logo"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                hiddenName="logo"
+                value={profile.logo}
+                helpText="PNG, JPEG, WEBP o SVG, hasta 1 MB. El símbolo/marca (ej. la 'D'). Se usa en el header y en el footer; mientras no se suba, se muestra el isotipo 'DS'."
+              />
+            </div>
+            <div className={styles.fullField}>
+              <FileUploadField
+                label="Logo — texto &quot;DevSure&quot; (imagen)"
+                folder="site-logo"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                hiddenName="logoWordmark"
+                value={profile.logoWordmark}
+                helpText="PNG, JPEG, WEBP o SVG, hasta 1 MB. Idealmente con fondo transparente. Va al lado del icono; mientras no se suba, se muestra el texto 'DevSure'."
+              />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset disabled={submitting}>
+          <legend>Contacto (footer)</legend>
+          <p className={styles.muted}>
+            Teléfono, dirección, horarios y redes que se muestran en la tercera columna del footer.
+          </p>
+          <div className={styles.formGrid}>
+            <label className={styles.field}>
+              <span>Teléfono</span>
+              <input name="phone" defaultValue={profile.phone} maxLength={40} autoComplete="off" />
+            </label>
+            <label className={styles.field}>
+              <span>Dirección</span>
+              <input name="address" defaultValue={profile.address} maxLength={255} autoComplete="off" />
+            </label>
+            <label className={styles.field}>
+              <span>Horarios de atención</span>
+              <input name="businessHours" defaultValue={profile.businessHours} maxLength={255} autoComplete="off" />
+            </label>
+            <label className={styles.field}>
+              <span>Facebook (URL)</span>
+              <input name="facebookUrl" type="url" defaultValue={profile.facebookUrl} maxLength={255} autoComplete="off" />
+            </label>
+            <label className={styles.field}>
+              <span>LinkedIn (URL)</span>
+              <input name="linkedinUrl" type="url" defaultValue={profile.linkedinUrl} maxLength={255} autoComplete="off" />
+            </label>
           </div>
         </fieldset>
 
@@ -325,12 +374,26 @@ function formDataToInput(
 ): Partial<UpdateProfileInput> {
   const fullName = String(data.get('fullName') ?? '').trim();
   const avatar = String(data.get('avatar') ?? '').trim();
+  const logo = String(data.get('logo') ?? '').trim();
+  const logoWordmark = String(data.get('logoWordmark') ?? '').trim();
+  const phone = String(data.get('phone') ?? '').trim();
+  const address = String(data.get('address') ?? '').trim();
+  const businessHours = String(data.get('businessHours') ?? '').trim();
+  const facebookUrl = String(data.get('facebookUrl') ?? '').trim();
+  const linkedinUrl = String(data.get('linkedinUrl') ?? '').trim();
 
   return {
     email: String(data.get('email') ?? '').trim(),
     name: String(data.get('name') ?? '').trim(),
     ...(fullName ? { fullName } : {}),
     ...(avatar ? { avatar } : {}),
+    ...(logo ? { logo } : {}),
+    ...(logoWordmark ? { logoWordmark } : {}),
+    ...(phone ? { phone } : {}),
+    ...(address ? { address } : {}),
+    ...(businessHours ? { businessHours } : {}),
+    ...(facebookUrl ? { facebookUrl } : {}),
+    ...(linkedinUrl ? { linkedinUrl } : {}),
     headline: collectTranslatable(data, 'headline', activeLocales),
     bio: collectTranslatable(data, 'bio', activeLocales),
     resume: collectTranslatable(data, 'resume', activeLocales),

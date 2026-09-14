@@ -12,47 +12,7 @@ import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
 import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
 import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
 
-describe('profile translations migration (up/down/up)', () => {
-  let dataSource: DataSource;
-
-  beforeEach(async () => {
-    dataSource = new DataSource({
-      type: 'better-sqlite3',
-      database: ':memory:',
-      synchronize: false,
-      entities: [AdminUser, AdminSession, Profile],
-      migrations: [
-        CreateAdminAuth1788480000000,
-        RequireAdminPasswordChange1788739200000,
-        AddAdminUsername1788825600000,
-        CreateProfiles1788912000000,
-        AddProfileTranslations1788998400000,
-      ],
-    });
-    await dataSource.initialize();
-  });
-
-  afterEach(async () => {
-    await dataSource.destroy();
-  });
-
-  it('adds and removes every translation column up/down/up', async () => {
-    await dataSource.runMigrations();
-    const columns = async () => (await dataSource.createQueryRunner().getTable('profiles'))?.columns.map((c) => c.name) ?? [];
-
-    expect(await columns()).toEqual(expect.arrayContaining(['hero_tag', 'hero_title', 'about_body', 'contact_intro']));
-
-    await dataSource.undoLastMigration();
-    const afterDown = await columns();
-    expect(afterDown).not.toEqual(expect.arrayContaining(['hero_tag']));
-    expect(afterDown).toEqual(expect.arrayContaining(['id', 'owner_id', 'name']));
-
-    await dataSource.runMigrations();
-    expect(await columns()).toEqual(expect.arrayContaining(['hero_tag', 'contact_intro']));
-  });
-});
-
-describe('profile translations migration (data integrity, with stats column applied)', () => {
+describe('profile logo wordmark migration (up/down/up)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -73,14 +33,27 @@ describe('profile translations migration (data integrity, with stats column appl
       ],
     });
     await dataSource.initialize();
-    await dataSource.runMigrations();
   });
 
   afterEach(async () => {
     await dataSource.destroy();
   });
 
-  it('persists and reloads translation fields through the Profile entity', async () => {
+  it('adds and removes the logo_wordmark column up/down/up', async () => {
+    await dataSource.runMigrations();
+    const columns = async () => (await dataSource.createQueryRunner().getTable('profiles'))?.columns.map((c) => c.name) ?? [];
+
+    expect(await columns()).toEqual(expect.arrayContaining(['logo_wordmark']));
+
+    await dataSource.undoLastMigration();
+    expect(await columns()).not.toEqual(expect.arrayContaining(['logo_wordmark']));
+
+    await dataSource.runMigrations();
+    expect(await columns()).toEqual(expect.arrayContaining(['logo_wordmark']));
+  });
+
+  it('persists and reloads logoWordmark through the Profile entity', async () => {
+    await dataSource.runMigrations();
     const { id: ownerId } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',
@@ -94,16 +67,11 @@ describe('profile translations migration (data integrity, with stats column appl
         name: 'Eduardo',
         activeLocales: ['en'],
         defaultLocale: 'en',
-        heroTag: 'WEB APPS / LARAVEL',
-        heroTitle: { en: 'Building reliable systems' },
-        aboutBody: { en: 'Backend engineer.', es: 'Ingeniero backend.' },
+        logoWordmark: 'site-logo/devsure-wordmark.png',
       }),
     );
 
     const reloaded = await profiles.findOneByOrFail({ ownerId });
-    expect(reloaded.heroTag).toBe('WEB APPS / LARAVEL');
-    expect(reloaded.heroTitle).toEqual({ en: 'Building reliable systems' });
-    expect(reloaded.aboutBody).toEqual({ en: 'Backend engineer.', es: 'Ingeniero backend.' });
-    expect(reloaded.contactIntro).toBeNull();
+    expect(reloaded.logoWordmark).toBe('site-logo/devsure-wordmark.png');
   });
 });

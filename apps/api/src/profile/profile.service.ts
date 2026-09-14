@@ -46,6 +46,13 @@ export class ProfileService {
         ...(input.stats !== undefined ? { stats: input.stats } : {}),
         ...(input.activeLocales !== undefined ? { activeLocales: input.activeLocales } : {}),
         ...(input.defaultLocale !== undefined ? { defaultLocale: input.defaultLocale } : {}),
+        ...(input.logo !== undefined ? { logo: input.logo } : {}),
+        ...(input.logoWordmark !== undefined ? { logoWordmark: input.logoWordmark } : {}),
+        ...(input.phone !== undefined ? { phone: input.phone } : {}),
+        ...(input.address !== undefined ? { address: input.address } : {}),
+        ...(input.businessHours !== undefined ? { businessHours: input.businessHours } : {}),
+        ...(input.facebookUrl !== undefined ? { facebookUrl: input.facebookUrl } : {}),
+        ...(input.linkedinUrl !== undefined ? { linkedinUrl: input.linkedinUrl } : {}),
       });
 
       if (!profile.activeLocales.includes(profile.defaultLocale)) {
@@ -89,5 +96,12 @@ function toProfile(user: AdminUser, profile: Profile): ProfileContract {
     stats: profile.stats ?? [],
     activeLocales: profile.activeLocales,
     defaultLocale: profile.defaultLocale,
+    ...(profile.logo ? { logo: profile.logo } : {}),
+    ...(profile.logoWordmark ? { logoWordmark: profile.logoWordmark } : {}),
+    ...(profile.phone ? { phone: profile.phone } : {}),
+    ...(profile.address ? { address: profile.address } : {}),
+    ...(profile.businessHours ? { businessHours: profile.businessHours } : {}),
+    ...(profile.facebookUrl ? { facebookUrl: profile.facebookUrl } : {}),
+    ...(profile.linkedinUrl ? { linkedinUrl: profile.linkedinUrl } : {}),
   };
 }

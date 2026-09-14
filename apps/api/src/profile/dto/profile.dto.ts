@@ -70,6 +70,41 @@ export class UpdateProfileDto implements UpdateProfileInput {
   @ValidateIf((_object, value) => value !== undefined)
   @IsIn(SUPPORTED_LOCALES)
   defaultLocale?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  logo?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  logoWordmark?: string;
+
+  @ApiPropertyOptional({ maxLength: 40 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(40)
+  phone?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  address?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  businessHours?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  facebookUrl?: string;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString() @MaxLength(255)
+  linkedinUrl?: string;
 }
 
 export class ProfileDto implements Profile {
@@ -85,4 +120,11 @@ export class ProfileDto implements Profile {
   @ApiProperty({ type: [ProfileStatDto] }) stats!: ProfileStat[];
   @ApiProperty({ type: [String] }) activeLocales!: string[];
   @ApiProperty() defaultLocale!: string;
+  @ApiPropertyOptional() logo?: string;
+  @ApiPropertyOptional() logoWordmark?: string;
+  @ApiPropertyOptional() phone?: string;
+  @ApiPropertyOptional() address?: string;
+  @ApiPropertyOptional() businessHours?: string;
+  @ApiPropertyOptional() facebookUrl?: string;
+  @ApiPropertyOptional() linkedinUrl?: string;
 }
