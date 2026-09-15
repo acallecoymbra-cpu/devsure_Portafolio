@@ -1,11 +1,27 @@
 /*
- * This whole page is anchored to CultureSpineScene's persistent dark 3D
- * canvas (see spineBackgroundRegion below), which isn't theme-aware — so
- * every color in this file is a fixed literal (not a `var()` from
- * globals.css) and the page keeps this exact look in both the site's dark
- * and light theme. Re-theming it would mean re-lighting the Three.js scene,
- * not just this stylesheet.
+ * `.pageBackdrop` is the page's actual background — a fixed layer behind
+ * everything, including the 3D spine canvas (see spine-engine.ts's
+ * `setClearAlpha(0)` and the transition composite shader's alpha
+ * pass-through — both needed so this shows through the canvas instead of
+ * sitting behind an opaque black scene). It reads `var(--background)`, so
+ * it's dark in dark theme and light in light theme; every section below
+ * stays transparent (or a low-opacity accent tint) so that's genuinely the
+ * only background. Section-level text (headings, eyebrows, body copy that
+ * sits directly on this backdrop) uses the normal themed
+ * `var(--text)`/`var(--muted)`/`var(--accent-soft)` to match. Text *inside*
+ * the photo cards (story/company cards, the manifesto's own card-like
+ * panels) is pinned to fixed light-on-dark literals instead — those cards
+ * keep their own dark translucent fill in both themes by design, so their
+ * text can't follow the page theme without breaking contrast.
  */
+.pageBackdrop {
+  background-color: var(--background);
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -2;
+}
+
 .hero {
   /* Slice 9.6: the dark linear-gradient layer was rgba(20, 27, 54, 0.82) —
      near-opaque, which made sense as a plain page background but now sits
@@ -16,23 +32,23 @@
      with. */
   background:
     radial-gradient(circle at 78% 28%, rgba(169, 152, 255, 0.22), transparent 25rem),
-    linear-gradient(180deg, rgba(20, 27, 54, 0.3), rgba(7, 11, 23, 0)),
-    #0a0e20;
+    linear-gradient(180deg, rgba(20, 27, 54, 0.3), rgba(7, 11, 23, 0));
   min-height: min(43rem, calc(100vh - 4.25rem));
   padding-block: clamp(5rem, 12vw, 9rem) 4rem;
 }
 
 .hero h1 {
-  color: #ffffff;
+  color: var(--text);
   font-size: clamp(2.8rem, 9vw, 7rem);
   margin-bottom: clamp(3rem, 8vw, 6rem);
   max-width: 13ch;
 }
 
-.hero :global(.eyebrow),
-.sectionHeading :global(.eyebrow),
-.principlesIntro :global(.eyebrow),
-.manifestoSection :global(.eyebrow),
+/* closingPanel keeps its own fixed violet/navy gradient regardless of theme
+   (a CTA card, like signalCard on the home page) — pin its eyebrow to match.
+   Every other eyebrow on this page sits directly on .pageBackdrop, so it
+   uses the ordinary themed color instead (the global .eyebrow rule already
+   does that). */
 .closingPanel :global(.eyebrow) {
   color: #86e9db;
 }
@@ -45,7 +61,11 @@
 
 .heroFooter > p,
 .heroFooter > a,
-.sectionHeading > p,
+.sectionHeading > p {
+  color: var(--muted);
+}
+
+/* Inside always-dark photo cards (see the top-of-file note) — pinned regardless of theme. */
 .principlesGrid p,
 .companyCopy > p:last-child {
   color: #94a3b8;
@@ -73,11 +93,6 @@
 }
 
 .storiesSection {
-  /* Same reasoning as .principlesSection below: mostly transparent so the
-     pinned 3D column shows through in the WebGL path, but with a dark floor
-     so its pinned-white heading still reads in the CSS fallback / light
-     theme, where there's no column behind it. */
-  background: rgba(7, 11, 23, 0.88);
   scroll-margin-top: 5rem;
 }
 
@@ -89,7 +104,7 @@
 
 .sectionHeading h2,
 .principlesIntro h2 {
-  color: #ffffff;
+  color: var(--text);
   margin-bottom: 0;
 }
 
@@ -105,7 +120,7 @@
 
 .storySlide {
   background: rgba(16, 24, 43, 0.86);
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  border: 1px solid var(--line);
   border-radius: 1.1rem;
   display: grid;
   min-width: 0;
@@ -212,10 +227,10 @@
 .arrowControls button,
 .companyControls button {
   align-items: center;
-  background: #111a27;
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  color: #ffffff;
+  color: var(--text);
   cursor: pointer;
   display: inline-flex;
   font-size: 1.1rem;
@@ -265,16 +280,16 @@
 }
 
 .indicators button[aria-current='true']::after {
-  background: #3cd8c5;
+  background: var(--accent);
   width: 2.1rem;
 }
 
 .playControl {
   align-items: center;
   background: transparent;
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  color: #94a3b8;
+  color: var(--muted);
   cursor: pointer;
   display: inline-flex;
   font-size: 0.78rem;
@@ -336,7 +351,13 @@
  * canvas but below the foreground content's own z-index.
  */
 .spineScrim {
-  background: linear-gradient(180deg, rgba(7, 11, 23, 0.35), rgba(7, 11, 23, 0.9));
+  /* Dims the busy particle/ring column behind "Lo que cuidamos" / "Nuestra
+     medida" / "Confianza compartida" (see spine-engine.ts's `dimAmount`) so
+     the column doesn't fight with that text. Themed via --culture-scrim-*
+     (dark-navy tint in dark theme, near-white in light theme) instead of a
+     literal dark color — a fixed dark veil read as a visible blue-ish layer
+     once .pageBackdrop could actually go light. */
+  background: linear-gradient(180deg, var(--culture-scrim-1), var(--culture-scrim-2));
   inset: 0;
   opacity: 0;
   position: absolute;
@@ -414,7 +435,7 @@
 }
 
 .spineTrack::before {
-  background: linear-gradient(180deg, transparent, rgba(60, 216, 197, 0.16) 6%, rgba(60, 216, 197, 0.16) 94%, transparent);
+  background: linear-gradient(180deg, transparent, var(--line) 6%, var(--line) 94%, transparent);
   bottom: 0.5rem;
   content: '';
   left: 1.1rem;
@@ -441,8 +462,8 @@
 }
 
 .spineDot {
-  background: #111a27;
-  border: 2px solid rgba(60, 216, 197, 0.16);
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 999px;
   grid-column: 1;
   height: 0.85rem;
@@ -456,14 +477,14 @@
 }
 
 .spineItemRevealed .spineDot {
-  background: #3cd8c5;
-  border-color: #3cd8c5;
+  background: var(--accent);
+  border-color: var(--accent);
   box-shadow: 0 0 0 5px rgba(60, 216, 197, 0.18);
 }
 
 .spineCard {
   background: rgba(16, 24, 43, 0.86);
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  border: 1px solid var(--line);
   border-radius: 1.1rem;
   grid-column: 2;
   min-width: 0;
@@ -586,15 +607,9 @@
 }
 
 .principlesSection {
-  /* Slice 9: was a near-opaque rgba(13, 20, 38, 0.7) — lightened so the
-     pinned 3D column (see spineBackgroundRegion) mostly shows through the
-     gaps around the (still solidly-backed, per .principlesGrid li)
-     principle cards. Not fully transparent, though: this section (and its
-     pinned-white heading text, see the top-of-file note) also has to read
-     correctly without that 3D column — the CultureSpine CSS fallback for
-     browsers without WebGL, and this page's own light-theme background —
-     so a dark floor stays underneath either way. */
-  background: rgba(7, 11, 23, 0.88);
+  /* Transparent so the pinned 3D column (spineBackgroundRegion) is the
+     page's only background here — no CSS floor competing with it. */
+  background: transparent;
 }
 
 .principlesIntro {
@@ -611,7 +626,7 @@
 
 .principlesGrid li {
   background: rgba(16, 24, 43, 0.82);
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  border: 1px solid var(--line);
   border-radius: 0.9rem;
   min-height: 18rem;
   padding: 1.5rem;
@@ -636,7 +651,6 @@
 
 .manifestoSection {
   align-items: center;
-  background: #0a0e20;
   display: flex;
   min-height: 75vh;
   padding-block: 6rem;
@@ -647,7 +661,7 @@
 }
 
 .manifestoSection blockquote p {
-  color: #ffffff;
+  color: var(--text);
   font-size: clamp(2.4rem, 7vw, 6.2rem);
   font-weight: 700;
   letter-spacing: -0.055em;
@@ -657,18 +671,16 @@
 }
 
 .companiesSection {
-  /* Slice 9: dropped the border-top and lightened the gradient — this
-     section now sits over the pinned 3D column (see spineBackgroundRegion)
-     rather than a plain page background, and a hard edge/heavier tint would
-     read as a seam interrupting it. Kept a dark floor (see .principlesSection
-     above) for the CSS fallback / light-theme case where there's no column
-     to show through. */
-  background: linear-gradient(180deg, rgba(25, 20, 61, 0.35), rgba(7, 11, 23, 0.6)), #0a0e20;
+  /* Transparent, like .principlesSection — .pageBackdrop is the floor now,
+     so this section doesn't need its own tint. (It used to have a faint
+     dark-purple gradient here for the dark-theme-only column; that read as
+     a visible blue-ish layer once .pageBackdrop could actually go light.) */
+  background: transparent;
 }
 
 .companyCard {
   background: rgba(16, 24, 43, 0.88);
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  border: 1px solid var(--line);
   border-radius: 1rem;
   display: grid;
   min-height: 18rem;
@@ -716,7 +728,7 @@
 }
 
 .companyControls p {
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0;
   min-width: 3.5rem;
   text-align: center;
@@ -724,7 +736,7 @@
 
 .emptyState {
   background: rgba(16, 24, 43, 0.82);
-  border: 1px solid rgba(60, 216, 197, 0.16);
+  border: 1px solid var(--line);
   border-radius: 0.9rem;
   color: #94a3b8;
   margin: 0;

@@ -799,6 +799,8 @@ h3 {
   --signal-card-grad-2: rgba(12, 19, 38, 0.96);
   --step-number-bg: #151d36;
   --button-secondary-bg: rgba(17, 26, 50, 0.56);
+  --culture-scrim-1: rgba(7, 11, 23, 0.35);
+  --culture-scrim-2: rgba(7, 11, 23, 0.9);
   color-scheme: dark;
 }
 
@@ -859,6 +861,8 @@ h3 {
   --signal-card-grad-2: rgba(240, 244, 250, 0.95);
   --step-number-bg: #eef2f8;
   --button-secondary-bg: rgba(255, 255, 255, 0.7);
+  --culture-scrim-1: rgba(244, 247, 251, 0.45);
+  --culture-scrim-2: rgba(244, 247, 251, 0.92);
   color-scheme: light;
 }
 

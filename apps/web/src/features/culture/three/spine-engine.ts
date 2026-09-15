@@ -227,6 +227,13 @@ export function mountSpineEngine(
   );
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  // `alpha: true` above only makes the canvas's alpha channel usable — the
+  // renderer still clears to opaque black by default unless told otherwise,
+  // which would hide the CSS `.pageBackdrop` behind it. Force a fully
+  // transparent clear so that shows through everywhere the scene doesn't
+  // draw (also needs the transition composite shader to pass alpha through
+  // instead of hardcoding 1.0 — see transition-composite-material.ts).
+  renderer.setClearAlpha(0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(canvasMount.clientWidth, canvasMount.clientHeight);
   canvasMount.appendChild(renderer.domElement);

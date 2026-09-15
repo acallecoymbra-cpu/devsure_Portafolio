@@ -46,6 +46,8 @@ export default function CulturePage() {
         }}
       />
 
+      <div className={styles.pageBackdrop} aria-hidden="true" />
+
       {/*
         Slice 9.6: the user asked for the column to show as a backdrop even
         further up, starting from the hero ("Cultura DevSure") — so the hero

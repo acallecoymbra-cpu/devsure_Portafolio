@@ -32,10 +32,15 @@ const FRAGMENT_SHADER = /* glsl */ `
 
     float split = 0.014 * strength;
     float r = texture2D(uScene, distortedUv + vec2(split, 0.0)).r;
-    float g = texture2D(uScene, distortedUv).g;
+    vec4 centerSample = texture2D(uScene, distortedUv);
+    float g = centerSample.g;
     float b = texture2D(uScene, distortedUv - vec2(split, 0.0)).b;
 
-    gl_FragColor = vec4(r, g, b, 1.0);
+    // uScene is transparent wherever the 3D scene drew nothing (see
+    // spine-engine.ts's renderer.setClearAlpha(0)) - passing that through
+    // instead of hardcoding 1.0 lets the CSS pageBackdrop behind the canvas
+    // show through everywhere the column/particles don't cover.
+    gl_FragColor = vec4(r, g, b, centerSample.a);
   }
 `;
 
