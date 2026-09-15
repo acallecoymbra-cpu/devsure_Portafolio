@@ -4,9 +4,12 @@ import {
   companyStories,
   culturePrinciples,
   cultureStories,
+  teamMembers,
 } from '@/features/culture/culture-content';
 import { CompanyCarousel } from '@/features/culture/components/culture-carousels';
 import { CultureSpineScene } from '@/features/culture/components/culture-spine-scene';
+import { TeamRevealSection } from '@/features/culture/components/team-reveal-section';
+import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import styles from '@/features/culture/culture.module.css';
 
 export const metadata: Metadata = {
@@ -49,60 +52,62 @@ export default function CulturePage() {
       <div className={styles.pageBackdrop} aria-hidden="true" />
 
       {/*
-        Slice 9.6: the user asked for the column to show as a backdrop even
-        further up, starting from the hero ("Cultura DevSure") — so the hero
-        and the "Quiénes somos" heading move from being plain sections before
-        CultureSpineScene to its `header` prop, making them foreground
-        content that scrolls over the pinned column too, same mechanism
-        Slice 9.3 already uses for "Lo que cuidamos"/"Nuestra
-        medida"/"Confianza compartida" below (falls back to a plain,
-        non-overlapping stack when the CSS spine is in play).
+        Restructure (user request): the column is no longer a backdrop from
+        the very top of the page — sections 1-2 (hero, statement) are plain
+        content above `CultureSpineScene`, not its `header` prop, so the
+        pinned canvas only starts appearing once scrolling actually reaches
+        it (section 3). That also means `storySpacer` is now the *first*
+        thing in the spine's foreground content, so `headerClearAmount` (see
+        spine-engine.ts) ramps up almost immediately — the first card shows
+        up after only a little scroll, not after clearing a tall header.
       */}
-      <CultureSpineScene
-        stories={cultureStories}
-        header={
-          <>
-            <section className={styles.hero} aria-labelledby="culture-title">
-              <div className="shell">
-                <p className="eyebrow">Cultura DevSure</p>
-                <h1 id="culture-title">Personas curiosas. Trabajo claro. Software que se sostiene.</h1>
-                <div className={styles.heroFooter}>
-                  <p>
-                    Somos un equipo que combina ingeniería, conversación honesta y mejora continua
-                    para convertir problemas complejos en soluciones que puedan evolucionar.
-                  </p>
-                  <a href="#nuestra-forma-de-trabajar">
-                    Conocer quiénes somos <span aria-hidden="true">↓</span>
-                  </a>
-                </div>
-              </div>
-            </section>
+      <section className={styles.hero} aria-labelledby="culture-title">
+        <div className={`shell ${styles.heroLayout}`}>
+          <div className={styles.heroCopy}>
+            <p className="eyebrow">Cultura DevSure</p>
+            <h1 id="culture-title">Personas curiosas. Trabajo claro. Software que se sostiene.</h1>
+            <p className={styles.heroLead}>
+              Somos un equipo que combina ingeniería, conversación honesta y mejora continua para
+              convertir problemas complejos en soluciones que puedan evolucionar.
+            </p>
+          </div>
+          {/* Placeholder photo — swap for the real one whenever it's ready. */}
+          <img
+            className={styles.heroImage}
+            src="/photos/conference-room.webp"
+            alt="Equipo de DevSure colaborando en una sala de trabajo."
+          />
+        </div>
+      </section>
 
-            <section
-              className={styles.storiesSection}
-              id="nuestra-forma-de-trabajar"
-              aria-labelledby="stories-title"
-            >
-              <div className="shell">
-                <div className={styles.sectionHeading}>
-                  <div>
-                    <p className="eyebrow">Quiénes somos</p>
-                    <h2 id="stories-title">Una forma de trabajar que se nota en cada entrega.</h2>
-                  </div>
-                  <p>
-                    La cultura no es una frase en la pared. Es cómo escuchamos, decidimos,
-                    verificamos y avanzamos juntos.
-                  </p>
-                </div>
-              </div>
-            </section>
-          </>
-        }
-      >
+      <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
+        <div className="shell">
+          <p className="eyebrow">Nuestra medida</p>
+          <blockquote>
+            <p id="manifesto-title">
+              El mejor trabajo no solo resuelve el presente: deja al equipo listo para tomar la
+              siguiente buena decisión.
+            </p>
+          </blockquote>
+        </div>
+      </section>
+
+      <CultureSpineScene stories={cultureStories}>
+        {/* Placeholder — content to be defined. */}
+        <section className={styles.cardSection} aria-labelledby="card-section-title">
+          <div className="shell">
+            <p className="eyebrow">Próximamente</p>
+            <h2 id="card-section-title">Un espacio más para contar quiénes somos.</h2>
+            <div className={styles.placeholderCard}>
+              <p>Aquí va el contenido que definamos juntos.</p>
+            </div>
+          </div>
+        </section>
+
         <section className={styles.principlesSection} aria-labelledby="principles-title">
           <div className="shell">
             <div className={styles.principlesIntro}>
-              <p className="eyebrow">Lo que cuidamos</p>
+              <p className="eyebrow">Valores</p>
               <h2 id="principles-title">Cómo se siente trabajar con nosotros.</h2>
             </div>
             <ol className={styles.principlesGrid}>
@@ -117,17 +122,25 @@ export default function CulturePage() {
           </div>
         </section>
 
-        <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
-          <div className="shell">
-            <p className="eyebrow">Nuestra medida</p>
-            <blockquote>
-              <p id="manifesto-title">
-                El mejor trabajo no solo resuelve el presente: deja al equipo listo para tomar la
-                siguiente buena decisión.
-              </p>
-            </blockquote>
-          </div>
-        </section>
+        {/*
+          Rendered as CultureSpineScene's `children` (foreground content),
+          same as the sections above/below it — the column keeps showing
+          (and dimming, see .spineScrim) behind it, per the user's request
+          to bring that back. Its own SectionErrorBoundary keeps a crash
+          here (this section runs its own GSAP ScrollTrigger pin, on top of
+          everything else going on in this scene) from taking out the
+          column/cards or the sections around it.
+        */}
+        <SectionErrorBoundary
+          fallback={
+            <div className={styles.teamFallback} role="alert">
+              <p className="eyebrow">Nuestro equipo</p>
+              <p>No pudimos cargar esta sección en tu navegador. Actualiza la página para intentarlo de nuevo.</p>
+            </div>
+          }
+        >
+          <TeamRevealSection members={teamMembers} eyebrow="Nuestro equipo" title="Las personas detrás de DevSure" />
+        </SectionErrorBoundary>
 
         <section className={styles.companiesSection} aria-labelledby="companies-title">
           <div className="shell">

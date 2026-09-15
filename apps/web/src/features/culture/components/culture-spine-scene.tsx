@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import type { CultureStory } from '@/features/culture/culture-content';
 import { CultureSpine } from '@/features/culture/components/culture-spine';
 import { canRender3DSpine } from '@/features/culture/three/capabilities';
+import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import styles from '@/features/culture/culture.module.css';
 
 const CultureSpine3D = dynamic(
@@ -55,6 +56,30 @@ function CultureSpineCaption({ story }: { story: CultureStory }) {
 }
 
 /**
+ * Last-resort fallback if even `CultureSpine` (the CSS/JS path) fails to
+ * render — deliberately has zero refs, effects, or `IntersectionObserver`
+ * calls, just the story copy as plain markup, so there's nothing left in
+ * it that could throw the way both richer paths above it did.
+ */
+function StaticStoriesFallback({ stories }: { stories: readonly CultureStory[] }) {
+  return (
+    <ol className={styles.spineTrack} aria-label="Cómo trabajamos, paso a paso">
+      {stories.map((story) => (
+        <li key={story.id} className={styles.spineItem}>
+          <article className={styles.spineCard}>
+            <div className={styles.spineCopy}>
+              <p>{story.kicker}</p>
+              <h3>{story.title}</h3>
+              <p>{story.description}</p>
+            </div>
+          </article>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/**
  * Gate between the WebGL spine (see PLAN-CULTURA-SPINE-3D.md) and its
  * required CSS/JS fallback, `CultureSpine`. Always renders the fallback
  * first — deterministic on the server, real accessible content, zero
@@ -80,29 +105,48 @@ export function CultureSpineScene({ stories, header, children }: CultureSpineSce
     setActiveIndex(index);
   }, []);
 
-  if (render3D) {
-    const activeStory = activeIndex >= 0 ? (stories[activeIndex] ?? stories[0]) : null;
-    return (
-      <CultureSpine3D
-        stories={stories}
-        onActiveIndexChange={handleActiveIndexChange}
-        header={header}
-        foreground={children}
-      >
-        {activeStory ? (
-          <div className={styles.spineCaptionOverlay}>
-            <CultureSpineCaption story={activeStory} />
-          </div>
-        ) : null}
-      </CultureSpine3D>
-    );
-  }
+  const activeStory = activeIndex >= 0 ? (stories[activeIndex] ?? stories[0]) : null;
 
   return (
-    <>
-      {header}
-      <CultureSpine stories={stories} />
-      {children}
-    </>
+    // Two layers: the inner boundary catches a WebGL-specific failure (e.g.
+    // a browser extension's DOM patching conflicting with the canvas
+    // mounted imperatively in spine-engine.ts) and downgrades to the
+    // CSS/JS path — `onError` flips `render3D` so the *next* render takes
+    // that branch for good. The outer boundary is the true last resort, in
+    // case even swapping to that fallback fails mid-transition; it drops
+    // all the way to `StaticStoriesFallback`, which has nothing left in it
+    // that could throw.
+    <SectionErrorBoundary
+      fallback={
+        <>
+          {header}
+          <StaticStoriesFallback stories={stories} />
+          {children}
+        </>
+      }
+    >
+      {render3D ? (
+        <SectionErrorBoundary fallback={null} onError={() => setRender3D(false)}>
+          <CultureSpine3D
+            stories={stories}
+            onActiveIndexChange={handleActiveIndexChange}
+            header={header}
+            foreground={children}
+          >
+            {activeStory ? (
+              <div className={styles.spineCaptionOverlay}>
+                <CultureSpineCaption story={activeStory} />
+              </div>
+            ) : null}
+          </CultureSpine3D>
+        </SectionErrorBoundary>
+      ) : (
+        <>
+          {header}
+          <CultureSpine stories={stories} />
+          {children}
+        </>
+      )}
+    </SectionErrorBoundary>
   );
 }

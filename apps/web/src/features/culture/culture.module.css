@@ -23,25 +23,70 @@
 }
 
 .hero {
-  /* Slice 9.6: the dark linear-gradient layer was rgba(20, 27, 54, 0.82) —
-     near-opaque, which made sense as a plain page background but now sits
-     over the pinned 3D column (spineBackgroundRegion), so it's lightened
-     enough to let the column show through while keeping some of the
-     original top-to-bottom tint for text contrast. The radial purple glow
-     is untouched — decorative, not something the column needs to compete
-     with. */
-  background:
-    radial-gradient(circle at 78% 28%, rgba(169, 152, 255, 0.22), transparent 25rem),
-    linear-gradient(180deg, rgba(20, 27, 54, 0.3), rgba(7, 11, 23, 0));
-  min-height: min(43rem, calc(100vh - 4.25rem));
-  padding-block: clamp(5rem, 12vw, 9rem) 4rem;
+  /* No longer a full-viewport section pinned behind the 3D column (the
+     column now only starts appearing at the spine section, see page.tsx) —
+     just a decorative accent glow on the page's own backdrop. */
+  background: radial-gradient(circle at 82% 22%, rgba(169, 152, 255, 0.22), transparent 25rem);
+  padding-block: clamp(4rem, 10vw, 7rem);
+}
+
+.heroLayout {
+  align-items: center;
+  display: grid;
+  gap: 2.5rem;
+}
+
+.heroCopy {
+  max-width: 36rem;
 }
 
 .hero h1 {
   color: var(--text);
-  font-size: clamp(2.8rem, 9vw, 7rem);
-  margin-bottom: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  margin-bottom: 1.5rem;
   max-width: 13ch;
+}
+
+.heroLead {
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  margin-bottom: 0;
+  max-width: 34rem;
+}
+
+.heroImage {
+  border-radius: 1.1rem;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+@media (min-width: 48rem) {
+  .heroLayout {
+    grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
+  }
+}
+
+.cardSection h2 {
+  color: var(--text);
+  margin: 0.75rem 0 2rem;
+  max-width: 24ch;
+}
+
+.placeholderCard {
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: 1.1rem;
+  margin: 0 auto;
+  max-width: 40rem;
+  padding: clamp(2.5rem, 8vw, 4rem);
+  text-align: center;
+}
+
+.placeholderCard p {
+  color: var(--muted);
+  margin: 0;
 }
 
 /* closingPanel keeps its own fixed violet/navy gradient regardless of theme
@@ -53,14 +98,6 @@
   color: #86e9db;
 }
 
-.heroFooter {
-  align-items: flex-end;
-  display: grid;
-  gap: 1.5rem;
-}
-
-.heroFooter > p,
-.heroFooter > a,
 .sectionHeading > p {
   color: var(--muted);
 }
@@ -71,29 +108,11 @@
   color: #94a3b8;
 }
 
-.heroFooter > p {
-  font-size: clamp(1.05rem, 2vw, 1.25rem);
-  margin-bottom: 0;
-  max-width: 42rem;
-}
-
-.heroFooter > a {
-  align-items: center;
-  display: inline-flex;
-  font-weight: 700;
-  gap: 0.8rem;
-  min-height: 2.75rem;
-}
-
-.storiesSection,
+.cardSection,
 .principlesSection,
 .companiesSection,
 .closingSection {
   padding-block: clamp(5rem, 10vw, 8rem);
-}
-
-.storiesSection {
-  scroll-margin-top: 5rem;
 }
 
 .sectionHeading {
@@ -318,7 +337,13 @@
  */
 .spineBackgroundRegion {
   display: grid;
-  grid-template-columns: 1fr;
+  /* minmax(0, 1fr), not 1fr: a bare `1fr` track keeps the default grid-item
+     `min-width: auto`, so a wide descendant (TeamRevealSection's
+     `width: max-content` horizontal track, several levels down through
+     `spineForegroundLayer`) bloats this whole column — and the sticky 3D
+     layer sharing the same cell — out to that content's full width instead
+     of the viewport. */
+  grid-template-columns: minmax(0, 1fr);
   position: relative;
 }
 
@@ -668,6 +693,24 @@
   line-height: 1.02;
   margin-bottom: 0;
   max-width: 17ch;
+}
+
+.teamFallback {
+  align-items: center;
+  background: #07090d;
+  color: #f3f6fb;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  min-height: 40vh;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.teamFallback p {
+  color: rgba(243, 246, 251, 0.6);
+  margin: 0;
+  max-width: 34rem;
 }
 
 .companiesSection {

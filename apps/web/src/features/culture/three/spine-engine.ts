@@ -219,9 +219,18 @@ export function mountSpineEngine(
   onActiveIndexChange?: (index: number) => void,
 ): SpineEngineHandle {
   const scene = new THREE.Scene();
+  // Both dimensions clamped to at least 1: `canvasMount` can still be 0×0
+  // the instant this runs (e.g. this mounts inside a CSS grid/sticky layout
+  // that hasn't settled yet, or right after `next/dynamic`'s client-only
+  // swap). An aspect of exactly 0 makes `fitDistanceForScene` divide by a
+  // zero horizontal FOV — the resulting Infinity distance builds a
+  // degenerate camera path whose `getPointAt` returns undefined, crashing
+  // `applyProgress` the moment it runs below. `handleResize`'s observer
+  // (see bottom of this function) corrects the real aspect once layout
+  // actually reports a size.
   const camera = new THREE.PerspectiveCamera(
     50,
-    canvasMount.clientWidth / Math.max(canvasMount.clientHeight, 1),
+    Math.max(canvasMount.clientWidth, 1) / Math.max(canvasMount.clientHeight, 1),
     0.1,
     100,
   );
@@ -313,8 +322,14 @@ export function mountSpineEngine(
     // "Lo que cuidamos"/"Nuestra medida"/"Confianza compartida" scroll past.
     spine.group.rotation.y = rawProgress * Math.PI * 2 * SPINE_ROTATION_CYCLES + 0.3;
 
+    // Belt-and-suspenders alongside the aspect clamp above and the resize
+    // observer below: `getPointAt` can still return undefined for a
+    // degenerate curve (e.g. an Infinite/NaN distance slipping through some
+    // other path). Skip this frame's camera move rather than crash the
+    // whole page on a `.x` read.
     const here = cameraPath.getPointAt(rawProgress);
     const ahead = cameraPath.getPointAt(Math.min(1, rawProgress + 0.02));
+    if (!here || !ahead) return;
     camera.position.copy(here);
     // Look mostly at the column (origin's x/y), biased slightly toward
     // where the path is heading next, so turns read as the camera
@@ -468,6 +483,15 @@ export function mountSpineEngine(
   }
 
   window.addEventListener('resize', handleResize);
+  // `window`'s own `resize` event only fires when the *viewport* changes —
+  // it never catches `canvasMount` going from the degenerate 0×0 above to
+  // its real size purely from layout settling (grid/sticky positioning,
+  // the client-only spine mounting in). A `ResizeObserver` on the element
+  // itself catches that too, so a bad initial aspect/camera path gets
+  // corrected as soon as real dimensions are known, not just on an actual
+  // window resize.
+  const resizeObserver = new ResizeObserver(handleResize);
+  resizeObserver.observe(canvasMount);
 
   return {
     dispose: () => {
@@ -476,6 +500,7 @@ export function mountSpineEngine(
       cancelAnimationFrame(frameId);
       cancelAnimationFrame(transitionFrame);
       window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       cards.dispose();
       spine.dispose();
       particles.dispose();
