@@ -18,10 +18,10 @@
 .scrim {
   background: linear-gradient(
     115deg,
-    rgba(4, 8, 18, 0.92) 0%,
-    rgba(6, 11, 23, 0.84) 38%,
-    rgba(7, 12, 26, 0.58) 68%,
-    rgba(7, 12, 26, 0.76) 100%
+    var(--section-scrim-1) 0%,
+    var(--section-scrim-2) 38%,
+    var(--section-scrim-3) 68%,
+    var(--section-scrim-4) 100%
   );
   inset: 0;
   position: absolute;

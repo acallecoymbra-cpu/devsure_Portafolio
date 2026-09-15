@@ -116,7 +116,7 @@
 .signalCard {
   animation: hero-enter 620ms 100ms var(--ease-out) both;
   background:
-    linear-gradient(145deg, rgba(30, 41, 79, 0.92), rgba(12, 19, 38, 0.96)), var(--surface);
+    linear-gradient(145deg, var(--signal-card-grad-1), var(--signal-card-grad-2)), var(--surface);
   border: 1px solid var(--line);
   border-radius: 1.2rem;
   box-shadow: 0 2rem 5rem rgba(1, 4, 14, 0.34);
@@ -267,7 +267,7 @@
 .stepNumber {
   align-items: center;
   animation: step-light 3.2s var(--ease-in-out) 1.1s infinite;
-  background: #151d36;
+  background: var(--step-number-bg);
   border: 1px solid var(--line-strong);
   border-radius: 50%;
   color: var(--accent-soft);

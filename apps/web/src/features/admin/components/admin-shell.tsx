@@ -10,6 +10,7 @@ import {
   logout,
 } from '../api/admin-api';
 import type { AdminUser } from '../types';
+import { ThemeToggle } from '@/components/theme-toggle';
 import styles from '../admin.module.css';
 
 export function AdminShell({ children }: { children: ReactNode }) {
@@ -264,6 +265,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <a href="/" target="_blank" rel="noreferrer">
             Ver sitio <span aria-hidden="true">↗</span>
           </a>
+          <ThemeToggle />
         </header>
         <div className={styles.content}>
           {logoutError ? <p className={styles.alertError} role="alert">{logoutError}</p> : null}

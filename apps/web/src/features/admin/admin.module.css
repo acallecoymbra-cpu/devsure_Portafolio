@@ -7,11 +7,94 @@
   --admin-border: rgba(170, 184, 214, 0.2);
   --admin-muted: #aab6cc;
   --admin-text: #f6f8ff;
+  --admin-glow: rgba(108, 83, 222, 0.15);
+  --admin-input-bg: #07111f;
+  --admin-input-border: rgba(179, 190, 215, 0.3);
+  --admin-placeholder: #78859d;
+  --admin-sidebar-bg: #081321;
+  --admin-topbar-bg: rgba(7, 16, 31, 0.88);
+  --admin-login-card-bg: rgba(12, 23, 40, 0.94);
+  --admin-backdrop: rgba(2, 6, 13, 0.73);
+  --admin-dialog-backdrop: rgba(2, 6, 13, 0.78);
+  --admin-form-actions-bg: rgba(5, 13, 25, 0.42);
+  --admin-hover-bg: rgba(255, 255, 255, 0.05);
+  --admin-skeleton-bg: rgba(176, 187, 214, 0.1);
+  --admin-spinner-track: rgba(255, 255, 255, 0.17);
+  --admin-field-label: #e9edfa;
+  --admin-table-text: #d9e0ee;
+  --admin-tag-bg: rgba(169, 156, 255, 0.14);
+  --admin-tag-text: #ebe7ff;
+  --admin-alert-error-bg: rgba(126, 35, 57, 0.2);
+  --admin-alert-error-border: rgba(255, 128, 153, 0.55);
+  --admin-alert-error-text: #ffd7df;
+  --admin-alert-success-bg: rgba(24, 108, 81, 0.2);
+  --admin-alert-success-border: rgba(83, 211, 164, 0.55);
+  --admin-alert-success-text: #c5f8e5;
+  --admin-status-published-bg: rgba(34, 153, 112, 0.16);
+  --admin-status-published-text: #8eebca;
+  --admin-status-draft-bg: rgba(169, 181, 205, 0.12);
+  --admin-status-draft-text: #c1cada;
+  --admin-upload-error: #ffb7c6;
+  --admin-dirty-bg: rgba(224, 174, 75, 0.14);
+  --admin-dirty-border: rgba(246, 198, 98, 0.4);
+  --admin-dirty-text: #ffdda0;
+  --admin-focus-outline: #ded8ff;
+  --admin-active-bg: rgba(169, 156, 255, 0.16);
   background:
-    radial-gradient(circle at 90% -10%, rgba(108, 83, 222, 0.15), transparent 34rem),
+    radial-gradient(circle at 90% -10%, var(--admin-glow), transparent 34rem),
     var(--admin-bg);
   color: var(--admin-text);
   min-height: 100vh;
+}
+
+/*
+ * Light theme overrides — `ThemeToggle` flips `[data-theme]` on <html>; the
+ * admin panel keeps its own violet accent but every neutral/background
+ * token below switches to a light equivalent. Everything else in this file
+ * reads colors only through these variables.
+ */
+[data-theme='light'] .adminRoot {
+  --admin-accent: #7c6ae0;
+  --admin-accent-strong: #5b3ff0;
+  --admin-bg: #f5f4fb;
+  --admin-panel: #ffffff;
+  --admin-panel-soft: #f0eefa;
+  --admin-border: rgba(76, 63, 130, 0.18);
+  --admin-muted: #5d5a72;
+  --admin-text: #1a1730;
+  --admin-glow: rgba(108, 83, 222, 0.1);
+  --admin-input-bg: #ffffff;
+  --admin-input-border: rgba(76, 63, 130, 0.25);
+  --admin-placeholder: #7a7690;
+  --admin-sidebar-bg: #ffffff;
+  --admin-topbar-bg: rgba(255, 255, 255, 0.9);
+  --admin-login-card-bg: rgba(255, 255, 255, 0.96);
+  --admin-backdrop: rgba(26, 23, 48, 0.35);
+  --admin-dialog-backdrop: rgba(26, 23, 48, 0.4);
+  --admin-form-actions-bg: rgba(240, 238, 250, 0.6);
+  --admin-hover-bg: rgba(76, 63, 130, 0.06);
+  --admin-skeleton-bg: rgba(76, 63, 130, 0.08);
+  --admin-spinner-track: rgba(76, 63, 130, 0.15);
+  --admin-field-label: #241f3d;
+  --admin-table-text: #2a2645;
+  --admin-tag-bg: rgba(124, 106, 224, 0.14);
+  --admin-tag-text: #4a3aa8;
+  --admin-alert-error-bg: rgba(220, 38, 63, 0.1);
+  --admin-alert-error-border: rgba(220, 38, 63, 0.4);
+  --admin-alert-error-text: #9f1239;
+  --admin-alert-success-bg: rgba(22, 163, 74, 0.1);
+  --admin-alert-success-border: rgba(22, 163, 74, 0.4);
+  --admin-alert-success-text: #15803d;
+  --admin-status-published-bg: rgba(22, 163, 74, 0.14);
+  --admin-status-published-text: #15803d;
+  --admin-status-draft-bg: rgba(93, 90, 114, 0.12);
+  --admin-status-draft-text: #46435c;
+  --admin-upload-error: #c81e45;
+  --admin-dirty-bg: rgba(217, 119, 6, 0.12);
+  --admin-dirty-border: rgba(217, 119, 6, 0.4);
+  --admin-dirty-text: #92400e;
+  --admin-focus-outline: #5b3ff0;
+  --admin-active-bg: rgba(124, 106, 224, 0.16);
 }
 
 .adminRoot *,
@@ -50,7 +133,7 @@
 }
 
 .adminRoot :is(a, button, input, textarea, select):focus-visible {
-  outline: 3px solid #ded8ff;
+  outline: 3px solid var(--admin-focus-outline);
   outline-offset: 3px;
 }
 
@@ -62,7 +145,7 @@
 }
 
 .loginCard {
-  background: rgba(12, 23, 40, 0.94);
+  background: var(--admin-login-card-bg);
   border: 1px solid var(--admin-border);
   border-radius: 1.25rem;
   box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.32);
@@ -113,13 +196,13 @@
 }
 
 .field > span {
-  color: #e9edfa;
+  color: var(--admin-field-label);
   font-size: 0.88rem;
   font-weight: 700;
 }
 
 .field em {
-  color: #c5bcff;
+  color: var(--admin-accent-strong);
   font-style: normal;
 }
 
@@ -134,8 +217,8 @@
 .field textarea,
 .field select,
 .searchField {
-  background: #07111f;
-  border: 1px solid rgba(179, 190, 215, 0.3);
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-input-border);
   border-radius: 0.65rem;
   color: var(--admin-text);
 }
@@ -155,7 +238,7 @@
 
 .field input::placeholder,
 .searchField input::placeholder {
-  color: #78859d;
+  color: var(--admin-placeholder);
 }
 
 .field input:disabled,
@@ -202,7 +285,7 @@
 }
 
 .secondaryButton:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-hover-bg);
 }
 
 .alertError,
@@ -215,15 +298,15 @@
 }
 
 .alertError {
-  background: rgba(126, 35, 57, 0.2);
-  border-color: rgba(255, 128, 153, 0.55);
-  color: #ffd7df;
+  background: var(--admin-alert-error-bg);
+  border-color: var(--admin-alert-error-border);
+  color: var(--admin-alert-error-text);
 }
 
 .alertSuccess {
-  background: rgba(24, 108, 81, 0.2);
-  border-color: rgba(83, 211, 164, 0.55);
-  color: #c5f8e5;
+  background: var(--admin-alert-success-bg);
+  border-color: var(--admin-alert-success-border);
+  color: var(--admin-alert-success-text);
 }
 
 .centerState {
@@ -244,7 +327,7 @@
 
 .spinner {
   animation: admin-spin 0.75s linear infinite;
-  border: 3px solid rgba(255, 255, 255, 0.17);
+  border: 3px solid var(--admin-spinner-track);
   border-radius: 50%;
   border-top-color: var(--admin-accent);
   height: 2rem;
@@ -256,7 +339,7 @@
 }
 
 .sidebar {
-  background: #081321;
+  background: var(--admin-sidebar-bg);
   border-right: 1px solid var(--admin-border);
   display: flex;
   flex-direction: column;
@@ -312,8 +395,8 @@
 }
 
 .adminNav a[aria-current='page'] {
-  background: rgba(169, 156, 255, 0.13);
-  color: #ebe7ff;
+  background: var(--admin-active-bg);
+  color: var(--admin-tag-text);
 }
 
 .sidebarAccount {
@@ -335,7 +418,7 @@
   background: transparent;
   border: 0;
   border-radius: 0.45rem;
-  color: #dce3f2;
+  color: var(--admin-table-text);
   cursor: pointer;
   min-height: 2.5rem;
   padding: 0.55rem;
@@ -343,11 +426,11 @@
 }
 
 .sidebarAccount button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-hover-bg);
 }
 
 .backdrop {
-  background: rgba(2, 6, 13, 0.73);
+  background: var(--admin-backdrop);
   border: 0;
   inset: 0;
   position: fixed;
@@ -361,7 +444,7 @@
 .topbar {
   align-items: center;
   backdrop-filter: blur(14px);
-  background: rgba(7, 16, 31, 0.88);
+  background: var(--admin-topbar-bg);
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   gap: 0.75rem;
@@ -430,10 +513,10 @@
 
 .dirtyBadge {
   align-self: flex-start;
-  background: rgba(224, 174, 75, 0.14);
-  border: 1px solid rgba(246, 198, 98, 0.4);
+  background: var(--admin-dirty-bg);
+  border: 1px solid var(--admin-dirty-border);
   border-radius: 999px;
-  color: #ffdda0;
+  color: var(--admin-dirty-text);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.35rem 0.65rem;
@@ -500,7 +583,7 @@
 
 .table td {
   align-items: center;
-  color: #d9e0ee;
+  color: var(--admin-table-text);
   display: flex;
   gap: 1rem;
   justify-content: space-between;
@@ -558,7 +641,7 @@
 }
 
 .rowActions button {
-  color: #ffb7c6;
+  color: var(--admin-upload-error);
 }
 
 .statusPublished,
@@ -572,13 +655,13 @@
 }
 
 .statusPublished {
-  background: rgba(34, 153, 112, 0.16);
-  color: #8eebca;
+  background: var(--admin-status-published-bg);
+  color: var(--admin-status-published-text);
 }
 
 .statusDraft {
-  background: rgba(169, 181, 205, 0.12);
-  color: #c1cada;
+  background: var(--admin-status-draft-bg);
+  color: var(--admin-status-draft-text);
 }
 
 .stateCard {
@@ -614,7 +697,7 @@
 
 .skeletonPanel div {
   animation: skeleton-pulse 1.25s ease-in-out infinite;
-  background: rgba(176, 187, 214, 0.1);
+  background: var(--admin-skeleton-bg);
   border: 1px solid var(--admin-border);
   border-radius: 0.8rem;
   height: 7.5rem;
@@ -721,8 +804,8 @@
 
 .tagsInput {
   align-items: center;
-  background: #07111f;
-  border: 1px solid rgba(179, 190, 215, 0.3);
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-input-border);
   border-radius: 0.65rem;
   display: flex;
   flex-wrap: wrap;
@@ -743,9 +826,9 @@
 
 .tag {
   align-items: center;
-  background: rgba(169, 156, 255, 0.14);
+  background: var(--admin-tag-bg);
   border-radius: 999px;
-  color: #ebe7ff;
+  color: var(--admin-tag-text);
   display: inline-flex;
   font-size: 0.8rem;
   font-weight: 700;
@@ -825,7 +908,7 @@
 }
 
 .highlightsLabel {
-  color: #e9edfa;
+  color: var(--admin-field-label);
   display: block;
   font-size: 0.88rem;
   font-weight: 700;
@@ -839,11 +922,11 @@
 }
 
 .uploadError {
-  color: #ffb7c6;
+  color: var(--admin-upload-error);
 }
 
 .localeTab[aria-selected='true'] {
-  background: rgba(169, 156, 255, 0.16);
+  background: var(--admin-active-bg);
   border-color: var(--admin-accent);
   color: var(--admin-accent-strong);
 }
@@ -891,7 +974,7 @@
 
 .formActions {
   align-items: stretch;
-  background: rgba(5, 13, 25, 0.42);
+  background: var(--admin-form-actions-bg);
   border-top: 1px solid var(--admin-border);
   display: flex;
   flex-direction: column-reverse;
@@ -912,7 +995,7 @@
 }
 
 .dialog::backdrop {
-  background: rgba(2, 6, 13, 0.78);
+  background: var(--admin-dialog-backdrop);
   backdrop-filter: blur(3px);
 }
 

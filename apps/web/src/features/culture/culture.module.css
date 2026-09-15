@@ -1,3 +1,11 @@
+/*
+ * This whole page is anchored to CultureSpineScene's persistent dark 3D
+ * canvas (see spineBackgroundRegion below), which isn't theme-aware — so
+ * every color in this file is a fixed literal (not a `var()` from
+ * globals.css) and the page keeps this exact look in both the site's dark
+ * and light theme. Re-theming it would mean re-lighting the Three.js scene,
+ * not just this stylesheet.
+ */
 .hero {
   /* Slice 9.6: the dark linear-gradient layer was rgba(20, 27, 54, 0.82) —
      near-opaque, which made sense as a plain page background but now sits
@@ -8,15 +16,25 @@
      with. */
   background:
     radial-gradient(circle at 78% 28%, rgba(169, 152, 255, 0.22), transparent 25rem),
-    linear-gradient(180deg, rgba(20, 27, 54, 0.3), rgba(7, 11, 23, 0));
+    linear-gradient(180deg, rgba(20, 27, 54, 0.3), rgba(7, 11, 23, 0)),
+    #0a0e20;
   min-height: min(43rem, calc(100vh - 4.25rem));
   padding-block: clamp(5rem, 12vw, 9rem) 4rem;
 }
 
 .hero h1 {
+  color: #ffffff;
   font-size: clamp(2.8rem, 9vw, 7rem);
   margin-bottom: clamp(3rem, 8vw, 6rem);
   max-width: 13ch;
+}
+
+.hero :global(.eyebrow),
+.sectionHeading :global(.eyebrow),
+.principlesIntro :global(.eyebrow),
+.manifestoSection :global(.eyebrow),
+.closingPanel :global(.eyebrow) {
+  color: #86e9db;
 }
 
 .heroFooter {
@@ -30,7 +48,7 @@
 .sectionHeading > p,
 .principlesGrid p,
 .companyCopy > p:last-child {
-  color: var(--muted);
+  color: #94a3b8;
 }
 
 .heroFooter > p {
@@ -55,6 +73,11 @@
 }
 
 .storiesSection {
+  /* Same reasoning as .principlesSection below: mostly transparent so the
+     pinned 3D column shows through in the WebGL path, but with a dark floor
+     so its pinned-white heading still reads in the CSS fallback / light
+     theme, where there's no column behind it. */
+  background: rgba(7, 11, 23, 0.88);
   scroll-margin-top: 5rem;
 }
 
@@ -66,6 +89,7 @@
 
 .sectionHeading h2,
 .principlesIntro h2 {
+  color: #ffffff;
   margin-bottom: 0;
 }
 
@@ -81,7 +105,7 @@
 
 .storySlide {
   background: rgba(16, 24, 43, 0.86);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 1.1rem;
   display: grid;
   min-width: 0;
@@ -122,7 +146,7 @@
 .mediaFallback {
   align-items: center;
   background: linear-gradient(135deg, #10182b, #211b49);
-  color: var(--muted);
+  color: #94a3b8;
   display: flex;
   height: 100%;
   justify-content: center;
@@ -141,7 +165,7 @@
 
 .storyCopy > p:first-child,
 .companyCopy > p:first-child {
-  color: var(--accent-soft);
+  color: #86e9db;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -149,12 +173,13 @@
 }
 
 .storyCopy h3 {
+  color: #ffffff;
   font-size: clamp(2rem, 6vw, 3.5rem);
   max-width: 11ch;
 }
 
 .storyCopy > p:last-of-type {
-  color: var(--muted);
+  color: #94a3b8;
   margin-bottom: 0;
   max-width: 34rem;
 }
@@ -187,10 +212,10 @@
 .arrowControls button,
 .companyControls button {
   align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: #111a27;
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 999px;
-  color: var(--text);
+  color: #ffffff;
   cursor: pointer;
   display: inline-flex;
   font-size: 1.1rem;
@@ -240,16 +265,16 @@
 }
 
 .indicators button[aria-current='true']::after {
-  background: var(--accent);
+  background: #3cd8c5;
   width: 2.1rem;
 }
 
 .playControl {
   align-items: center;
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 999px;
-  color: var(--muted);
+  color: #94a3b8;
   cursor: pointer;
   display: inline-flex;
   font-size: 0.78rem;
@@ -363,7 +388,7 @@
 }
 
 .spineCaption > p:first-child {
-  color: var(--accent-soft);
+  color: #86e9db;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -371,12 +396,13 @@
 }
 
 .spineCaption h3 {
+  color: #ffffff;
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   margin-bottom: 0;
 }
 
 .spineCaption > p:last-child {
-  color: var(--muted);
+  color: #94a3b8;
   margin-bottom: 0;
 }
 
@@ -388,7 +414,7 @@
 }
 
 .spineTrack::before {
-  background: linear-gradient(180deg, transparent, var(--line) 6%, var(--line) 94%, transparent);
+  background: linear-gradient(180deg, transparent, rgba(60, 216, 197, 0.16) 6%, rgba(60, 216, 197, 0.16) 94%, transparent);
   bottom: 0.5rem;
   content: '';
   left: 1.1rem;
@@ -415,8 +441,8 @@
 }
 
 .spineDot {
-  background: var(--surface);
-  border: 2px solid var(--line);
+  background: #111a27;
+  border: 2px solid rgba(60, 216, 197, 0.16);
   border-radius: 999px;
   grid-column: 1;
   height: 0.85rem;
@@ -430,14 +456,14 @@
 }
 
 .spineItemRevealed .spineDot {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: #3cd8c5;
+  border-color: #3cd8c5;
   box-shadow: 0 0 0 5px rgba(60, 216, 197, 0.18);
 }
 
 .spineCard {
   background: rgba(16, 24, 43, 0.86);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 1.1rem;
   grid-column: 2;
   min-width: 0;
@@ -472,7 +498,7 @@
 }
 
 .spineCopy > p:first-child {
-  color: var(--accent-soft);
+  color: #86e9db;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -480,12 +506,13 @@
 }
 
 .spineCopy h3 {
+  color: #ffffff;
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   margin-bottom: 0;
 }
 
 .spineCopy > p:last-child {
-  color: var(--muted);
+  color: #94a3b8;
   margin-bottom: 0;
 }
 
@@ -525,21 +552,21 @@
 @keyframes spineTextGlitch {
   0% {
     text-shadow:
-      -3px 0 var(--accent),
+      -3px 0 #3cd8c5,
       3px 0 #ff5fae;
     transform: translateX(-4px);
   }
 
   35% {
     text-shadow:
-      3px 0 var(--accent),
+      3px 0 #3cd8c5,
       -3px 0 #ff5fae;
     transform: translateX(3px);
   }
 
   65% {
     text-shadow:
-      -1px 0 var(--accent),
+      -1px 0 #3cd8c5,
       1px 0 #ff5fae;
     transform: translateX(-1px);
   }
@@ -559,11 +586,15 @@
 }
 
 .principlesSection {
-  /* Slice 9: was a near-opaque rgba(13, 20, 38, 0.7) — now sits over the
-     pinned 3D column (see spineBackgroundRegion), so the section itself
-     stays transparent and lets the column show through the gaps around
-     the (still solidly-backed, per .principlesGrid li) principle cards. */
-  background: transparent;
+  /* Slice 9: was a near-opaque rgba(13, 20, 38, 0.7) — lightened so the
+     pinned 3D column (see spineBackgroundRegion) mostly shows through the
+     gaps around the (still solidly-backed, per .principlesGrid li)
+     principle cards. Not fully transparent, though: this section (and its
+     pinned-white heading text, see the top-of-file note) also has to read
+     correctly without that 3D column — the CultureSpine CSS fallback for
+     browsers without WebGL, and this page's own light-theme background —
+     so a dark floor stays underneath either way. */
+  background: rgba(7, 11, 23, 0.88);
 }
 
 .principlesIntro {
@@ -580,14 +611,14 @@
 
 .principlesGrid li {
   background: rgba(16, 24, 43, 0.82);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 0.9rem;
   min-height: 18rem;
   padding: 1.5rem;
 }
 
 .principlesGrid li > span {
-  color: var(--accent-soft);
+  color: #86e9db;
   display: block;
   font-size: 0.75rem;
   font-weight: 700;
@@ -595,6 +626,7 @@
 }
 
 .principlesGrid h3 {
+  color: #ffffff;
   font-size: 1.55rem;
 }
 
@@ -604,6 +636,7 @@
 
 .manifestoSection {
   align-items: center;
+  background: #0a0e20;
   display: flex;
   min-height: 75vh;
   padding-block: 6rem;
@@ -614,6 +647,7 @@
 }
 
 .manifestoSection blockquote p {
+  color: #ffffff;
   font-size: clamp(2.4rem, 7vw, 6.2rem);
   font-weight: 700;
   letter-spacing: -0.055em;
@@ -626,13 +660,15 @@
   /* Slice 9: dropped the border-top and lightened the gradient — this
      section now sits over the pinned 3D column (see spineBackgroundRegion)
      rather than a plain page background, and a hard edge/heavier tint would
-     read as a seam interrupting it. */
-  background: linear-gradient(180deg, rgba(25, 20, 61, 0.16), transparent);
+     read as a seam interrupting it. Kept a dark floor (see .principlesSection
+     above) for the CSS fallback / light-theme case where there's no column
+     to show through. */
+  background: linear-gradient(180deg, rgba(25, 20, 61, 0.35), rgba(7, 11, 23, 0.6)), #0a0e20;
 }
 
 .companyCard {
   background: rgba(16, 24, 43, 0.88);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 1rem;
   display: grid;
   min-height: 18rem;
@@ -665,6 +701,7 @@
 }
 
 .companyCopy h3 {
+  color: #ffffff;
   font-size: clamp(2rem, 6vw, 3.5rem);
 }
 
@@ -679,7 +716,7 @@
 }
 
 .companyControls p {
-  color: var(--muted);
+  color: #94a3b8;
   margin: 0;
   min-width: 3.5rem;
   text-align: center;
@@ -687,9 +724,9 @@
 
 .emptyState {
   background: rgba(16, 24, 43, 0.82);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(60, 216, 197, 0.16);
   border-radius: 0.9rem;
-  color: var(--muted);
+  color: #94a3b8;
   margin: 0;
   padding: 2rem;
 }
@@ -709,6 +746,7 @@
 }
 
 .closingPanel h2 {
+  color: #ffffff;
   margin-bottom: 0;
 }
 

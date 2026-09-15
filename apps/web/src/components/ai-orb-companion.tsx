@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from '@/lib/use-theme';
 
 /**
  * Sections the companion never changes side/reveals for. `client-logos-section`
@@ -24,6 +25,7 @@ const SKIP_SECTION_CLASSES = ['client-logos-section', 'home-hero-section'];
  * beside the content column instead, where there's room for it.
  */
 export function AiOrbCompanion() {
+  const { theme } = useTheme();
   const [side, setSide] = useState<'left' | 'right'>('right');
   const [hidden, setHidden] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -80,23 +82,37 @@ export function AiOrbCompanion() {
   useEffect(() => {
     // autoPlay is enough in most browsers, but Chrome sometimes leaves a
     // muted <video> stalled on its first frame until something explicitly
-    // calls play() — kick it once the element exists.
+    // calls play() — kick it once the element exists. Re-runs on theme
+    // change too, since the <video> below is re-keyed (and its <source>s
+    // swapped) whenever the theme flips.
     const video = videoRef.current;
     if (!video) return;
     const tryPlay = () => void video.play().catch(() => {});
     tryPlay();
     video.addEventListener('loadeddata', tryPlay);
     return () => video.removeEventListener('loadeddata', tryPlay);
-  }, []);
+  }, [theme]);
 
   return (
     <div className="ai-orb-companion" data-side={side} data-hidden={hidden} aria-hidden="true">
-      <video ref={videoRef} className="ai-orb-companion-video" autoPlay loop muted playsInline preload="auto">
-        {/* H.264/mp4 first: VP9 hardware decode is flaky on some Windows GPU
-            drivers and can silently stall on the first frame instead of
-            erroring, so don't let the browser prefer the webm source. */}
-        <source src="/videos/ai-orb-loop.mp4" type="video/mp4" />
-        <source src="/videos/ai-orb-loop.webm" type="video/webm" />
+      {/*
+       * `key={theme}` forces React to drop and recreate the <video> node
+       * instead of leaving the old one's already-decoded sources in place
+       * when the <source> children below change — a plain prop/children
+       * swap doesn't make browsers re-run resource selection on its own.
+       */}
+      <video key={theme} ref={videoRef} className="ai-orb-companion-video" autoPlay loop muted playsInline preload="auto">
+        {theme === 'light' ? (
+          <source src="/videos/orbe_theme_light.mp4" type="video/mp4" />
+        ) : (
+          <>
+            {/* H.264/mp4 first: VP9 hardware decode is flaky on some Windows
+                GPU drivers and can silently stall on the first frame instead
+                of erroring, so don't let the browser prefer the webm source. */}
+            <source src="/videos/ai-orb-loop.mp4" type="video/mp4" />
+            <source src="/videos/ai-orb-loop.webm" type="video/webm" />
+          </>
+        )}
       </video>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getStorageUrl } from '@/lib/config';
+import { ThemeToggle } from './theme-toggle';
 
 const navigation = [
   { href: '/', label: 'Inicio' },
@@ -50,46 +51,49 @@ export function SiteHeader({ profile }: { profile?: Profile }) {
             <span>DevSure</span>
           )}
         </Link>
-        <button
-          className="menu-button"
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="primary-navigation"
-          onClick={() => setMenuOpen((isOpen) => !isOpen)}
-          ref={buttonRef}
-        >
-          <span>Menú</span>
-          <span className="menu-icon" aria-hidden="true" />
-        </button>
-        <nav
-          id="primary-navigation"
-          className="primary-navigation"
-          aria-label="Navegación principal"
-          data-open={menuOpen}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') closeMenu(true);
-          }}
-        >
-          <ul className="nav-list">
-            {navigation.map((item, index) => {
-              const isCurrentPage = item.href === '/cultura' && pathname === item.href;
+        <div className="header-actions">
+          <button
+            className="menu-button"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="primary-navigation"
+            onClick={() => setMenuOpen((isOpen) => !isOpen)}
+            ref={buttonRef}
+          >
+            <span>Menú</span>
+            <span className="menu-icon" aria-hidden="true" />
+          </button>
+          <nav
+            id="primary-navigation"
+            className="primary-navigation"
+            aria-label="Navegación principal"
+            data-open={menuOpen}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') closeMenu(true);
+            }}
+          >
+            <ul className="nav-list">
+              {navigation.map((item, index) => {
+                const isCurrentPage = item.href === '/cultura' && pathname === item.href;
 
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={item.emphasized ? 'nav-culture-link' : undefined}
-                    aria-current={isCurrentPage ? 'page' : undefined}
-                    onClick={() => closeMenu()}
-                    ref={index === 0 ? firstLinkRef : undefined}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={item.emphasized ? 'nav-culture-link' : undefined}
+                      aria-current={isCurrentPage ? 'page' : undefined}
+                      onClick={() => closeMenu()}
+                      ref={index === 0 ? firstLinkRef : undefined}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
