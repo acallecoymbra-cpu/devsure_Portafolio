@@ -8,6 +8,7 @@ import {
 } from '@/features/culture/culture-content';
 import { CompanyCarousel } from '@/features/culture/components/culture-carousels';
 import { CultureSpineScene } from '@/features/culture/components/culture-spine-scene';
+import { CultureWaterSection } from '@/features/culture/components/culture-water-section';
 import { TeamRevealSection } from '@/features/culture/components/team-reveal-section';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import styles from '@/features/culture/culture.module.css';
@@ -60,8 +61,19 @@ export default function CulturePage() {
         thing in the spine's foreground content, so `headerClearAmount` (see
         spine-engine.ts) ramps up almost immediately — the first card shows
         up after only a little scroll, not after clearing a tall header.
+
+        The hero copy below is `CultureWaterSection`'s children (user
+        request): the background photo now uses `object-fit: contain` (its
+        full original composition, letterboxed, never cropped) instead of
+        the site's usual full-bleed `cover` treatment — which only makes
+        sense scoped to the hero itself, so the manifesto quote is back to
+        being its own plain section rather than sharing that image (an
+        earlier version stretched the shared photo across both, which relied
+        on `cover` cropping to fill the extra height). The old side-by-side
+        conference-room photo stays gone; the shared background already
+        carries the hero block visually.
       */}
-      <section className={styles.hero} aria-labelledby="culture-title">
+      <CultureWaterSection>
         <div className={`shell ${styles.heroLayout}`}>
           <div className={styles.heroCopy}>
             <p className="eyebrow">Cultura DevSure</p>
@@ -71,14 +83,8 @@ export default function CulturePage() {
               convertir problemas complejos en soluciones que puedan evolucionar.
             </p>
           </div>
-          {/* Placeholder photo — swap for the real one whenever it's ready. */}
-          <img
-            className={styles.heroImage}
-            src="/photos/conference-room.webp"
-            alt="Equipo de DevSure colaborando en una sala de trabajo."
-          />
         </div>
-      </section>
+      </CultureWaterSection>
 
       <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
         <div className="shell">

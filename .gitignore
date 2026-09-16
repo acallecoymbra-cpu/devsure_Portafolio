@@ -16,3 +16,10 @@ imagenes/*.mkv
 !.env.example
 pnpm-debug.log*
 videos muestra/
+.agents/skills/
+.claude/agents/
+.claude/skills/
+.claude/skills
+.cursor/skills
+.github/skills
+Portfolio
