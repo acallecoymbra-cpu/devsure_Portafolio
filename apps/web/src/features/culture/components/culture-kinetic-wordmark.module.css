@@ -1,0 +1,196 @@
+/*
+ * PARKED (see culture-kinetic-wordmark.tsx) — not imported by
+ * culture-water-section.tsx right now, kept intact for later reuse.
+ *
+ * Reads `var(--wordmark-size)`, which is defined on `.headingWrap` in
+ * culture-water-section.module.css, not in this file — CSS custom
+ * properties cascade by DOM position, not by stylesheet, so this still
+ * resolves correctly as long as `<CultureKineticWordmark />` renders inside
+ * that same `.headingWrap`.
+ */
+
+.headingTitle {
+  /* Overrides the global `h2 { max-width: 14ch }` rule (sized for wrapping
+     text headings) — this heading spans (most of) the section width. */
+  max-width: 1800px;
+  width: 100%;
+  margin: 0;
+
+  /* Bodoni Moda Italic (loaded in the component) reading as a large,
+     flowing wordmark — sized to dominate the hero the way the old logotype
+     image did (spanning most of the section width), not just a heading.
+     Warm ivory (not pure white). Weight 400, not 500 — the thinner cut
+     keeps the didone hairlines actually thin, which is what reads as
+     "fashion-magazine editorial" instead of "bold and opaque". `text-shadow`
+     inherits down to the `.letter` spans, so it only needs setting once.
+     Two *tight*, low-opacity layers: a short warm glow for material (not a
+     soft halo) plus a small dark contact shadow so the letterform edges
+     stay crisp against busy, light patches of the photo — glow for
+     sophistication, shadow for definition, neither doing the other's job. */
+  color: #f3e6cc;
+  font-size: var(--wordmark-size);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-shadow:
+    0 0 0.55rem rgba(243, 224, 176, 0.3),
+    0 0.12rem 0.6rem rgba(4, 6, 12, 0.4);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.letter {
+  display: inline-block;
+}
+
+/*
+ * Brushed-metal fill (user request, replacing an earlier black contour they
+ * didn't like): a vertical light/dark/light banded gradient clipped to the
+ * glyph shapes instead of a flat color, so the letters catch light like
+ * polished metal. Vertical, not diagonal — every letter has the same
+ * height, so a top-to-bottom gradient looks identical (and therefore
+ * continuous) on each `.letter` span regardless of its horizontal position;
+ * a diagonal one would visibly restart inside every letter since each is
+ * its own inline-block. Scoped via `.headingTitle .letter` / `.subtitle
+ * .letter` (not the shared `.letter` rule) because the two words need
+ * different metal tones — `background` isn't an inherited property the way
+ * `color`/`text-shadow` are, so this couldn't just live on the parent.
+ */
+.headingTitle .letter,
+.subtitle .letter {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+/*
+ * Floors kept fairly light (never darker than a mid-tone) rather than
+ * dipping to a saturated shadow color: `background-size: 100% 100%` maps
+ * this same vertical span to every letter's own box, but a lowercase
+ * x-height letter (e.g. "u") only occupies the middle third of that box
+ * while a capital or ascender spans nearly all of it — so a gradient with a
+ * genuinely dark stop reads bright on tall letters and muddy on short ones.
+ * A shallower light/mid/light sweep keeps every letter legible regardless
+ * of which slice it happens to sample, while still banding enough to read
+ * as brushed metal, not flat color.
+ */
+
+/* Warm champagne-gold metal, keeping Culture's established warm tone. */
+.headingTitle .letter {
+  background-image: linear-gradient(
+    180deg,
+    #fff9ec 0%,
+    #f3e5c4 25%,
+    #ddc79f 45%,
+    #fcf1d9 58%,
+    #d0b88c 75%,
+    #f3e5c4 90%,
+    #fff9ec 100%
+  );
+}
+
+/* Cool platinum/silver metal, keeping DevSure's established icy tone. */
+.subtitle .letter {
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e9eef4 25%,
+    #c7cfda 45%,
+    #f8fafc 58%,
+    #b7c2cf 75%,
+    #e9eef4 90%,
+    #ffffff 100%
+  );
+}
+
+.subtitle {
+  position: relative;
+  z-index: 2;
+
+  margin: clamp(0.5rem, 2vw, 1.5rem) 0 0;
+  text-align: center;
+
+  /* Same family and same size as `.headingTitle` (user request) — upright
+     instead of italic is the only difference: the roman cut of the same
+     typeface, not a smaller subordinate line. Icy pearl (vs. Culture's warm
+     ivory) — the two words read as two distinct temperatures, fashion-
+     editorial warmth above, sophisticated tech coolness below. Same tight
+     glow-plus-contact-shadow treatment and weight 400 as `.headingTitle`,
+     for the same reason: crisp edges over a soft halo. */
+  color: #e6eef7;
+  font-size: var(--wordmark-size);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-shadow:
+    0 0 0.55rem rgba(185, 212, 240, 0.28),
+    0 0.12rem 0.6rem rgba(4, 6, 12, 0.4);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Layers a blur-to-focus stage onto the site's existing scroll-reveal system
+ * (`.reveal-init` / `.is-revealed`, see use-in-view.ts and globals.css).
+ * Kinetic-typography entrance: each letter settles into position (existing
+ * fade/translate/scale) while coming into focus (new), offset from its
+ * neighbors by `transitionDelay` in the component (30-80ms stagger band).
+ * One-shot, above-the-fold reveal, so the generous "marketing" duration
+ * budget applies rather than the 300ms UI ceiling.
+ */
+.letter:global(.reveal-init) {
+  /* 12px, not 18px — a refinement pass asked for less blur throughout;
+     the entrance still reads as a focus pull, just a shorter one. */
+  filter: blur(12px);
+  transition:
+    filter 700ms var(--ease-out),
+    opacity 700ms var(--ease-out),
+    transform 700ms var(--ease-out);
+}
+
+.letter:global(.reveal-init.is-revealed) {
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter:global(.reveal-init) {
+    filter: none;
+    transition: none;
+  }
+}
+
+/*
+ * Ambient loop after the entrance: each letter re-blurs briefly on its own
+ * randomized ~2s-ish timer (see useLetterPulses in the component — JS owns
+ * the random timing, this just plays one cycle per class application).
+ * Keyframes, not a transition: this is a scripted out-and-back a class
+ * toggle drives, not a state change to retarget mid-flight.
+ */
+@keyframes letterPulse {
+  0%,
+  100% {
+    filter: blur(0);
+    opacity: 1;
+  }
+
+  /* 8px / 0.4, not 14px / 0.2 — subtler dip so the ambient pulse reads as a
+     flicker of focus, not the letter going soft and nearly vanishing. */
+  50% {
+    filter: blur(8px);
+    opacity: 0.4;
+  }
+}
+
+.letterPulsing {
+  animation: letterPulse 800ms var(--ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letterPulsing {
+    animation: none;
+  }
+}

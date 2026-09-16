@@ -26,25 +26,39 @@
 
   width: 100%;
   padding-inline: clamp(18px, 3.2vw, 62px);
-  padding-top: clamp(42px, 5vw, 82px);
+  padding-top: clamp(48px, 6vw, 100px);
+
+  /*
+   * Read by the parked kinetic wordmark's own CSS module too (see
+   * culture-kinetic-wordmark.module.css) if that's swapped back in here —
+   * CSS custom properties cascade by DOM position, not by file, so this
+   * still resolves there as long as it renders inside this element.
+   */
+  --wordmark-size: clamp(6rem, 30vw, 27rem);
 }
 
 .headingTitle {
-  /* Overrides the global `h2 { max-width: 14ch }` rule (sized for wrapping
-     text headings) — this heading is a full-width logotype image instead. */
-  max-width: none;
+  max-width: 1800px;
   width: 100%;
   margin: 0;
   line-height: 0;
 }
 
-.heading {
-  display: block;
-  width: 100%;
-  /* Caps how wide the logotype gets on very large monitors — the source
-     asset is 1692px wide, and this keeps upscaling minor. */
+.subtitle {
   max-width: 1800px;
+  width: 100%;
+  margin: clamp(0.5rem, 2vw, 1.5rem) auto 0;
+  text-align: center;
+  line-height: 0;
+}
+
+.wordmarkImage {
+  display: inline-block;
   height: auto;
+  max-width: 100%;
+  /* Source art is 2172x724 (~3:1) — matches the size the live-text version
+     read at (`--wordmark-size` above), not a smaller logo-in-the-corner. */
+  width: clamp(340px, 68vw, 1500px);
 }
 
 @media (max-width: 768px) {
