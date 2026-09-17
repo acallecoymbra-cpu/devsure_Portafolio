@@ -9,6 +9,7 @@ import {
   teamMembers,
 } from '@/features/culture/culture-content';
 import { CompanyCarousel } from '@/features/culture/components/culture-carousels';
+import { CultureFlowPath } from '@/features/culture/components/culture-flow-path';
 import { CultureSpineScene } from '@/features/culture/components/culture-spine-scene';
 import { CultureWaterSection } from '@/features/culture/components/culture-water-section';
 import { TeamRevealSection } from '@/features/culture/components/team-reveal-section';
@@ -93,6 +94,19 @@ export default async function CulturePage() {
       <CultureWaterSection />
 
       <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
+        <CultureFlowPath
+          anchor="top"
+          desktopViewBox="0 0 1600 1000"
+          mobileViewBox="0 0 500 1100"
+          desktopPath="M 1150 20 C 950 140, 1320 280, 1020 420 C 780 540, 1150 580, 850 720 C 620 830, 450 860, 280 960"
+          mobilePath="M 380 20 C 300 140, 460 260, 340 420 C 220 540, 400 620, 300 780 C 220 880, 160 920, 90 1040"
+          stops={[
+            { offset: '0%', color: '#123EB7' },
+            { offset: '55%', color: '#315CF4' },
+            { offset: '100%', color: '#6F8FFF' },
+          ]}
+          className={styles.manifestoFlowLine}
+        />
         <div className="shell">
           <p className="eyebrow">Nuestra medida</p>
           <blockquote className={styles.manifestoQuote}>
@@ -171,6 +185,19 @@ export default async function CulturePage() {
       </CultureSpineScene>
 
       <section className={styles.closingSection} aria-labelledby="closing-title">
+        <CultureFlowPath
+          anchor="top"
+          desktopViewBox="0 0 1600 700"
+          mobileViewBox="0 0 500 700"
+          desktopPath="M -60 40 C 260 140, 420 300, 620 380 C 820 460, 560 520, 700 580 C 820 630, 900 600, 800 660"
+          mobilePath="M -40 30 C 140 110, 220 240, 300 320 C 380 400, 260 440, 320 520 C 380 580, 420 560, 380 620"
+          stops={[
+            { offset: '0%', color: '#6F8FFF' },
+            { offset: '55%', color: '#7370FF' },
+            { offset: '100%', color: '#B1A5FF' },
+          ]}
+          className={styles.closingFlowLine}
+        />
         <div className={`shell ${styles.closingPanel}`}>
           <div>
             <p className="eyebrow">Conoce nuestro trabajo</p>

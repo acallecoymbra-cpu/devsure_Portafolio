@@ -1,0 +1,64 @@
+.wrap {
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  width: 100%;
+}
+
+.wrap[data-anchor='top'] {
+  top: 0;
+}
+
+.wrap[data-anchor='bottom'] {
+  bottom: 0;
+}
+
+.svgDesktop,
+.svgMobile {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.svgMobile {
+  display: none;
+}
+
+.pathMain {
+  stroke-width: 14px;
+}
+
+/* Extremely light depth pass — never a glow/neon halo — same `d` and
+   gradient as `.pathMain`, just a soft, near-invisible echo behind it. */
+.pathBlur {
+  filter: blur(6px);
+  opacity: 0.08;
+  stroke-width: 26px;
+}
+
+@media (max-width: 47.9375rem) {
+  .svgDesktop {
+    display: none;
+  }
+
+  .svgMobile {
+    display: block;
+  }
+
+  .pathMain {
+    stroke-width: 8px;
+  }
+
+  .pathBlur {
+    stroke-width: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pathMain {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

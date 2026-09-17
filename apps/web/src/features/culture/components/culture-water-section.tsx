@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import { CultureFlowPath } from './culture-flow-path';
 import styles from './culture-water-section.module.css';
 
 interface CultureWaterSectionProps {
@@ -41,6 +42,20 @@ export function CultureWaterSection({ children }: CultureWaterSectionProps) {
           sizes="100vw"
           priority
           className={styles.backgroundImage}
+        />
+
+        <CultureFlowPath
+          anchor="top"
+          desktopViewBox="0 0 1600 1000"
+          mobileViewBox="0 0 500 900"
+          desktopPath="M -120 40 C 220 120, 420 260, 560 420 C 700 580, 560 680, 640 780 C 700 860, 950 820, 1120 840"
+          mobilePath="M -30 40 C 120 140, 220 320, 200 480 C 180 620, 320 680, 380 820"
+          stops={[
+            { offset: '0%', color: '#061A40' },
+            { offset: '55%', color: '#0A2F8F' },
+            { offset: '100%', color: '#123EB7' },
+          ]}
+          className={styles.flowLine}
         />
 
         <div className={styles.headingWrap}>

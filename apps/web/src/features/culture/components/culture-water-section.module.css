@@ -53,6 +53,13 @@
   object-position: center top;
 }
 
+/* Sits above `.backgroundImage` (unpositioned, paints below any positioned
+   sibling) but below `.headingWrap`'s z-index: 2 — visible over the photo,
+   never over the wordmark. */
+.flowLine {
+  z-index: 1;
+}
+
 .headingWrap {
   position: relative;
   z-index: 2;

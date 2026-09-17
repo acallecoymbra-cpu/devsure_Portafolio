@@ -632,7 +632,15 @@
   align-items: center;
   display: flex;
   min-height: 75vh;
+  overflow: hidden;
   padding-block: 6rem;
+  position: relative;
+}
+
+/* Decorative flow line tramo — behind the quote (unpositioned, so it
+   already paints above any negative z-index sibling) without touching it. */
+.manifestoFlowLine {
+  z-index: -1;
 }
 
 .manifestoSection :global(.eyebrow) {
@@ -752,7 +760,13 @@
 }
 
 .closingSection {
+  overflow: hidden;
   padding-top: 0;
+  position: relative;
+}
+
+.closingFlowLine {
+  z-index: -1;
 }
 
 .closingPanel {
