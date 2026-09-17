@@ -19,6 +19,13 @@ const DURATION_MS = 550;
  * tells the caller whether it's worth scheduling extra render frames for
  * that decay (see `spine-engine.ts`'s `runTransitionFrames`) — outside an
  * active transition this is a plain, cheap pass-through blit.
+ *
+ * Double-buffered targets (`targets[0]`/`targets[1]`, swapped every `blit()`
+ * instead of a single `sceneTarget`): the ghosting term in the shader needs
+ * last frame's fully-rendered image (`uPrevScene`), not just the current
+ * one, so `spine-refraction.ts` always renders into whichever target isn't
+ * being sampled as "previous" this frame — the other one still holds
+ * exactly what was on screen a frame ago, safe to read from.
  */
 export function createTransitionComposite(renderer: THREE.WebGLRenderer) {
   const scene = new THREE.Scene();
@@ -39,30 +46,41 @@ export function createTransitionComposite(renderer: THREE.WebGLRenderer) {
     });
   }
 
-  let sceneTarget = createTarget();
-  material.uniforms.uScene.value = sceneTarget.texture;
+  let targets: [THREE.WebGLRenderTarget, THREE.WebGLRenderTarget] = [createTarget(), createTarget()];
+  let writeIndex = 0;
+  material.uniforms.uScene.value = targets[writeIndex].texture;
+  material.uniforms.uPrevScene.value = targets[1 - writeIndex].texture;
   let triggeredAt = -Infinity;
 
   return {
-    sceneTarget: () => sceneTarget,
+    // The target `spine-refraction.ts` renders the current frame into.
+    sceneTarget: () => targets[writeIndex],
     trigger: () => {
       triggeredAt = performance.now();
     },
     isActive: () => performance.now() - triggeredAt < DURATION_MS,
     resize: () => {
-      const previous = sceneTarget;
-      sceneTarget = createTarget();
-      material.uniforms.uScene.value = sceneTarget.texture;
-      previous.dispose();
+      const previous = targets;
+      targets = [createTarget(), createTarget()];
+      writeIndex = 0;
+      material.uniforms.uScene.value = targets[writeIndex].texture;
+      material.uniforms.uPrevScene.value = targets[1 - writeIndex].texture;
+      previous.forEach((target) => target.dispose());
     },
     blit: () => {
       const elapsed = performance.now() - triggeredAt;
       material.uniforms.uProgress.value = Math.max(0, 1 - elapsed / DURATION_MS);
+      material.uniforms.uScene.value = targets[writeIndex].texture;
+      material.uniforms.uPrevScene.value = targets[1 - writeIndex].texture;
       renderer.setRenderTarget(null);
       renderer.render(scene, camera);
+      // Next frame renders into the target that just served as "previous",
+      // since this frame's just-drawn target now becomes next frame's
+      // ghost source.
+      writeIndex = 1 - writeIndex;
     },
     dispose: () => {
-      sceneTarget.dispose();
+      targets.forEach((target) => target.dispose());
       geometry.dispose();
       material.dispose();
     },

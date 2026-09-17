@@ -212,6 +212,651 @@ satura en 1 y se queda ahí el resto del scroll. Esto es lo que permite que
 la columna se vea "viva" (rotando) detrás de contenido que ya no tiene
 tarjetas propias.
 
+## 2.8 Adición del Slice 10: coverflow en vez de órbita circular, tarjetas de vidrio, caption como panel centrado
+
+El usuario compartió una nueva referencia (26 frames,
+`ezgif-5dc002f375a78951-jpg`, estilo activetheory.net/work con tarjetas de
+proyecto de vidrio) y pidió explícitamente: analizar la implementación
+existente antes de tocar nada, y consultar antes de escribir código. Tras
+inspeccionar `spine-engine.ts` y los módulos `three/*` a fondo, se identificaron
+3 brechas reales frente a la referencia (documentadas y consultadas con el
+usuario vía `AskUserQuestion` antes de implementar — ver el plan de esa
+sesión) y se confirmó que **todo lo demás** (columna procedural/refractiva,
+partículas, anillos, arquitectura de scroll sin caché con damping, fallback
+CSS, gating de capacidades, decisión de no usar R3F) se conserva sin cambios.
+
+- **Órbita circular → coverflow:** con solo 4 historias, la órbita de 360°/N
+  dejaba las tarjetas secundarias a 90° de la cámara — prácticamente de
+  canto/invisibles. Reemplazado por `three/spine-cards.ts` (nuevo, extraído
+  de `spine-engine.ts`): `heroPosition = storyProgress * (N-1)` (lineal, no
+  circular); cada tarjeta calcula su offset `d = index - heroPosition` y usa
+  `Math.tanh(d * COVERFLOW_SPREAD)` para saturar suavemente posición X,
+  profundidad Z, rotación Y (máx. ~50°, nunca de canto) y escala — la card
+  "hero" es la de mayor `focus` (`1 - |tanh(d)|`) cada frame. Tarjetas a más
+  de `CARD_HIDE_DISTANCE` (2.4 índices) de la hero se ocultan del todo
+  (`mesh.visible = false`), evitando gastar fill-rate en tarjetas fuera de
+  composición.
+- **Material opaco de esquinas rectas → vidrio real:** `glitch-card-material.ts`
+  se reemplazó por `three/spine-card-material.ts` (mismo mecanismo de glitch
+  RGB-split existente, conservado íntegro). Se le agregó: máscara de
+  esquinas redondeadas vía SDF (`roundedBoxSDF`, Inigo Quilez) con
+  `discard` fuera del rounded-rect — el plano en sí ahora tiene silueta
+  redondeada, no solo su contenido; y un blur real de 8 muestras en círculo
+  sobre `uSceneBehindCards`, mezclado con un tinte translúcido y con la foto
+  de la card por `uFocus` (la hero muestra más foto, las secundarias más
+  vidrio esmerilado). El blur usa un radio más ancho para tarjetas alejadas
+  de la hero (`mix(0.014, 0.005, uFocus)`) como pista de profundidad de
+  campo. Material `transparent: true, depthWrite: false`.
+- **Textura "detrás de las cards" — pase de render nuevo, no una técnica
+  nueva:** `three/spine-refraction.ts` (que ya generaba `target` — la
+  escena con la columna oculta, para el material de refracción de la
+  columna) ahora también genera `cardsTarget` — la escena con las *cards*
+  ocultas en su lugar (columna + partículas + anillos), expuesta como
+  `cardsBackdropTexture`/`cardsResolution`. `render()` pasa a hacer 3
+  pasadas por frame (antes 2): columna oculta, cards ocultas, todo visible
+  → salida real. Costo de GPU moderado, mismo patrón ya corriendo hoy — el
+  usuario lo confirmó explícitamente al elegir "vidrio real con blur" sobre
+  la alternativa sin blur.
+- **Caption HTML → panel de vidrio centrado (no proyección 3D→2D exacta):**
+  el usuario confirmó explícitamente esta opción sobre proyectar el HTML en
+  las coordenadas de pantalla exactas de la card 3D cada frame (más fiel
+  pero frágil/con riesgo de desfase). `.spineCaptionOverlay` pasó de ser una
+  barra inferior de ancho completo a un contenedor `inset:0` centrado;
+  `.spineCaption` ganó `backdrop-filter: blur(22px)` +
+  `background: var(--culture-glass-bg)` (nuevo token, tematizado dark/light
+  en `globals.css`, mismo patrón que `--culture-scrim-*`) + esquinas
+  redondeadas + `box-shadow`. El glitch cromático del título reutiliza
+  `@keyframes spineTextGlitch` (`text-shadow` teal/rosa + `translateX`),
+  que **ya existía** en el fallback CSS (`culture-spine.tsx`) — no se
+  inventó un efecto nuevo. Como `CultureSpineCaption` ya usa
+  `key={story.id}`, la animación se re-dispara sola en cada cambio de
+  historia sin JS adicional.
+- **Extracción de `CameraRig` (`three/spine-camera.ts`):** `fitDistanceForScene`
+  y `buildCameraPath` salieron de `spine-engine.ts` (516 líneas antes de
+  esta refactorización) a su propio módulo, mismo comportamiento, cero
+  cambios de mecánica — solo mantenibilidad, siguiendo el mismo patrón
+  ya usado para `spine-particles.ts`/`spine-rings.ts`.
+- **Paleta de partículas:** de teal/coral/pálido (acento del sitio) a
+  azul/violeta/rosa/pálido, con teal conservado a baja probabilidad (Slice
+  9.2's `spine-particles.ts`, mecánica de deriva sin cambios) — pedido
+  explícito del brief de esta sesión ("azul, violeta, rosa, blanco").
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three src/app/cultura tests/culture-structure.test.mjs`
+y `node --test tests/*.test.mjs` (18/18) limpios. La suite e2e de Playwright
+no se corrió esta vez — puertos 3000/3001 ocupados por el propio `pnpm dev`
+del usuario (misma situación documentada en varios slices anteriores);
+verificación visual real hecha en su lugar contra ese servidor: capturas en
+dos historias distintas (con su respectivo cambio hero/secundarias), en
+tema claro y oscuro — esquinas redondeadas y blur visibles en las cards,
+glitch cromático disparándose en el título en cada cambio, secundarias
+visibles en ángulo a ambos lados (no de canto) sin quedar nunca vacía la
+composición, cero errores de consola relacionados a WebGL/shaders (el único
+mensaje de consola es un hydration-mismatch preexistente y ajeno, del theme
+bootstrap + una extensión del navegador).
+
+**Corrección post-entrega (mismo día):** el usuario probó el resultado y
+señaló un bug real de diseño, no solo estético: el panel del caption estaba
+centrado exactamente donde siempre se posa la card "hero" — la tapaba por
+completo (incluida su foto), mientras las cards secundarias, sin ningún
+panel encima, eran las únicas cuya imagen se veía. Es decir, llegar al
+centro (todo el sentido del coverflow) dejaba la card *menos* visible, no
+más. Corregido en `culture.module.css`: `.spineCaptionOverlay` pasó de
+`align-items: center` a `align-items: flex-end` (ancla abajo, no al medio
+de la card), y `.spineCaption` se achicó (`max-width` 30rem→24rem, padding y
+tipografía del título/descripción reducidos) para leerse como una franja de
+caption junto a la base de la card, no como un panel que la reemplaza.
+Verificado visualmente en claro/oscuro: la card hero (vidrio + foto +
+esquinas redondeadas) ahora se ve claramente por encima del texto.
+
+**Nota: la disposición "coverflow" descrita arriba (`COVERFLOW_SPREAD`,
+`CARD_X_SPACING`, `CARD_Z_DEPTH`, `CARD_MAX_YAW`, `CARD_HIDE_DISTANCE`) fue
+reemplazada por completo en el Slice 11 (ver abajo) por una órbita circular
+real con billboard — esas constantes ya no existen en `spine-cards.ts`.**
+Se deja esta sección tal cual (no reescrita) como registro histórico de por
+qué se intentó el coverflow primero y qué llevó a cambiarlo.
+
+No se hizo commit (regla general del repo).
+
+## 2.9 Adición del Slice 11: de coverflow a órbita circular real (billboard), caption HTML eliminado
+
+El usuario grabó el resultado del Slice 10 en uso real (13 frames,
+`ezgif-2b537b2223ddf832-jpg`) y señaló dos problemas, ambos confirmados
+explícitamente antes de tocar código (`AskUserQuestion`, ver esa sesión):
+
+1. El coverflow leía "amontonado" — con solo 4 historias, 2-3 tarjetas se
+   superponían visiblemente cerca del centro en vez de una transición clara
+   de "la de al lado avanza y se convierte en la del frente". El usuario
+   pidió explícitamente que sea la **misma tarjeta** la que viaje de costado
+   a frente, y que **siga una trayectoria circular real** mientras se sigue
+   bajando (no que se detenga a un costado).
+2. El panel de texto (kicker/título/descripción) centrado sobre la tarjeta
+   hero se podía eliminar — el usuario prefiere la experiencia puramente
+   visual.
+
+**Por qué no era tan simple como "volver a la órbita circular original":**
+la primera versión circular (antes del Slice 10) ya se había descartado
+porque, con `mesh.rotation.y = angle` (la tarjeta "mirando hacia afuera" en
+su propio punto de la órbita), una tarjeta a 90° de la cámara queda de canto
+— prácticamente invisible. La solución no es geométrica (radio/velocidad),
+es de **rotación**: en vez de que cada tarjeta rote según su propio ángulo
+orbital, ahora **siempre mira hacia la cámara** (`mesh.quaternion.copy(camera.quaternion)`,
+billboard real) sin importar en qué punto del círculo esté. Nunca queda de
+canto en ningún punto de la órbita — la profundidad ("algunas al frente,
+otras detrás") la da la perspectiva real (más cerca = más grande) más la
+oclusión de la columna misma, no una rotación fingida.
+
+- **`three/spine-cards.ts` reescrito:** se eliminaron `COVERFLOW_SPREAD`,
+  `CARD_X_SPACING`, `CARD_Z_DEPTH`, `CARD_MAX_YAW`, `CARD_SCALE_FALLOFF`,
+  `CARD_HIDE_DISTANCE`. Volvieron `ORBIT_RADIUS` (2.6) y `ORBIT_TURNS` (1,
+  una vuelta completa por el sub-rango de historias — con N tarjetas
+  parejas, cada una pasa por el frente exactamente una vez). `place()` ahora
+  recibe `camera` como parámetro (antes no la necesitaba) para el billboard;
+  ya no hay `mesh.rotation.y`, ya no hay escala/ocultamiento por distancia —
+  solo `mesh.scale.setScalar(globalFadeOut)` (el fundido de entrada/salida
+  de todo el sistema de tarjetas, sin relación con la posición orbital).
+- **`spine-engine.ts`:** la llamada a `cards.place(...)` ahora pasa `camera`
+  como cuarto argumento.
+- **Caption HTML eliminado por completo:** `culture-spine-scene.tsx` perdió
+  `CultureSpineCaption`, el estado `activeIndex`/`handleActiveIndexChange`, y
+  el `activeStory` que decidía si renderizar el overlay. En su lugar, un
+  nuevo `SpineAccessibleStories` renderiza una lista `sr-only` **estática**
+  (todas las historias, no solo la "activa") junto al canvas — sigue
+  cumpliendo la decisión cerrada §2.3 (el texto real vive en HTML, por
+  accesibilidad/SEO) sin depender de qué tarjeta esté al frente en un
+  momento dado, lo cual además es más robusto para crawlers que nunca
+  ejecutan el loop de WebGL. `culture-spine-3d.tsx` perdió los props
+  `children`/`onActiveIndexChange` (ya sin ningún consumidor). Se borraron
+  las clases ahora-muertas `.spineCaptionOverlay`/`.spineCaption*` y el
+  keyframe `spineCaptionFadeIn` de `culture.module.css`, y los tokens
+  `--culture-glass-bg`/`--culture-glass-border` de `globals.css` (ya sin
+  ningún consumidor tampoco). El glitch de pantalla completa en cada cambio
+  de tarjeta (`transition.trigger()`, Slice 8.3) sigue funcionando igual —
+  es un efecto del motor, no del caption, no se tocó.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture src/app/cultura tests/culture-structure.test.mjs`
+y `node --test tests/*.test.mjs` (18/18) limpios. E2e de Playwright no
+corrida (mismo bloqueo de puertos documentado en slices anteriores).
+Verificación visual real contra el `pnpm dev` del usuario, claro y oscuro:
+confirmado con capturas que la misma tarjeta viaja de costado a frente en
+un arco continuo (no un salto/superposición), nunca se ve de canto en
+ningún punto visible del recorrido, y no aparece ningún panel de texto en
+ningún momento. Cero errores de consola relacionados a WebGL/shaders (el
+único mensaje sigue siendo el hydration-mismatch preexistente y ajeno).
+
+**Pendiente/no calibrado (Slice 11, superado por el Slice 12 abajo):**
+`ORBIT_RADIUS`/`ORBIT_TURNS` de esa versión ya no existen — ver Slice 12.
+
+No se hizo commit (regla general del repo).
+
+## 2.10 Adición del Slice 12: la cámara desciende por estaciones verticales, +3 historias (4→7)
+
+El usuario probó el Slice 11 ("me gustó como está quedando") pero señaló que
+girar en el lugar no se sentía como *bajar* por la columna — comparándolo de
+nuevo con la referencia original (activetheory-style), donde las tarjetas ya
+parecen estar ubicadas de arriba a abajo y el scroll simplemente las va
+revelando en su turno, no las hace girar alrededor de un punto fijo. Pidió
+además agregar 3 historias más (de 4 a 7). Confirmado el entendimiento en
+texto antes de tocar código.
+
+**Cambio de fondo:** hasta el Slice 11, la única cosa que el scroll movía en
+relación a las tarjetas era su ángulo orbital alrededor de un punto fijo —
+la cámara nunca viajaba en altura. Ahora es al revés: **cada tarjeta vive en
+una "estación" de altura fija** a lo largo de la columna (repartidas de
+`+STATION_TRAVEL_HALF_HEIGHT` a `-STATION_TRAVEL_HALF_HEIGHT`,
+`SPINE_HEIGHT * 0.42`), y es **la cámara la que desciende** por ese mismo
+rango a medida que `storyProgress` avanza (antes usaba `rawProgress` y no
+viajaba en Y en absoluto). Una tarjeta entra "en foco" cuando la altura de
+la cámara pasa cerca de su estación, no cuando un ángulo la pone al frente.
+Cada tarjeta conserva un giro local lento y continuo alrededor de su propia
+estación (wall-clock, no scroll) — es el remanente de "trayectoria en
+círculos" que pidió el usuario en el Slice 11, ahora puramente ambiental,
+ya no el mecanismo que decide qué tarjeta se ve.
+
+- **`three/spine-cards.ts`:** `createSpineCards` gana un parámetro
+  `stationTravelHalfHeight`; `place()` cambia su primer argumento de
+  `storyProgress` a `cameraY` (la altura real de la cámara). Nuevas
+  `stationY(index)` (reparto lineal por índice) y `STATION_FOCUS_RANGE`
+  (cuán cerca en altura debe estar la cámara para que una estación esté "en
+  foco"). `ORBIT_RADIUS` bajó a 1.7 y ganó `ORBIT_SPEED` (giro ambiental por
+  reloj de pared) — `ORBIT_TURNS` ya no existe. Exporta `CARD_HEIGHT` (antes
+  privado) para que `spine-engine.ts` calcule el encuadre de cámara con él.
+- **`three/spine-camera.ts` reescrito:** `fitDistanceForScene` ya no intenta
+  encuadrar la columna entera (`sceneHeight`) desde un punto fijo — ahora
+  encuadra un vecindario *local* (`cardHalfHeight * 2.4`), porque la cámara
+  ya no necesita ver toda la columna de una vez, solo lo que tiene cerca en
+  cada momento. Esto además permite que la cámara esté más cerca (las
+  tarjetas se ven más grandes) sin ningún cambio de geometría. `buildCameraPath`
+  ya no es un lazo cerrado alrededor de una altura fija: ahora son 9 puntos
+  de control que descienden en línea recta de `+travelHalfHeight` a
+  `-travelHalfHeight` en Y, con un balanceo lateral/de profundidad tipo
+  espiral superpuesto (`turns = 1.1`) — una escalera de caracol descendente,
+  no una órbita. `applyAt`'s `lookAt` ahora apunta nivelado a la altura
+  *actual* de la cámara (`here.y`, antes siempre miraba hacia el origen),
+  para que la columna se mantenga encuadrada mientras la cámara baja.
+- **`three/spine-engine.ts`:** nueva constante `STATION_TRAVEL_HALF_HEIGHT`;
+  `cameraRig.applyAt(storyProgress)` ahora se llama *después* de calcular
+  `computeStoryState()` (antes usaba `rawProgress`, calculado antes) — es lo
+  que hace que "scrollear" y "la cámara bajando por las estaciones" sean el
+  mismo reloj. La rotación de la columna (`spine.group.rotation.y`) se queda
+  en `rawProgress`, sin cambios — sigue "viva" durante todo el rango
+  combinado. `cards.place(...)` ahora recibe `camera.position.y` en vez de
+  `storyProgress`.
+- **`culture-content.ts`:** +3 historias (`communicate`/`focus`/
+  `follow-through`, 05-07), reutilizando fotos ya presentes en
+  `public/photos/` (`conference-room.webp`, `portrait-focused.webp`,
+  `trajectory.webp` — ya usadas en otras secciones del sitio, mismo criterio
+  de reuso que el resto del repo) en vez de generar assets nuevos.
+- **`.spineStorySpacer`:** la altura fija `240vh` (pensada para 4 tarjetas)
+  se volvió inline (`culture-spine-3d.tsx`, `${stories.length * 60}vh`) para
+  que 7 tarjetas conserven aproximadamente el mismo ritmo de scroll por
+  tarjeta que tenían 4, en vez de sentirse apuradas.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture src/app/cultura tests/culture-structure.test.mjs`
+y `node --test tests/*.test.mjs` (18/18) limpios. E2e de Playwright no
+corrida (mismo bloqueo de puertos). Verificación visual real contra el
+`pnpm dev` del usuario, claro y oscuro: confirmado con capturas que varias
+tarjetas se ven simultáneamente a distintas alturas de pantalla (una arriba,
+una al frente en foco, otra asomando abajo) mientras se escrolea, en vez de
+todas girando a la misma altura — el efecto de "descender por estaciones"
+pedido. Cero errores de consola relacionados a WebGL/shaders.
+
+**Pendiente/no calibrado:** `STATION_TRAVEL_HALF_HEIGHT` (0.42 ×
+`SPINE_HEIGHT`), `STATION_FOCUS_RANGE`, `ORBIT_RADIUS`/`ORBIT_SPEED` locales,
+y el multiplicador de `fitDistanceForScene` (2.4× la media altura de card)
+son primera pasada, no calibrados a ojo con el usuario en esta sesión —
+cada uno es una constante de una línea en `spine-cards.ts`/`spine-camera.ts`
+si hace falta más/menos separación entre estaciones, más/menos zoom, o que
+el giro ambiental sea más/menos notorio. Tampoco se corrió la suite e2e
+completa.
+
+No se hizo commit (regla general del repo).
+
+## 2.11 Adición del Slice 13.1: el giro local de cada card se ata al scroll, no al reloj
+
+El usuario probó el Slice 12 y dio 2 observaciones. Pidió resolver primero
+la #1 y dejar la #2 (sentido del recorrido de arriba a abajo) pendiente de
+una aclaración que todavía no confirmó — **no tocar el orden/dirección de
+las estaciones hasta que el usuario responda esa pregunta.**
+
+**Observación #1 (bug real, confirmado por el usuario, resuelto):** "no se
+pueden mover en círculos a menos que yo haga scroll... tienen que estar
+flotando en su propio eje." El giro ambiental de cada card alrededor de su
+propia estación (agregado en el Slice 12) estaba atado a `elapsed`
+(wall-clock) — por eso las cards seguían circulando aunque el usuario
+dejara de escrollear. Corregido: el ángulo del giro local ahora se calcula
+con `storyProgress` (`angle = storyProgress * 2π * LOCAL_ORBIT_TURNS + ...`,
+nueva constante `LOCAL_ORBIT_TURNS = 0.6`, reemplaza a `ORBIT_SPEED`), no
+con el tiempo — solo avanza mientras el usuario escrollea de verdad, y con
+`smoothedProgress` (el damping ya existente) se asienta en un instante al
+dejar de hacerlo, no sigue girando. Lo único que sigue animándose por reloj
+de pared es el balanceo vertical chico (`CARD_FLOAT_AMPLITUDE`/`CARD_FLOAT_SPEED`,
+sin cambios) — el "flotando en su propio eje" que pidió el usuario, que no
+traslada la card alrededor del anillo, solo la mece en el lugar.
+
+- **`three/spine-cards.ts`:** `place()` gana un parámetro `storyProgress`
+  (antes solo tenía `cameraY`, `globalFadeOut`, `elapsed`, `camera`).
+  `ORBIT_SPEED` eliminado, reemplazado por `LOCAL_ORBIT_TURNS`.
+- **`three/spine-engine.ts`:** la llamada a `cards.place(...)` pasa
+  `storyProgress` (ya calculado antes en `applyProgress`, sin cambios de
+  dónde se obtiene) como segundo argumento.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario:
+dos capturas de la misma zona de la columna, separadas 3 segundos sin
+escrollear en absoluto — las cards quedan en la misma posición en ambas
+(solo las partículas, que tienen su propia deriva independiente ya de
+antes, se ven levemente distintas). Cero errores de consola nuevos.
+
+**Pendiente:** observación #2 del usuario (sentido del recorrido de arriba
+a abajo) — se le preguntó si se refiere a (a) invertir el orden de las
+historias en la columna, (b) invertir hacia dónde viaja la cámara al
+escrollear, o (c) otra cosa, y todavía no respondió; el usuario pidió
+explícitamente resolver el punto 1 primero. No se toca `stationY()` ni la
+dirección de `buildCameraPath` hasta tener esa respuesta.
+
+No se hizo commit (regla general del repo).
+
+## 2.12 Adición del Slice 13.2: histéresis en el índice "frontal" — arregla el glitch que se quedaba pegado
+
+El usuario envió una captura (`erroralhacerscroll.png`) mostrando la escena
+entera (columna + cards) congelada en un glitch de aberración cromática/
+bloques a máxima intensidad, en vez de un flash breve, y preguntó qué
+estaba pasando ("no está fluido, parece que se congela") — también
+preguntó si estas animaciones se apoyan en skills. Respuesta a lo segundo:
+no — este motor es Three.js/GLSL escrito a mano, sin ningún skill de
+animación de por medio (los skills de animación de este entorno son para
+CSS/DOM, no aplican a una escena WebGL a medida como esta).
+
+**Causa raíz (confirmada leyendo el código, no adivinada):**
+`transition-composite.ts`'s `trigger()` simplemente resetea
+`triggeredAt = performance.now()`; `uProgress` decae linealmente en 550ms
+desde el último `trigger()`. En `spine-engine.ts`, `transition.trigger()`
+se llama cada vez que el índice "frontal" que reporta `cards.place()`
+cambia. Ese índice es `argmax(focus)` por frame — y `focus` es una función
+continua de `|cameraY - stationY|`, así que **justo en el punto medio entre
+dos estaciones**, dos cards tienen un `focus` casi idéntico: un jitter de
+subpíxel en la posición de la cámara (o simplemente el usuario escrolleando
+lento o quedándose quieto ahí) hace que el índice ganador cambie de un
+frame a otro. Cada cambio volvía a resetear `triggeredAt`, así que
+`uProgress` nunca llegaba a decaer — se quedaba visualmente "pegado" al
+glitch máximo mientras el usuario permaneciera cerca de ese cruce.
+
+**Corrección — histéresis en `three/spine-cards.ts`, no en el motor de
+transición (la causa está en la fuente del índice, no en cómo se consume):**
+nuevas constantes `SWITCH_MARGIN` (0.12) y `MIN_SWITCH_INTERVAL` (0.6s,
+un poco más que los 550ms de decaimiento del composite). `place()` ahora
+guarda `stableIndex`/`lastSwitchElapsed` en el closure (junto a `disposed`)
+y solo adopta un nuevo índice "frontal" cuando (a) su `focus` supera al del
+índice actual por más de `SWITCH_MARGIN`, y (b) pasó más de
+`MIN_SWITCH_INTERVAL` desde el último cambio real. El `uFocus`/`uIntensity`
+de cada card individual **no** se tocó — sigue siendo continuo por frame,
+como antes; la histéresis solo aplica al valor que se devuelve y que
+dispara `transition.trigger()`.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario:
+scroll deliberadamente lento y luego oscilando arriba/abajo repetidas veces
+justo en zonas con varias cards simultáneas en pantalla (la situación que
+antes disparaba el bug) — ninguna captura mostró el glitch de pantalla
+completa pegado; las transiciones se ven como un flash breve y limpio.
+Cero errores de consola nuevos.
+
+No se hizo commit (regla general del repo).
+
+## 2.13 Adición del Slice 13.3: las primeras historias arrancan del lado izquierdo (resuelve el punto 2 pendiente)
+
+El usuario mandó un video (`2026-09-17 14 45 01.mp4`, sin narración audible
+útil — se extrajeron 19 frames con `ffmpeg` para revisarlo) intentando
+mostrar a qué se refería con el punto 2 pendiente desde el Slice 12. Los
+frames por sí solos no lo dejaban 100% claro, así que se le preguntó
+directamente; respondió en una frase: **"me gustaría que las tarjetas
+empiecen primero ordenadas en la izquierda y no a la derecha."**
+
+**Causa:** en `spine-cards.ts`, la posición X de cada card es
+`Math.sin(angle) * ORBIT_RADIUS`, con `angle = storyProgress * 2π *
+LOCAL_ORBIT_TURNS + (index / stories.length) * 2π` — el segundo término
+(`baseAngle`, fijo por índice) es el que determina de qué lado arranca cada
+card en reposo. Con 7 historias repartidas parejo en el círculo, los
+índices 1-3 (`baseAngle` entre 0° y 180°) caían del lado derecho
+(`sin` positivo) y los índices 4-6 del lado izquierdo — es decir, las
+primeras historias que el usuario encuentra al bajar arrancaban a la
+derecha, justo al revés de lo que pedía.
+
+**Corrección — un espejo de un signo, no un rediseño:** se negó el
+componente X (`-Math.sin(angle) * ORBIT_RADIUS`, `Z`/profundidad sin
+cambios porque `cos` es par). Esto invierte qué lado le toca a cada índice
+sin tocar el mecanismo de enfoque por altura de cámara (Slice 12), la
+histéresis (Slice 13.2), el billboard, ni el giro atado a scroll
+(Slice 13.1) — todo eso sigue exactamente igual, solo cambió de qué lado
+arranca cada card.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario:
+al entrar a la zona de historias, las primeras dos/tres (`listen`/
+`quality`/`evolve`) aparecen claramente del lado izquierdo de la pantalla,
+no del derecho. Cero errores de consola nuevos.
+
+No se hizo commit (regla general del repo).
+
+## 2.14 Adición del Slice 13.4: las cards ya no giran por detrás de la columna al llegar a su enfoque
+
+El usuario reportó: **"esta girando por atras cuando hago scroll hacia
+abajo, quiero que vaya girando por encima de la columna en ese sentido."**
+Es decir, al bajar, alguna(s) card(s) aparecían ocultas detrás del cuerpo
+de la columna justo cuando les tocaba ser la protagonista, en vez de
+quedar al frente.
+
+**Causa (confirmada con cálculo, no a ojo):** el ángulo de la órbita local
+era `angle = storyProgress * 2π * LOCAL_ORBIT_TURNS + baseAngle_i`, con
+`baseAngle_i = (i / stories.length) * 2π` — un ángulo base fijo por índice,
+sin relación con el momento en que esa card específica llega a su propio
+enfoque (`storyProgress = index / stationCount`). Calculando `cos(angle)`
+(el signo que determina si la card queda al frente, `z > 0`, o detrás,
+`z < 0`) en ese momento exacto para cada uno de los 7 índices, los índices
+2 y 6 (y en menor medida 1 y 3) daban `cos(angle) < 0` — quedaban detrás de
+la columna precisamente cuando debían ser las protagonistas. No era una
+percepción subjetiva: era un defecto geométrico real y calculable.
+
+**Corrección:** en `spine-cards.ts::place()`, el ángulo ahora se mide
+relativo al propio punto de enfoque de cada card, no a un ángulo base
+arbitrario por índice:
+
+```ts
+const angle = (storyProgress - index / stationCount) * Math.PI * 2 * LOCAL_ORBIT_TURNS;
+```
+
+Esto garantiza `angle ≡ 0 (mod 2π)` — es decir `cos(angle) = 1`, justo al
+frente — exactamente en el instante en que `storyProgress = index /
+stationCount`, que es el mismo instante en que la cámara alcanza la
+estación de esa card (ambos son lineales en `index / stationCount`). Antes
+y después de ese instante la card sigue girando libremente como parte de
+la misma órbita ambiental (Slice 13.1); solo cambió el punto de referencia,
+para que "en foco" signifique siempre "al frente", nunca "detrás".
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario:
+se recorrieron las 7 estaciones con scroll, incluyendo específicamente los
+índices 2, 3 y 6 (los que el cálculo señalaba como afectados) — en cada
+una, la card protagonista aparece completa, nítida y al frente de la
+columna, sin ningún fragmento oculto detrás del cuerpo cristalino. Cero
+errores de consola nuevos (solo el warning de hidratación preexistente,
+no relacionado).
+
+No se hizo commit (regla general del repo).
+
+## 2.15 Adición del Slice 13.5: glitch de transición rediseñado (bloques + tearing + ghosting)
+
+El usuario describió con mucho detalle, con timestamps de un video de
+referencia, el tipo de glitch digital que quería para la transición entre
+estaciones: fragmentación en bloques rectangulares, separación RGB,
+"tearing" horizontal, desplazamiento de fragmentos de la escena, ghosting
+(rastros de posiciones anteriores), y todo esto breve (unos cientos de ms)
+y solo en el momento de la transición — nunca permanente, porque "si lo
+dejas permanente se vuelve ruido visual". Aclaró explícitamente que no
+quería "un efecto pixelado" (que podría interpretarse como bajar
+resolución) y que, dado que el motor ya usa Three.js, lo correcto era
+hacerlo vía shader/post-processing sobre el render real, no una imagen
+pixelada superpuesta.
+
+**Punto de partida:** el glitch de transición de pantalla completa ya
+existía desde el Slice 8.3 (`transition-composite.ts` +
+`transition-composite-material.ts`) — ya cumplía "solo durante la
+transición" (`uProgress` decae en `DURATION_MS = 550`ms tras cada
+`trigger()`, disparado únicamente al cambiar de estación, con la
+histéresis del Slice 13.2 evitando que se quedara pegado) y ya usaba shader
+real (no una imagen superpuesta) con separación RGB. Lo que le faltaba era
+el *carácter* visual: el distorsión de UV era ruido fino por-píxel
+(`hash(floor(vUv * vec2(70, 40)))`), que lee como grano/ruido, no como los
+bloques rectangulares desplazados ni el tearing horizontal que pedía el
+usuario. Tampoco existía ghosting.
+
+**Cambios:**
+- `transition-composite-material.ts`: el fragment shader ahora aplica, en
+  este orden, dentro del mismo envolvente de intensidad que ya existía
+  (`band`/`strength`, atado a `uProgress`):
+  1. **Desplazamiento por bloques** — grilla de 28×16 celdas; un
+     subconjunto aleatorio de celdas (elegido por hash) desplaza su UV de
+     muestreo, así fragmentos rectangulares de la imagen quedan
+     "mal ubicados" en vez de vibrar con ruido fino.
+  2. **Tearing horizontal** — un subconjunto aleatorio de filas de
+     escaneo (grilla de 90 filas) se desplazan lateralmente por distintas
+     cantidades, el clásico efecto de "línea desincronizada".
+  3. **Separación RGB** — se mantiene del original, pero ahora se aplica
+     sobre el UV ya desplazado por los dos pasos anteriores, así el propio
+     split también "salta" con los bloques/filas en vez de solo con la
+     imagen limpia.
+  4. **Ghosting** — nuevo uniform `uPrevScene` con el frame anterior
+     completo, mezclado con un offset leve y solo mientras el glitch está
+     fuerte, para que se lea como rastro/after-image, no doble exposición
+     estática.
+- `transition-composite.ts`: para que el ghosting tenga de dónde leer el
+  "frame anterior" sin un pase de render extra, el único `sceneTarget`
+  pasó a ser un par `targets[0]/targets[1]` en ping-pong — cada `blit()`
+  compone `uScene` (el que `spine-refraction.ts` acaba de renderizar) junto
+  a `uPrevScene` (el otro, que todavía tiene exactamente lo que estaba en
+  pantalla un frame atrás) y luego intercambia cuál es cuál para el
+  siguiente frame.
+
+**Lo que se conservó tal cual (no rediseño, ajuste dirigido):** la
+duración (550ms, ya dentro de "unos cientos de ms"), el disparo solo por
+cambio de estación + histéresis (Slice 13.2), el wipe radial que acota
+*cuándo* dentro del frame se ve el efecto, y la arquitectura de shader
+sobre render real (nunca imagen superpuesta).
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario:
+se capturó una captura exactamente a mitad de una transición de estación
+(entre las cards de "trabajo en equipo" y "el mundo en tus manos") que
+muestra bloques rectangulares claramente desplazados, franjas horizontales
+cortadas/corridas y flecos de color RGB — desapareciendo por completo en
+el frame siguiente, reconstruyendo la escena limpia. Cero errores de
+consola nuevos (solo el warning de hidratación preexistente, no
+relacionado).
+
+No se hizo commit (regla general del repo).
+
+## 2.16 Adición del Slice 13.6: split RGB localizado (respuesta a "¿se puede eliminar el ruido tipo píxel, o solo disimular?")
+
+El usuario preguntó, con buen ojo, si el "ruido por píxel" que se seguía
+viendo tras el Slice 13.5 se podía eliminar de raíz o si solo se podía
+disimular. Respuesta honesta y la causa real (no adivinada — confirmada
+leyendo el shader):
+
+- La función de ruido fino por-píxel del shader original (Slice 8.3,
+  `hash(floor(vUv * vec2(70, 40)))`) **ya no existía** desde el Slice 13.5
+  — se había reemplazado por completo con el desplazamiento por bloques.
+- Lo que seguía leyéndose como "ruido"/"confeti" era el **split RGB**
+  (separación de canales, heredado del shader original), que se aplicaba
+  **parejo en toda la pantalla** a `strength` completa. La escena tiene
+  ~2200 partículas brillantes (`spine-particles.ts`) siempre visibles
+  alrededor de la columna — al muestrear cada una tres veces con offset
+  (rojo/verde/azul), cada punto brillante se convierte en tres puntos de
+  color ligeramente separados, y con miles de partículas eso se lee como
+  ruido esparcido, aunque matemáticamente no hay ninguna función de ruido
+  ahí. No era algo que "disimular" — tenía una causa localizable y
+  corregible: *dónde* se aplicaba el split, no una limitación del enfoque.
+
+**Corrección:**
+- `transition-composite-material.ts`: el split RGB ahora se multiplica por
+  `mix(0.15, 1.0, localGlitch)`, donde `localGlitch = max(blockActive,
+  rowActive)` — full split solo dentro de los bloques/filas que
+  efectivamente están corruptos ese frame; el resto de la pantalla (donde
+  antes cada partícula se triplicaba en color) se queda con un split
+  residual del 15%, casi imperceptible.
+- De paso, se redujo la densidad de bloques/filas simultáneos (grilla de
+  bloques 28×16→16×9 con ~80%→45% activos en el pico; filas 90→48 con
+  ~50%→35% activas) — menos fragmentos pero más grandes y legibles, en vez
+  de muchos fragmentos diminutos que también contribuían a la lectura de
+  "ruido esparcido".
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente: capturas a mitad de transición
+muestran ahora paneles rectangulares de corrupción claramente delimitados
+(en vez de estática esparcida por toda la pantalla), y un zoom sobre la
+zona de partículas confirma que los puntos de color son las partículas
+reales de la escena (siempre así, con o sin glitch), no artefactos del
+split. Cero errores de consola nuevos.
+
+No se hizo commit (regla general del repo).
+
+## 2.17 Adición del Slice 13.7: regresión — las cards volvían a arrancar por la derecha
+
+El usuario notó que las cards habían vuelto a arrancar por la derecha,
+pese a que el arranque por la izquierda (Slice 13.3) ya estaba confirmado
+hace rato: **"recuerdas que te comenté que las tarjetas deberían empezar
+en la izquierda, y siempre dar la vuelta por delante de la columna, eso
+estaba hace rato, ahora volvió a ser por la derecha ¿por qué?"**
+
+**Causa (confirmada leyendo el código, no adivinada):** el Slice 13.4
+—al arreglar que las cards quedaran detrás de la columna— cambió la
+fórmula del ángulo de `storyProgress * k + baseAngle_i` a `(storyProgress
+- index / stationCount) * k`. Ese cambio sí resolvió el problema de
+profundidad (ver Slice 13.4), pero como efecto secundario no anticipado
+invirtió el signo de la fase de "acercamiento": antes de llegar a su
+propio enfoque (`storyProgress < index / stationCount`), la diferencia es
+negativa, así que con `-Math.sin(ángulo)` la card ahora aterrizaba del
+lado derecho durante su acercamiento — justo lo opuesto de lo que el
+Slice 13.3 había fijado y el usuario había confirmado.
+
+**Corrección — un solo signo, sin tocar el arreglo de profundidad:** se
+invirtió el orden de la resta, `(index / stationCount - storyProgress) *
+k` en vez de `(storyProgress - index / stationCount) * k`. Como `cos()` es
+una función par, `cos(-x) = cos(x)`, así que el valor de profundidad
+(`z = cos(ángulo) * radio`) en cada punto del recorrido de cada card es
+matemáticamente idéntico al de antes — el arreglo del Slice 13.4 (siempre
+al frente en el momento de su propio enfoque) queda intacto. Solo cambió
+`x = -sin(ángulo) * radio`, que ahora da negativo (izquierda) durante el
+acercamiento y positivo (derecha) después de pasar el enfoque, consistente
+para las 7 historias.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario:
+recorriendo las estaciones, la card que se acerca a su turno aparece del
+lado izquierdo y la que ya pasó su turno queda del lado derecho,
+consistentemente, y ninguna aparece oculta detrás de la columna. Cero
+errores de consola nuevos.
+
+No se hizo commit (regla general del repo).
+
+## 2.18 Adición del Slice 13.8: primera card a la izquierda + giro que desciende
+
+El usuario pidió, explícitamente pidiendo confirmación de entendimiento
+antes de tocar código: **"quiero solamente que los primeros elementos que
+comienzan en la parte de arriba de la columna estén ubicados a la
+izquierda y que gire hacia abajo no hacia arriba."** Antes de implementar,
+se le preguntó (vía pregunta de una sola opción) a qué giro se refería —
+confirmó que era "el recorrido de las tarjetas" (el barrido izquierda →
+centro → derecha alrededor de la columna), no la rotación propia de la
+columna.
+
+**Diagnóstico de la primera parte (bug de borde real, no ambiguo):** el
+índice 0 (la card en la estación más alta de la columna) tiene su propio
+"punto de enfoque" exactamente en `storyProgress = 0` — el instante mismo
+en que arranca el scroll de la sección. Como no existe ningún
+`storyProgress` anterior a 0, esa card nunca tiene una fase de
+"acercamiento" — nace con `angle = 0` (centrada) y, apenas el usuario
+scrollea un poco, entra directo a su fase de "ya pasó su enfoque"
+(derecha). Nunca llegaba a mostrarse a la izquierda, a diferencia de las
+demás historias.
+
+**Corrección:**
+- `spine-cards.ts`: nueva constante `LOCAL_ORBIT_PHASE_BIAS = 0.35`
+  (radianes), sumada al ángulo de cada card — un adelanto de fase
+  uniforme para todas las cards (no un caso especial solo para el índice
+  0) que garantiza que toda card, incluida la primera, arranca medible
+  a la izquierda del centro en vez de exactamente centrada.
+  `cos(0.35) ≈ 0.94`, lejos de la zona de peligro `cos < 0` (detrás de la
+  columna) — el arreglo de profundidad del Slice 13.4 queda intacto.
+- Nueva constante `VERTICAL_ARC_DROP = 0.4` (unidades de mundo): un
+  componente vertical nuevo, atado al mismo ángulo — positivo (más
+  arriba) del lado izquierdo/de acercamiento, negativo (más abajo) del
+  lado derecho/de retirada, clampeado a un cuarto de vuelta para no
+  seguir bajando de más en las cards muy lejos de su propio enfoque. Antes
+  el recorrido era puramente horizontal (misma altura); ahora el giro se
+  lee como un descenso, no como algo plano.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture/three` y `node --test tests/*.test.mjs`
+(18/18) limpios. Verificado visualmente contra el `pnpm dev` del usuario
+(hard refresh incluido): la primera card (la de la estación más alta)
+ahora aparece claramente a la izquierda del centro desde el momento en
+que entra en pantalla, en vez de nacer centrada — y se la vio moverse
+hacia la derecha a medida que se sigue bajando, confirmado comparando la
+posición en píxeles de la misma card entre capturas consecutivas. Cero
+errores de consola nuevos.
+
+No se hizo commit (regla general del repo).
+
 ## 3. Estado actual / progreso
 
 **Actualizar esta tabla antes de terminar cualquier sesión de trabajo.**
@@ -236,6 +881,17 @@ tarjetas propias.
 | 9.4 | Tarjetas en órbita (no deslizamiento lateral) + movimiento más fluido + fondo atenuado al bajar | ✅ Hecho | 2026-09-11 | Pedido explícito del usuario con referencias visuales; incluye un bug real encontrado y corregido (superposición de textos en 360px) |
 | 9.5 | Partículas con deriva aleatoria (gravedad cero) + columna un poco más grande | ✅ Hecho | 2026-09-11 | Usuario confirmó el Slice 9.4 ("super bonito") antes de pedir este ajuste |
 | 9.6 | Fondo extendido hasta el hero ("Cultura DevSure") | ✅ Hecho | 2026-09-11 | Incluye un segundo bug real encontrado y corregido (caption superpuesto con el H1 del hero) |
+| 10 | Tarjetas tipo coverflow + vidrio + caption integrado | ✅ Hecho | 2026-09-17 | Nueva referencia (activetheory-style), analizada y consultada con el usuario antes de tocar código — ver bitácora |
+| 11 | Órbita circular real con billboard + eliminación del caption HTML | ✅ Hecho | 2026-09-17 | El coverflow del Slice 10 leía "amontonado"; el usuario pidió recorrido circular real + sacar el panel de texto. Consultado y confirmado antes de tocar código — ver bitácora |
+| 12 | Cámara desciende por estaciones verticales + 3 historias nuevas (4→7) | ✅ Hecho | 2026-09-17 | El Slice 11 giraba en el lugar sin sensación de bajar; el usuario pidió que las tarjetas ya estén ubicadas de arriba a abajo y que el scroll las vaya revelando, más 3 tarjetas — ver bitácora |
+| 13.1 | Giro local de cada card atado al scroll, no al reloj (punto 1 de 2 observaciones) | ✅ Hecho | 2026-09-17 | Bug real: las cards seguían circulando solas en reposo. El usuario pidió resolver primero este punto, el punto 2 (sentido del recorrido) queda pendiente de su confirmación — ver bitácora |
+| 13.2 | Histéresis en el índice "frontal" — arregla el glitch de pantalla completa que se quedaba pegado | ✅ Hecho | 2026-09-17 | Bug real, con captura del usuario: cerca del punto medio entre dos estaciones el índice frontal parpadeaba cada frame, re-disparando `transition.trigger()` sin dejarlo decaer nunca — ver bitácora |
+| 13.3 | Punto 2 resuelto: las primeras historias arrancan del lado izquierdo, no derecho | ✅ Hecho | 2026-09-17 | El usuario aclaró con un video + una frase ("que empiecen ordenadas en la izquierda y no a la derecha") lo que quedó pendiente en el Slice 12 — ver bitácora |
+| 13.4 | Las cards ya no giran por detrás de la columna al llegar a su enfoque | ✅ Hecho | 2026-09-17 | Bug real confirmado con cálculo numérico por índice: el ángulo local dependía del índice de forma arbitraria, así que algunas cards (2 y 6, y en menor medida 1 y 3) quedaban con `cos(angle) < 0` (detrás de la columna) justo en su propio momento de enfoque — ver bitácora |
+| 13.5 | Glitch de transición rediseñado: bloques desplazados + tearing horizontal + ghosting | ✅ Hecho | 2026-09-17 | El usuario describió en detalle qué tipo de glitch digital quería (bloques rectangulares, no ruido pixelado fino) — ver bitácora |
+| 13.6 | Split RGB localizado a los bloques/filas activos (menos lectura de "confeti") | ✅ Hecho | 2026-09-17 | El usuario preguntó si el ruido tipo píxel de antes se podía eliminar o solo disimular — causa real identificada (split parejo contra ~2200 partículas) y corregida — ver bitácora |
+| 13.7 | Regresión: las cards volvían a arrancar por la derecha | ✅ Hecho | 2026-09-17 | El fix del Slice 13.4 (ángulo relativo al enfoque propio) invirtió sin querer el signo que el Slice 13.3 había fijado — corregido negando el ángulo, sin tocar el arreglo de profundidad — ver bitácora |
+| 13.8 | La primera card (arriba de la columna) arranca a la izquierda + el giro ahora desciende | ✅ Hecho | 2026-09-17 | Bug de borde real: el índice 0 nace exactamente en su propio punto de enfoque (storyProgress=0), así que nacía centrada y nunca visitaba la izquierda; más un componente vertical nuevo para que el giro se lea como descenso — ver bitácora |
 
 Estados posibles: ⏳ Pendiente · 🚧 En progreso · ✅ Hecho · 🔴 Bloqueado (anota
 por qué y qué se necesita para desbloquear).

@@ -1,20 +1,18 @@
 import * as THREE from 'three';
+import { createCameraRig } from '@/features/culture/three/spine-camera';
 import {
-  createFallbackTexture,
-  createGlitchCardMaterial,
-  type GlitchCardMaterial,
-} from '@/features/culture/three/glitch-card-material';
-
+  CARD_HEIGHT,
+  CARDS_SCENE_HALF_WIDTH,
+  createSpineCards,
+  type SpineCardInput,
+} from '@/features/culture/three/spine-cards';
 import { createSpineColumn, SPINE_HEIGHT, SPINE_HALF_WIDTH } from '@/features/culture/three/spine-geometry';
 import { createSpineParticles } from '@/features/culture/three/spine-particles';
 import { createSpineRefraction } from '@/features/culture/three/spine-refraction';
 import { createSpineRings } from '@/features/culture/three/spine-rings';
 import { createTransitionComposite } from '@/features/culture/three/transition-composite';
 
-export interface SpineCardInput {
-  id: string;
-  imageSrc: string;
-}
+export type { SpineCardInput };
 
 export interface SpineEngineElements {
   /** The element whose bounding rect drives scroll progress — the combined background region spanning the story cards *and* the sections that scroll over the pinned column as foreground content (Slice 9). */
@@ -31,175 +29,31 @@ export interface SpineEngineHandle {
   dispose: () => void;
 }
 
-// Slice 9: user feedback was that the column and cards read as too small
-// against the reference (activetheory.net/work) — bumped from 2.
-const CARD_WIDTH = 2.4;
-const CARD_ASPECT = 1672 / 941; // apps/web/src/features/culture/culture-content.ts image dimensions
-const CARD_HEIGHT = CARD_WIDTH / CARD_ASPECT;
-// Interior vertices so the idle wave (Slice 8.4) reads as a surface ripple
-// instead of the whole plane rocking rigidly around its 4 corners.
-const CARD_SEGMENTS_X = 12;
-const CARD_SEGMENTS_Y = 18;
-const CARD_FALLBACK_COLOR = 0x172236; // --surface-raised, shown until a texture loads or if it fails
-
-// Slice 9 (second pass): cards now orbit the column on a fixed-radius ring
-// instead of sliding in from a side — the user pointed at a reference
-// (videos muestra/fotos referencia) showing panels arranged *around* a
-// central column, not flat cards parked beside it. One full orbit
-// (`ORBIT_TURNS`) happens across the story cards' sub-range of the combined
-// scroll (see `computeStoryProgress`), so with 3 evenly-spaced cards each
-// gets one turn facing the camera, same spirit as the old 3-band system.
-const ORBIT_RADIUS = 2.6;
-const ORBIT_TURNS = 1;
-// Slow, small, independent-per-card bobbing so the cards read as floating
-// in zero-gravity rather than rigidly locked to the orbit ring, per the
-// user's "floating slowly, like in space" request — driven by the idle
-// clock (elapsed wall-clock time), not scroll progress.
-const CARD_FLOAT_AMPLITUDE = 0.18;
-const CARD_FLOAT_SPEED = 0.35;
-
-// Half-width of the whole scene (spine + the orbit ring the cards travel
-// on), used to keep the camera fit from clipping cards horizontally.
-const SCENE_HALF_WIDTH = ORBIT_RADIUS + CARD_WIDTH / 2;
-
-// Slice 9: the column now keeps rotating across a much longer combined
-// scroll range (stories + the sections that scroll over it as background,
-// see `computeStoryProgress`), so a single 2π turn across the whole thing
-// (the original Slice 8.1 value) would read as barely moving during that
-// extra distance. First-pass tuning, not calibrated against the user yet.
+// The column now keeps rotating across a much longer combined scroll range
+// (stories + the sections that scroll over it as background, see
+// `computeStoryState`), so a single 2π turn across the whole thing would
+// read as barely moving during that extra distance.
 const SPINE_ROTATION_CYCLES = 2.5;
 
 // How quickly the rendered progress catches up to the raw scroll-derived
-// value (Slice 9, "more fluid" feedback) — see `THREE.MathUtils.damp`.
-// Lower = softer/laggier, higher = snappier/closer to 1:1 with scroll.
+// value — see `THREE.MathUtils.damp`. Lower = softer/laggier, higher =
+// snappier/closer to 1:1 with scroll.
 const PROGRESS_DAMPING = 4.5;
 
-interface CardsResult {
-  group: THREE.Group;
-  materials: GlitchCardMaterial[];
-  meshes: THREE.Mesh[];
-  dispose: () => void;
-}
-
-/**
- * One flat card per story, orbiting the column on a ring of radius
- * `ORBIT_RADIUS` (see `applyProgress` for the angle math). Textures load
- * asynchronously; each card shows `CARD_FALLBACK_COLOR` until its image
- * resolves (or forever, if it fails — same spirit as the CSS fallback's
- * `mediaFallback`, without trying to render the `alt` text inside WebGL,
- * since the real alt text already lives in the HTML caption
- * `CultureSpineScene` renders alongside this canvas).
- */
-function createCards(stories: readonly SpineCardInput[], onTextureLoaded: () => void): CardsResult {
-  const group = new THREE.Group();
-  const geometry = new THREE.PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_SEGMENTS_X, CARD_SEGMENTS_Y);
-  const loader = new THREE.TextureLoader();
-  const fallbackTexture = createFallbackTexture(CARD_FALLBACK_COLOR);
-  const textures: THREE.Texture[] = [];
-  const materials: GlitchCardMaterial[] = [];
-  const meshes: THREE.Mesh[] = [];
-  // A texture load can resolve after `dispose()` already ran (fast
-  // navigation away). Guard against assigning it to an about-to-be-freed
-  // material and instead dispose it immediately on arrival.
-  let disposed = false;
-
-  stories.forEach((story, index) => {
-    const material = createGlitchCardMaterial(fallbackTexture, index * 13.37);
-    materials.push(material);
-
-    loader.load(
-      story.imageSrc,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        if (disposed) {
-          texture.dispose();
-          return;
-        }
-        textures.push(texture);
-        material.uniforms.map.value = texture;
-        onTextureLoaded();
-      },
-      undefined,
-      () => {
-        // Keep the fallback texture; the accessible caption still carries
-        // the real copy and alt text regardless of whether this loaded.
-      },
-    );
-
-    const mesh = new THREE.Mesh(geometry, material);
-    meshes.push(mesh);
-    group.add(mesh);
-  });
-
-  return {
-    group,
-    materials,
-    meshes,
-    dispose: () => {
-      disposed = true;
-      geometry.dispose();
-      fallbackTexture.dispose();
-      materials.forEach((material) => material.dispose());
-      textures.forEach((texture) => texture.dispose());
-    },
-  };
-}
-
-/** Distance along +z needed for the whole scene (spine + the cards' orbit ring) to fit, at any aspect ratio. */
-function fitDistanceForScene(camera: THREE.PerspectiveCamera, aspect: number): number {
-  // Slice 9: reduced from 1.35 — less headroom means the camera sits
-  // closer, so the column/cards fill noticeably more of the frame (bigger
-  // *is* mostly a "camera distance" question here: fitDistanceForScene
-  // already auto-fits the whole scene, so scaling up the geometry itself
-  // wouldn't look any bigger on screen — the camera would just back away
-  // by the same factor). Still enough headroom for the camera path's own
-  // lateral/vertical drift (buildCameraPath) not to clip anything.
-  const margin = 1.12;
-
-  const verticalFov = (camera.fov * Math.PI) / 180;
-  const distanceForHeight = SPINE_HEIGHT / 2 / Math.tan(verticalFov / 2);
-
-  const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-  const distanceForWidth = SCENE_HALF_WIDTH / Math.tan(horizontalFov / 2);
-
-  return Math.max(distanceForHeight, distanceForWidth) * margin;
-}
-
-/**
- * Slice 8.2: the camera's *path*, not just a static point — a closed set of
- * control points orbiting loosely around `distance` (the still-image fit
- * from `fitDistanceForScene`), so scrolling through it feels like a real
- * camera move (banking side to side, dollying slightly in/out) on top of
- * the column's own rotation from Slice 8.1 (untouched, orthogonal to this).
- * Offsets are kept well inside `fitDistanceForScene`'s margin so neither the
- * spine nor the orbiting cards clip at any point on the path.
- */
-function buildCameraPath(distance: number): THREE.CatmullRomCurve3 {
-  const lateral = distance * 0.1;
-  const vertical = distance * 0.05;
-  const depth = distance * 0.08;
-  return new THREE.CatmullRomCurve3(
-    [
-      new THREE.Vector3(-lateral, vertical * 0.6, distance + depth * 0.4),
-      new THREE.Vector3(lateral * 0.7, -vertical, distance - depth),
-      new THREE.Vector3(-lateral * 0.4, vertical, distance + depth),
-      new THREE.Vector3(lateral, -vertical * 0.5, distance - depth * 0.6),
-      new THREE.Vector3(-lateral * 0.8, vertical * 0.3, distance + depth * 0.7),
-      new THREE.Vector3(lateral * 0.5, -vertical * 0.8, distance - depth * 0.3),
-    ],
-    false,
-    'catmullrom',
-    0.5,
-  );
-}
+// How far up/down the camera travels (see spine-camera.ts's `buildCameraPath`)
+// and how far apart the cards' stations are spread (spine-cards.ts) — a
+// fraction of the column's own height, not the full height, so the path
+// stays inset from the very top/bottom of the geometry.
+const STATION_TRAVEL_HALF_HEIGHT = SPINE_HEIGHT * 0.42;
 
 /**
  * Scrolling rotates the real vertebral geometry around its vertical axis,
- * moves the camera along `cameraPath`, and orbits each story card around
- * the column (Slice 9). `rawProgress` is a *damped* value, not the raw
- * scroll-derived one (see `PROGRESS_DAMPING` in the render loop below) —
- * that's what makes the motion read as fluid/eased rather than snapping
- * directly to scroll position.
+ * moves the camera along its path (see `spine-camera.ts`), and slides each
+ * story card's position along the coverflow (see `spine-cards.ts`).
+ * `rawProgress` is a *damped* value, not the raw scroll-derived one (see
+ * `PROGRESS_DAMPING` in the render loop below) — that's what makes the
+ * motion read as fluid/eased rather than snapping directly to scroll
+ * position.
  *
  * Never pins the section or alters native scroll behavior — layout is only
  * ever read (`getBoundingClientRect()`), never written.
@@ -222,18 +76,19 @@ export function mountSpineEngine(
   // Both dimensions clamped to at least 1: `canvasMount` can still be 0×0
   // the instant this runs (e.g. this mounts inside a CSS grid/sticky layout
   // that hasn't settled yet, or right after `next/dynamic`'s client-only
-  // swap). An aspect of exactly 0 makes `fitDistanceForScene` divide by a
-  // zero horizontal FOV — the resulting Infinity distance builds a
+  // swap). An aspect of exactly 0 makes the camera rig's auto-fit divide by
+  // a zero horizontal FOV — the resulting Infinity distance builds a
   // degenerate camera path whose `getPointAt` returns undefined, crashing
   // `applyProgress` the moment it runs below. `handleResize`'s observer
   // (see bottom of this function) corrects the real aspect once layout
   // actually reports a size.
-  const camera = new THREE.PerspectiveCamera(
-    50,
+  const cameraRig = createCameraRig(
     Math.max(canvasMount.clientWidth, 1) / Math.max(canvasMount.clientHeight, 1),
-    0.1,
-    100,
+    CARD_HEIGHT / 2,
+    CARDS_SCENE_HALF_WIDTH,
+    STATION_TRAVEL_HALF_HEIGHT,
   );
+  const camera = cameraRig.camera;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   // `alpha: true` above only makes the canvas's alpha channel usable — the
@@ -262,13 +117,18 @@ export function mountSpineEngine(
   const rings = createSpineRings();
   scene.add(rings.group);
 
-  const cards = createCards(stories, () => {
-    /* texture arriving mid-frame just shows up on the next scheduled render — no extra render() call needed now that the loop below always runs. */
-  });
+  const cards = createSpineCards(
+    stories,
+    refraction.cardsBackdropTexture,
+    refraction.cardsResolution,
+    STATION_TRAVEL_HALF_HEIGHT,
+    () => {
+      /* texture arriving mid-frame just shows up on the next scheduled render — no extra render() call needed now that the loop below always runs. */
+    },
+  );
   scene.add(cards.group);
 
   let activeIndex = 0;
-  let cameraPath = buildCameraPath(fitDistanceForScene(camera, camera.aspect));
 
   /**
    * 0 at the very start, reaching 1 exactly when `storySpacer` (the empty
@@ -316,25 +176,14 @@ export function mountSpineEngine(
   }
 
   function applyProgress(rawProgress: number, elapsed: number) {
-    // The column keeps rotating and the camera keeps drifting along its
-    // path for the *entire* combined range, story cards or not — this is
-    // what makes the column read as a continuous animated backdrop while
-    // "Lo que cuidamos"/"Nuestra medida"/"Confianza compartida" scroll past.
+    // The column keeps rotating for the *entire* combined range, story cards
+    // or not — this is what makes it read as a continuous animated backdrop
+    // while "Lo que cuidamos"/"Nuestra medida"/"Confianza compartida" scroll
+    // past. The camera, below, is different: it only travels down through
+    // the cards' stations (`storyProgress`), then parks at the bottom once
+    // that saturates at 1 — there's nothing further down to descend toward
+    // once the story cards are behind.
     spine.group.rotation.y = rawProgress * Math.PI * 2 * SPINE_ROTATION_CYCLES + 0.3;
-
-    // Belt-and-suspenders alongside the aspect clamp above and the resize
-    // observer below: `getPointAt` can still return undefined for a
-    // degenerate curve (e.g. an Infinite/NaN distance slipping through some
-    // other path). Skip this frame's camera move rather than crash the
-    // whole page on a `.x` read.
-    const here = cameraPath.getPointAt(rawProgress);
-    const ahead = cameraPath.getPointAt(Math.min(1, rawProgress + 0.02));
-    if (!here || !ahead) return;
-    camera.position.copy(here);
-    // Look mostly at the column (origin's x/y), biased slightly toward
-    // where the path is heading next, so turns read as the camera
-    // steering rather than just sliding sideways.
-    camera.lookAt(2 * (ahead.x - here.x), 2 * (ahead.y - here.y), 0);
 
     // The story cards only exist for the *first* sub-range of the combined
     // scroll distance (there's no card content for the sections beyond
@@ -342,6 +191,12 @@ export function mountSpineEngine(
     // foreground's real content is about to appear on screen, and holding
     // there for the rest of the scroll.
     const { progress: storyProgress, headerClearAmount } = computeStoryState();
+
+    // Drives the camera's vertical descent through the cards' stations (see
+    // spine-camera.ts) — using `storyProgress`, not `rawProgress`, is what
+    // makes "scrolling down" and "the camera travelling down past each
+    // card's station" the same motion, instead of two independent clocks.
+    cameraRig.applyAt(storyProgress);
 
     // Slice 9: dim the column once we're past the story cards, so the busy
     // particle/ring surface doesn't compete with the foreground sections'
@@ -351,46 +206,21 @@ export function mountSpineEngine(
     const dimAmount = THREE.MathUtils.smoothstep(storyProgress, 0.82, 1);
     scrim.style.opacity = String(dimAmount * 0.72);
 
-    // Cards orbit together on one ring, `ORBIT_TURNS` full turns across the
-    // story sub-range; each starts at its own evenly-spaced angle so with 3
-    // cards every one gets a turn facing the camera (angle ≈ 0). A plane's
-    // default normal is +Z, so `rotation.y = angle` keeps each card facing
-    // outward along its own orbit position — which also means a card on the
-    // far side (angle ≈ π) faces away from the camera and is naturally
-    // backface-culled instead of needing separate hide logic.
-    const orbitAngle = storyProgress * Math.PI * 2 * ORBIT_TURNS;
-    // Fade out (via scale, not opacity — the shader has no alpha control)
-    // over the last stretch of the story range so nothing lingers, visible
-    // at a screen edge, once scrolling moves into the foreground content —
-    // a real bug found by scrolling past this point and screenshotting it.
-    // Also faded in only once `headerClearAmount` ramps up (Slice 9.6):
-    // while the hero/heading are still on screen, there's no reason for a
-    // card to be floating over them either.
+    // Fade out (via scale, not opacity alone — see spine-cards.ts) over the
+    // last stretch of the story range so nothing lingers, visible at a
+    // screen edge, once scrolling moves into the foreground content — a real
+    // bug found by scrolling past this point and screenshotting it. Also
+    // faded in only once `headerClearAmount` ramps up: while the hero/
+    // heading are still on screen, there's no reason for a card to be
+    // floating over them either.
     const fadeOut = headerClearAmount * (1 - THREE.MathUtils.smoothstep(storyProgress, 0.92, 1));
     cards.group.visible = fadeOut > 0.001;
 
-    let frontIndex = 0;
-    let frontBest = -Infinity;
-
-    cards.meshes.forEach((mesh, index) => {
-      const baseAngle = (index / stories.length) * Math.PI * 2;
-      const angle = baseAngle + orbitAngle;
-      const frontAmount = (Math.cos(angle) + 1) / 2; // 1 facing the camera, 0 at the back
-      if (frontAmount > frontBest) {
-        frontBest = frontAmount;
-        frontIndex = index;
-      }
-
-      // Slow, per-card bob driven by wall-clock time, not scroll — the
-      // "floating slowly, like in space" feel the user asked for, layered
-      // on top of the scroll-driven orbit position.
-      const floatY = Math.sin(elapsed * CARD_FLOAT_SPEED + index * 2.1) * CARD_FLOAT_AMPLITUDE;
-
-      mesh.position.set(Math.sin(angle) * ORBIT_RADIUS, floatY, Math.cos(angle) * ORBIT_RADIUS);
-      mesh.rotation.y = angle;
-      mesh.scale.setScalar(fadeOut);
-      cards.materials[index].uniforms.uIntensity.value = 1 - frontAmount;
-    });
+    // `spine-cards.ts` owns each card's station/local-orbit placement
+    // (position/rotation/scale/visibility/glass-material uniforms) and
+    // reports back which station is currently in focus — driven by the
+    // camera's own height, now that it's the camera doing the travelling.
+    const frontIndex = cards.place(camera.position.y, storyProgress, fadeOut, elapsed, camera);
 
     const nextActiveIndex = headerClearAmount >= 1 && storyProgress < 1 ? frontIndex : -1;
     if (nextActiveIndex !== activeIndex) {
@@ -402,7 +232,7 @@ export function mountSpineEngine(
   }
 
   function render() {
-    refraction.render(scene, camera, spine.group, transition.sceneTarget());
+    refraction.render(scene, camera, spine.group, cards.group, transition.sceneTarget());
     transition.blit();
   }
 
@@ -474,12 +304,20 @@ export function mountSpineEngine(
     const { clientWidth, clientHeight } = canvasMount;
     if (clientWidth === 0 || clientHeight === 0) return;
     camera.aspect = clientWidth / clientHeight;
-    cameraPath = buildCameraPath(fitDistanceForScene(camera, camera.aspect));
+    cameraRig.refit(CARD_HEIGHT / 2, CARDS_SCENE_HALF_WIDTH, STATION_TRAVEL_HALF_HEIGHT);
     camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(clientWidth, clientHeight);
     refraction.resize();
     transition.resize();
+    // `refraction.resize()` just recreated the cards-backdrop render target
+    // (a new texture object + new dimensions) — every card material holds
+    // its own reference to the old one and needs it refreshed, the same way
+    // `spine-refraction.ts` already refreshes its own column material above.
+    cards.materials.forEach((material) => {
+      material.uniforms.uSceneBehindCards.value = refraction.cardsBackdropTexture;
+      material.uniforms.uResolution.value.set(refraction.cardsResolution.width, refraction.cardsResolution.height);
+    });
   }
 
   window.addEventListener('resize', handleResize);

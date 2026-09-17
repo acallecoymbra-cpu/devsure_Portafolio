@@ -1,9 +1,15 @@
 import * as THREE from 'three';
 
 const PARTICLE_COUNT = 2200;
+// Narrative-column redesign: shifted from the site's teal/coral accent to
+// the blue → violet → pink family the reference video's atmosphere uses.
+// `TEAL` stays in the mix at low odds (see the pick below) — a quiet nod to
+// the site's own accent color rather than a clean break from it.
+const BLUE = new THREE.Color(0x5274ff);
+const VIOLET = new THREE.Color(0x8a7dff);
+const PINK = new THREE.Color(0xff8fd6);
+const PALE = new THREE.Color(0xe4e9ff);
 const TEAL = new THREE.Color(0x3cd8c5);
-const CORAL = new THREE.Color(0xff8f6b);
-const PALE = new THREE.Color(0xdfefff);
 
 export interface SpineParticles {
   points: THREE.Points;
@@ -60,7 +66,8 @@ export function createSpineParticles(spineHeight: number, halfWidth: number): Sp
     }
 
     const colorPick = Math.random();
-    const color = colorPick < 0.55 ? TEAL : colorPick < 0.85 ? PALE : CORAL;
+    const color =
+      colorPick < 0.4 ? BLUE : colorPick < 0.65 ? VIOLET : colorPick < 0.85 ? PALE : colorPick < 0.95 ? PINK : TEAL;
     colors[base] = color.r;
     colors[base + 1] = color.g;
     colors[base + 2] = color.b;

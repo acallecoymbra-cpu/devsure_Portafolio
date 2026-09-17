@@ -87,6 +87,45 @@ export const cultureStories: readonly CultureStory[] = [
       height: 800,
     },
   },
+  {
+    id: 'communicate',
+    kicker: '05 · Comunicar',
+    title: 'Avisamos antes de que sea un problema',
+    description:
+      'Compartimos avances, riesgos y decisiones a tiempo, para que nunca haya sorpresas de último momento.',
+    image: {
+      src: '/photos/conference-room.webp',
+      alt: 'Fotografía editorial de una sala de reuniones donde el equipo conversa sobre un proyecto.',
+      width: 1600,
+      height: 900,
+    },
+  },
+  {
+    id: 'focus',
+    kicker: '06 · Enfocar',
+    title: 'El detalle también es el producto',
+    description:
+      'Cuidamos cada decisión pequeña porque sabemos que, sumadas, son las que definen la experiencia final.',
+    image: {
+      src: '/photos/portrait-focused.webp',
+      alt: 'Retrato editorial de una persona del equipo concentrada en su trabajo.',
+      width: 1600,
+      height: 900,
+    },
+  },
+  {
+    id: 'follow-through',
+    kicker: '07 · Acompañar',
+    title: 'Seguimos después de la entrega',
+    description:
+      'Medimos resultados reales y ajustamos el rumbo junto al equipo del cliente, no solo en el lanzamiento.',
+    image: {
+      src: '/photos/trajectory.webp',
+      alt: 'Fotografía editorial de una trayectoria de crecimiento profesional.',
+      width: 1600,
+      height: 900,
+    },
+  },
 ];
 
 export const companyStories: readonly CompanyStory[] = [

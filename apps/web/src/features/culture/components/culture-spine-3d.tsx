@@ -8,9 +8,6 @@ import styles from '@/features/culture/culture.module.css';
 
 type CultureSpine3DProps = {
   stories: readonly CultureStory[];
-  onActiveIndexChange?: (index: number) => void;
-  /** Rendered inside the pinned viewport-height stage, over the canvas (see `spineCaptionOverlay`). */
-  children?: ReactNode;
   /**
    * Slice 9.6: the hero and "Quiénes somos" heading — rendered *before* the
    * story cards' scroll room (`storySpacerRef`), so the column shows as a
@@ -28,14 +25,15 @@ type CultureSpine3DProps = {
 
 /**
  * The WebGL layer for the culture spine: a rotating column with a card per
- * story orbiting around it, one taking the front-facing turn at a time as
- * the viewer scrolls (Slice 4's glitch shader plays as each card leaves that
- * position, Slice 9 replaced the original side-slide with this orbit). Only
- * ever mounted by
- * `CultureSpineScene` after it has confirmed WebGL is available, the viewer
- * doesn't prefer reduced motion, and the device isn't flagged as low-end
- * (see three/capabilities.ts). Purely decorative: the real story copy is
- * passed in as `children` and rendered as HTML, never only on the canvas.
+ * story orbiting around it, always billboarded to face the camera so it's
+ * never edge-on, one taking the front-facing turn at a time as the viewer
+ * scrolls (the glitch shader plays as each card leaves that position). Only
+ * ever mounted by `CultureSpineScene` after it has confirmed WebGL is
+ * available, the viewer doesn't prefer reduced motion, and the device isn't
+ * flagged as low-end (see three/capabilities.ts). Purely decorative — no
+ * on-screen text of its own; the real story copy lives as a separate
+ * `sr-only` HTML list `CultureSpineScene` renders alongside this canvas
+ * (see `SpineAccessibleStories`).
  *
  * Four elements matter here (see `culture.module.css`'s
  * `spineBackgroundRegion` comment for why): `wrapperRef` is the combined
@@ -48,12 +46,11 @@ type CultureSpine3DProps = {
  * the engine fades in once scrolling moves past the story cards, dimming
  * the column so it doesn't fight with the foreground sections' text.
  *
- * `stories` and `onActiveIndexChange` are expected to be referentially
- * stable for the component's lifetime (a module-level content array and a
- * `useCallback`-wrapped setter, respectively) — the mount effect
- * intentionally runs once, not on every render.
+ * `stories` is expected to be referentially stable for the component's
+ * lifetime (a module-level content array) — the mount effect intentionally
+ * runs once, not on every render.
  */
-export function CultureSpine3D({ stories, onActiveIndexChange, children, header, foreground }: CultureSpine3DProps) {
+export function CultureSpine3D({ stories, header, foreground }: CultureSpine3DProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasMountRef = useRef<HTMLDivElement>(null);
   const storySpacerRef = useRef<HTMLDivElement>(null);
@@ -69,21 +66,27 @@ export function CultureSpine3D({ stories, onActiveIndexChange, children, header,
     const handle = mountSpineEngine(
       { scrollTrigger, canvasMount, storySpacer, scrim },
       stories.map((story) => ({ id: story.id, imageSrc: story.image.src })),
-      onActiveIndexChange,
     );
     return () => handle.dispose();
-  }, [stories, onActiveIndexChange]);
+  }, [stories]);
 
   return (
     <div ref={wrapperRef} className={styles.spineBackgroundRegion}>
       <div className={styles.spineStickyLayer}>
         <div ref={canvasMountRef} className={styles.spineCanvasMount} aria-hidden="true" />
         <div ref={scrimRef} className={styles.spineScrim} aria-hidden="true" />
-        {children}
       </div>
       <div className={styles.spineForegroundLayer}>
         {header}
-        <div ref={storySpacerRef} className={styles.spineStorySpacer} aria-hidden="true" />
+        {/* Scroll room scales with story count (~60vh each) so adding/removing
+            stories keeps roughly the same pace per card instead of rushing or
+            dragging as the list grows. */}
+        <div
+          ref={storySpacerRef}
+          className={styles.spineStorySpacer}
+          style={{ height: `${stories.length * 60}vh` }}
+          aria-hidden="true"
+        />
         {foreground}
       </div>
     </div>

@@ -342,9 +342,9 @@
   position: absolute;
 }
 
-/* Slice 9: the artificial scroll room for the 3 story cards — see `three/spine-engine.ts`'s `computeStoryFraction`. Nothing renders here; it's pure spacing so the cards keep the same scroll distance they had before the column extended into the sections that follow. */
+/* The artificial scroll room for the story cards — see `three/spine-engine.ts`'s `computeStoryState`. Nothing renders here; it's pure spacing so the cards keep a real scroll distance even though the column extends into the sections that follow. Height is set inline by `culture-spine-3d.tsx`, scaled to the number of stories, so each card keeps roughly the same amount of scroll room regardless of how many there are. */
 .spineStorySpacer {
-  height: 240vh;
+  width: 100%;
 }
 
 .spineCanvasMount {
@@ -356,54 +356,6 @@
   display: block;
   height: 100%;
   width: 100%;
-}
-
-@keyframes spineCaptionFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.spineCaptionOverlay {
-  background: linear-gradient(180deg, transparent, rgba(7, 11, 23, 0.88) 70%);
-  bottom: 0;
-  left: 0;
-  padding: clamp(1.5rem, 6vw, 4rem) clamp(1rem, 6vw, 4rem);
-  position: absolute;
-  right: 0;
-}
-
-.spineCaption {
-  animation: spineCaptionFadeIn 420ms var(--ease-out);
-  display: grid;
-  gap: 0.65rem;
-  margin-inline: auto;
-  max-width: 34rem;
-}
-
-.spineCaption > p:first-child {
-  color: #86e9db;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.spineCaption h3 {
-  color: #ffffff;
-  font-size: clamp(1.6rem, 4vw, 2.2rem);
-  margin-bottom: 0;
-}
-
-.spineCaption > p:last-child {
-  color: #94a3b8;
-  margin-bottom: 0;
 }
 
 .spineTrack {
@@ -869,10 +821,6 @@
 
   .spineItemRevealed .spineMedia img,
   .spineItemRevealed .spineCopy h3 {
-    animation: none;
-  }
-
-  .spineCaption {
     animation: none;
   }
 }

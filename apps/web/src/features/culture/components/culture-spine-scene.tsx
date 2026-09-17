@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CultureStory } from '@/features/culture/culture-content';
 import { CultureSpine } from '@/features/culture/components/culture-spine';
@@ -36,22 +36,30 @@ type CultureSpineSceneProps = {
 };
 
 /**
- * The real story copy for whichever card is currently resting next to the
- * spine (plan §2.3: the canvas is decorative, this HTML is the actual
- * accessible/SEO content). Rendered as an overlay pinned to the bottom of
- * the 3D stage — not projected onto the card's individual 3D screen
- * position (plan §5, Slice 3 "option 2") — which is far more robust than
- * keeping a per-frame projection in sync with a scroll-driven scene, at the
- * cost of some fidelity to the reference video. Revisit if the user asks
- * for tighter visual coupling.
+ * User request: the 3D scene's visible glass caption panel is gone — it sat
+ * exactly where the front-facing card orbits to (plan §5, Slice 3 "option
+ * 2"), so the card "winning" the front position ended up the *least*
+ * visible thing on screen instead of the most. The canvas is purely
+ * decorative now, no on-screen text at all — but the real story copy (plan
+ * §2.3, still in force) still needs to exist as real HTML for screen
+ * readers and search crawlers, so it renders here, `sr-only`, as a static
+ * list next to the canvas. Static rather than tied to whichever card is
+ * currently front-facing: simpler, and correct regardless of
+ * animation/JS state — a crawler that never runs the WebGL loop still sees
+ * every story, not just whichever one happened to be "active" at request
+ * time.
  */
-function CultureSpineCaption({ story }: { story: CultureStory }) {
+function SpineAccessibleStories({ stories }: { stories: readonly CultureStory[] }) {
   return (
-    <div className={styles.spineCaption} key={story.id}>
-      <p>{story.kicker}</p>
-      <h3>{story.title}</h3>
-      <p>{story.description}</p>
-    </div>
+    <ul className="sr-only" aria-label="Cómo trabajamos, paso a paso">
+      {stories.map((story) => (
+        <li key={story.id}>
+          <p>{story.kicker}</p>
+          <h3>{story.title}</h3>
+          <p>{story.description}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -89,23 +97,10 @@ function StaticStoriesFallback({ stories }: { stories: readonly CultureStory[] }
  */
 export function CultureSpineScene({ stories, header, children }: CultureSpineSceneProps) {
   const [render3D, setRender3D] = useState(false);
-  // -1 = past the story cards (Slice 9): scrolling has moved into
-  // `children`'s sections, which now sit as foreground content over the
-  // column, so there's no active story caption to show anymore.
-  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     setRender3D(canRender3DSpine());
   }, []);
-
-  // Stable identity (setState setters never change) so the effect that
-  // mounts the WebGL engine in `CultureSpine3D` doesn't see this as a new
-  // prop on every render and remount the whole scene.
-  const handleActiveIndexChange = useCallback((index: number) => {
-    setActiveIndex(index);
-  }, []);
-
-  const activeStory = activeIndex >= 0 ? (stories[activeIndex] ?? stories[0]) : null;
 
   return (
     // Two layers: the inner boundary catches a WebGL-specific failure (e.g.
@@ -126,20 +121,12 @@ export function CultureSpineScene({ stories, header, children }: CultureSpineSce
       }
     >
       {render3D ? (
-        <SectionErrorBoundary fallback={null} onError={() => setRender3D(false)}>
-          <CultureSpine3D
-            stories={stories}
-            onActiveIndexChange={handleActiveIndexChange}
-            header={header}
-            foreground={children}
-          >
-            {activeStory ? (
-              <div className={styles.spineCaptionOverlay}>
-                <CultureSpineCaption story={activeStory} />
-              </div>
-            ) : null}
-          </CultureSpine3D>
-        </SectionErrorBoundary>
+        <>
+          <SectionErrorBoundary fallback={null} onError={() => setRender3D(false)}>
+            <CultureSpine3D stories={stories} header={header} foreground={children} />
+          </SectionErrorBoundary>
+          <SpineAccessibleStories stories={stories} />
+        </>
       ) : (
         <>
           {header}
