@@ -62,30 +62,13 @@ export default function CulturePage() {
         spine-engine.ts) ramps up almost immediately — the first card shows
         up after only a little scroll, not after clearing a tall header.
 
-        The hero copy below is `CultureWaterSection`'s children (user
-        request), but it renders *after* that component's `.frame` (the
-        photo + wordmarks), not inside it — the photo's box is pinned to its
-        own aspect ratio there specifically so this copy, whatever its
-        length, can never stretch it taller and force `object-fit: cover`
-        to crop in hard and lose one of the two stones. The manifesto quote
-        is its own plain section rather than sharing that image (an earlier
-        version stretched the shared photo across both, which relied on
-        `cover` cropping to fill the extra height). The old side-by-side
-        conference-room photo stays gone; the shared background already
-        carries the hero block visually.
+        User request: the hero no longer carries its own copy block
+        ("Cultura DevSure" eyebrow / "Personas curiosas..." h1 / lead
+        paragraph) — `CultureWaterSection` renders on its own (just the
+        photo + wordmarks), and `.manifestoSection` ("Nuestra medida")
+        follows it directly, no `children` in between.
       */}
-      <CultureWaterSection>
-        <div className={`shell ${styles.hero} ${styles.heroLayout}`}>
-          <div className={styles.heroCopy}>
-            <p className="eyebrow">Cultura DevSure</p>
-            <h1 id="culture-title">Personas curiosas. Trabajo claro. Software que se sostiene.</h1>
-            <p className={styles.heroLead}>
-              Somos un equipo que combina ingeniería, conversación honesta y mejora continua para
-              convertir problemas complejos en soluciones que puedan evolucionar.
-            </p>
-          </div>
-        </div>
-      </CultureWaterSection>
+      <CultureWaterSection />
 
       <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
         <div className="shell">

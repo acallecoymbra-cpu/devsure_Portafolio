@@ -22,47 +22,6 @@
   z-index: -2;
 }
 
-.hero {
-  /* Lives inside `CultureWaterSection` now (see page.tsx), wrapped in the
-     usual `shell` — the crystal photo is the background, this is just a
-     soft accent glow on top of it. */
-  background: radial-gradient(circle at 82% 22%, rgba(169, 152, 255, 0.22), transparent 25rem);
-  padding-block: clamp(2rem, 5vw, 3.5rem) clamp(2.5rem, 6vw, 4rem);
-  position: relative;
-  z-index: 2;
-}
-
-.heroLayout {
-  display: block;
-}
-
-.heroCopy {
-  max-width: 36rem;
-}
-
-/* The global `.eyebrow`/`h1`/`.heroLead` colors follow the page theme, which
-   assumes a plain themed backdrop. This block sits on the always-dark photo
-   band instead (see culture-water-section.module.css), so its text is
-   pinned to fixed light values — same fixed-light-on-dark pattern already
-   used for `.closingPanel`'s eyebrow and the always-dark photo cards below. */
-.heroCopy :global(.eyebrow) {
-  color: #86e9db;
-}
-
-.hero h1 {
-  color: #f5f7fb;
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  margin-bottom: 1.5rem;
-  max-width: 13ch;
-}
-
-.heroLead {
-  color: #94a3b8;
-  font-size: clamp(1.05rem, 2vw, 1.25rem);
-  margin-bottom: 0;
-  max-width: 34rem;
-}
-
 .cardSection h2 {
   color: var(--text);
   margin: 0.75rem 0 2rem;

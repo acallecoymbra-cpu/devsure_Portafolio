@@ -10,20 +10,47 @@
   width: 100%;
 
   /*
-   * The photo is 1536x1024 (1.5:1, i.e. 66.7% as tall as it is wide).
-   * Matching that here means `object-fit: cover` on `.backgroundImage`
-   * barely has to crop anything to fill this box — the two stones keep
-   * their source scale and position relative to each other, just trimmed a
-   * little at the extremes instead of zoomed into a slice of the photo.
-   * This height is intentionally decoupled from the hero copy below (see
-   * `.section` in the .tsx) so long copy can never stretch the frame taller
-   * than the photo's own composition and force `cover` to crop in hard.
+   * User request (reference screenshot): the hero photo was reading as too
+   * tall against the "Culture"/"DevSure" wordmark — at the photo's own
+   * 1.5:1 ratio (66.7vw) it ran ~960px at desktop widths, mostly empty
+   * space below the wordmark before the next section. Shallower than that
+   * on purpose: `object-fit: cover` below trims some of the photo's height.
+   * Combined with `object-position: center top` below, that trim lands
+   * entirely on the chalcopyrite rock's bottom — the goldstone sphere stays
+   * at its full native extent regardless of this value. Bumped repeatedly
+   * on user follow-up (58vw → 62vw → 64vw → 66vw, approaching but still
+   * under the photo's own 66.7vw): the rock was getting cut right at the
+   * hero/copy boundary with no fade, reading as an ugly hard edge — more
+   * height here pushes that boundary down and shows more of the rock before
+   * it. Larger number = less crop but a taller frame; this is the tuning
+   * knob for that tradeoff.
+   *
+   * BUG (caught by user screenshot at a ~1920px-wide screen): the cap used
+   * to be 975px, which only tracks `66vw` up to ~1477px wide. Past that,
+   * the box height freezes while the *displayed* (cover-scaled) image
+   * keeps growing with viewport width, cropping more of the bottom the
+   * wider the screen gets. Raised once already (975→1320px, covering up to
+   * ~2000px) and again here (1320→1690px) after checking every breakpoint
+   * for a "is this responsive?" question — 1690px keeps the cap from
+   * binding up to ~2560px (common wide/1440p monitors); only ultrawide or
+   * 4K viewports still see the heavier crop.
    */
-  min-height: clamp(480px, 66.7vw, 980px);
+  min-height: clamp(480px, 66vw, 1690px);
 }
 
+/*
+ * `object-position: center top` (not the `cover` default of centered) is
+ * the "posición" half of the trim above: the goldstone sphere already
+ * touches the very top edge of the source photo (zero headroom), while the
+ * chalcopyrite rock's bottom is a rougher, more forgiving edge to lose more
+ * of. Anchoring to the top means the vertical crop `.frame`'s shorter
+ * height forces comes entirely from the bottom — the sphere renders at its
+ * full native extent (same as an uncropped view), instead of losing a
+ * sliver off both stones symmetrically.
+ */
 .backgroundImage {
   object-fit: cover;
+  object-position: center top;
 }
 
 .headingWrap {
@@ -67,8 +94,24 @@
   width: clamp(340px, 68vw, 1500px);
 }
 
+/*
+ * BUG (found testing every breakpoint after a "is this responsive?"
+ * question): the floor here used to be 400px. At real phone widths
+ * (320-428px, i.e. most phones) `66vw` is only ~210-285px, so the 400px
+ * floor was the value actually in effect — a box far *taller relative to
+ * its width* than the photo's own ratio. `object-fit: cover` on a
+ * too-tall-for-its-width box crops the *sides*, not top/bottom, so it was
+ * eating deep into both stones horizontally — the goldstone sphere (near
+ * the photo's right edge) was reduced to a sliver at 375-390px, the
+ * un-fixed-earlier-for width iPhone/Android range. Dropping the floor to
+ * 200px means `66vw` almost always wins down to very narrow phones — the
+ * box tracks the photo's own ~1.5:1 ratio closely (same "barely any crop"
+ * property `.frame`'s desktop value has), it's just a shorter banner at
+ * narrow widths because the photo itself is shorter there. 200px only acts
+ * as a safety floor below ~303px, which is narrower than any real device.
+ */
 @media (max-width: 768px) {
   .frame {
-    min-height: 420px;
+    min-height: clamp(200px, 66vw, 560px);
   }
 }
