@@ -68,5 +68,6 @@ function toTranslations(profile: Profile): TranslationsContract {
     contactIntro: profile.contactIntro ?? {},
     footerAboutPrimary: profile.footerAboutPrimary ?? {},
     footerAboutSecondary: profile.footerAboutSecondary ?? {},
+    cultureManifesto: profile.cultureManifesto ?? {},
   };
 }

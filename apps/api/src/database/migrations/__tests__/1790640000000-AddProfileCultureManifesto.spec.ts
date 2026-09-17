@@ -14,49 +14,7 @@ import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfile
 import { AddProfileHeroVisual1790380800000 } from '../1790380800000-AddProfileHeroVisual';
 import { AddProfileCultureManifesto1790640000000 } from '../1790640000000-AddProfileCultureManifesto';
 
-describe('profile hero visual migration (up/down/up)', () => {
-  let dataSource: DataSource;
-
-  beforeEach(async () => {
-    dataSource = new DataSource({
-      type: 'better-sqlite3',
-      database: ':memory:',
-      synchronize: false,
-      entities: [AdminUser, AdminSession, Profile],
-      migrations: [
-        CreateAdminAuth1788480000000,
-        RequireAdminPasswordChange1788739200000,
-        AddAdminUsername1788825600000,
-        CreateProfiles1788912000000,
-        AddProfileTranslations1788998400000,
-        AddProfileStats1789948800000,
-        AddProfileFooterFields1790208000000,
-        AddProfileLogoWordmark1790294400000,
-        AddProfileHeroVisual1790380800000,
-      ],
-    });
-    await dataSource.initialize();
-  });
-
-  afterEach(async () => {
-    await dataSource.destroy();
-  });
-
-  it('adds and removes the hero_visual column up/down/up', async () => {
-    await dataSource.runMigrations();
-    const columns = async () => (await dataSource.createQueryRunner().getTable('profiles'))?.columns.map((c) => c.name) ?? [];
-
-    expect(await columns()).toEqual(expect.arrayContaining(['hero_visual']));
-
-    await dataSource.undoLastMigration();
-    expect(await columns()).not.toEqual(expect.arrayContaining(['hero_visual']));
-
-    await dataSource.runMigrations();
-    expect(await columns()).toEqual(expect.arrayContaining(['hero_visual']));
-  });
-});
-
-describe('profile hero visual migration (data integrity, with culture manifesto applied)', () => {
+describe('profile culture manifesto migration (up/down/up)', () => {
   let dataSource: DataSource;
 
   beforeEach(async () => {
@@ -79,14 +37,27 @@ describe('profile hero visual migration (data integrity, with culture manifesto 
       ],
     });
     await dataSource.initialize();
-    await dataSource.runMigrations();
   });
 
   afterEach(async () => {
     await dataSource.destroy();
   });
 
-  it('persists and reloads heroVisual alongside cultureManifesto through the Profile entity', async () => {
+  it('adds and removes the culture_manifesto column up/down/up', async () => {
+    await dataSource.runMigrations();
+    const columns = async () => (await dataSource.createQueryRunner().getTable('profiles'))?.columns.map((c) => c.name) ?? [];
+
+    expect(await columns()).toEqual(expect.arrayContaining(['culture_manifesto']));
+
+    await dataSource.undoLastMigration();
+    expect(await columns()).not.toEqual(expect.arrayContaining(['culture_manifesto']));
+
+    await dataSource.runMigrations();
+    expect(await columns()).toEqual(expect.arrayContaining(['culture_manifesto']));
+  });
+
+  it('persists and reloads cultureManifesto through the Profile entity', async () => {
+    await dataSource.runMigrations();
     const { id: ownerId } = await seedAdmin(dataSource.manager, {
       username: 'eduardo',
       email: 'eduardo@example.com',
@@ -100,13 +71,13 @@ describe('profile hero visual migration (data integrity, with culture manifesto 
         name: 'Eduardo',
         activeLocales: ['en'],
         defaultLocale: 'en',
-        heroVisual: 'hero-visual/orb.png',
-        cultureManifesto: { es: 'Construimos software honesto.' },
+        cultureManifesto: { es: 'Construimos software honesto, donde la claridad importa tanto como el código.' },
       }),
     );
 
     const reloaded = await profiles.findOneByOrFail({ ownerId });
-    expect(reloaded.heroVisual).toBe('hero-visual/orb.png');
-    expect(reloaded.cultureManifesto).toEqual({ es: 'Construimos software honesto.' });
+    expect(reloaded.cultureManifesto).toEqual({
+      es: 'Construimos software honesto, donde la claridad importa tanto como el código.',
+    });
   });
 });

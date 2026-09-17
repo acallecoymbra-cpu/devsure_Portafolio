@@ -12,6 +12,7 @@ import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
 import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
 import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
 import { AddProfileHeroVisual1790380800000 } from '../1790380800000-AddProfileHeroVisual';
+import { AddProfileCultureManifesto1790640000000 } from '../1790640000000-AddProfileCultureManifesto';
 
 describe('profile logo wordmark migration (up/down/up)', () => {
   let dataSource: DataSource;
@@ -74,6 +75,7 @@ describe('profile logo wordmark migration (data integrity, with hero visual appl
         AddProfileFooterFields1790208000000,
         AddProfileLogoWordmark1790294400000,
         AddProfileHeroVisual1790380800000,
+        AddProfileCultureManifesto1790640000000,
       ],
     });
     await dataSource.initialize();

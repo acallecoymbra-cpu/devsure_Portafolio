@@ -169,6 +169,8 @@ export interface Translations {
   /** Two-paragraph "about" copy under the footer logo. */
   footerAboutPrimary: TranslatableString;
   footerAboutSecondary: TranslatableString;
+  /** Centered pull-quote in the "Nuestra medida" section of `/cultura`. */
+  cultureManifesto: TranslatableString;
 }
 
 export type UpdateTranslationsInput = Partial<Translations>;

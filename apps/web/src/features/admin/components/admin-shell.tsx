@@ -145,6 +145,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Translations
           </Link>
           <Link
+            href="/admin/cultura"
+            aria-current={pathname.startsWith('/admin/cultura') ? 'page' : undefined}
+          >
+            <span aria-hidden="true">◈</span>
+            Cultura
+          </Link>
+          <Link
             href="/admin/experiences"
             aria-current={pathname.startsWith('/admin/experiences') ? 'page' : undefined}
           >

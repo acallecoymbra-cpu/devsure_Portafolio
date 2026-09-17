@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Bodoni_Moda } from 'next/font/google';
+import { translateValue } from '@devsure/contracts';
 import {
   companyStories,
   culturePrinciples,
@@ -11,7 +13,23 @@ import { CultureSpineScene } from '@/features/culture/components/culture-spine-s
 import { CultureWaterSection } from '@/features/culture/components/culture-water-section';
 import { TeamRevealSection } from '@/features/culture/components/team-reveal-section';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
+import { getPortfolio } from '@/features/portfolio/api/get-portfolio';
 import styles from '@/features/culture/culture.module.css';
+
+// Same didone serif already chosen for this page's parked wordmark
+// (`culture-kinetic-wordmark.tsx`) — reused here for the "Nuestra medida"
+// pull-quote so the page keeps one consistent "editorial" display face
+// instead of introducing a second one.
+const bodoniModa = Bodoni_Moda({
+  subsets: ['latin'],
+  weight: ['500'],
+  style: ['normal'],
+  display: 'swap',
+});
+
+// Admin-editable via /admin/cultura (Translations.cultureManifesto) — this
+// is only the fallback shown when that field is empty.
+const DEFAULT_MANIFESTO = 'Creemos en el software honesto, claro hoy y fácil de decidir mañana.';
 
 export const metadata: Metadata = {
   title: 'Cultura',
@@ -40,7 +58,11 @@ const cultureJsonLd = {
   description: 'Cómo colaboramos y qué principios orientan el trabajo del equipo de DevSure.',
 };
 
-export default function CulturePage() {
+export default async function CulturePage() {
+  const { profile, translations } = await getPortfolio();
+  const locale = profile.defaultLocale || 'es';
+  const manifesto = translateValue(translations.cultureManifesto, locale) ?? DEFAULT_MANIFESTO;
+
   return (
     <>
       <script
@@ -73,10 +95,9 @@ export default function CulturePage() {
       <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
         <div className="shell">
           <p className="eyebrow">Nuestra medida</p>
-          <blockquote>
-            <p id="manifesto-title">
-              El mejor trabajo no solo resuelve el presente: deja al equipo listo para tomar la
-              siguiente buena decisión.
+          <blockquote className={styles.manifestoQuote}>
+            <p id="manifesto-title" className={bodoniModa.className}>
+              {manifesto}
             </p>
           </blockquote>
         </div>

@@ -60,6 +60,7 @@ export class Profile {
   @Column({ name: 'contact_intro', type: 'simple-json', nullable: true }) contactIntro!: TranslatableString | null;
   @Column({ name: 'footer_about_primary', type: 'simple-json', nullable: true }) footerAboutPrimary!: TranslatableString | null;
   @Column({ name: 'footer_about_secondary', type: 'simple-json', nullable: true }) footerAboutSecondary!: TranslatableString | null;
+  @Column({ name: 'culture_manifesto', type: 'simple-json', nullable: true }) cultureManifesto!: TranslatableString | null;
 
   // Site-wide footer contact details (spec follow-up: footer §5.16). Plain,
   // non-translatable strings like `email` — a phone number or street address

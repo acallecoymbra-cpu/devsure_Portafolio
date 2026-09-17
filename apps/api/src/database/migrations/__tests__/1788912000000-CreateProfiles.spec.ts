@@ -11,6 +11,7 @@ import { AddProfileStats1789948800000 } from '../1789948800000-AddProfileStats';
 import { AddProfileFooterFields1790208000000 } from '../1790208000000-AddProfileFooterFields';
 import { AddProfileLogoWordmark1790294400000 } from '../1790294400000-AddProfileLogoWordmark';
 import { AddProfileHeroVisual1790380800000 } from '../1790380800000-AddProfileHeroVisual';
+import { AddProfileCultureManifesto1790640000000 } from '../1790640000000-AddProfileCultureManifesto';
 import { seedAdmin } from '../../seeds/seed-admin';
 
 describe('profiles migration (table lifecycle)', () => {
@@ -67,6 +68,7 @@ describe('profiles migration (data integrity, with translation columns applied)'
         AddProfileFooterFields1790208000000,
         AddProfileLogoWordmark1790294400000,
         AddProfileHeroVisual1790380800000,
+        AddProfileCultureManifesto1790640000000,
       ],
     });
     await dataSource.initialize();
