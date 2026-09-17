@@ -1,19 +1,25 @@
 .section {
+  width: 100%;
+  background: #090b0f;
+  color: #f5f7fb;
+}
+
+.frame {
   overflow: hidden;
   position: relative;
   width: 100%;
 
   /*
-   * The photo is 1600x1066 (~1.5:1, i.e. ~66.7% as tall as it is wide).
+   * The photo is 1536x1024 (1.5:1, i.e. 66.7% as tall as it is wide).
    * Matching that here means `object-fit: cover` on `.backgroundImage`
    * barely has to crop anything to fill this box — the two stones keep
    * their source scale and position relative to each other, just trimmed a
    * little at the extremes instead of zoomed into a slice of the photo.
+   * This height is intentionally decoupled from the hero copy below (see
+   * `.section` in the .tsx) so long copy can never stretch the frame taller
+   * than the photo's own composition and force `cover` to crop in hard.
    */
   min-height: clamp(480px, 66.7vw, 980px);
-
-  background: #090b0f;
-  color: #f5f7fb;
 }
 
 .backgroundImage {
@@ -62,7 +68,7 @@
 }
 
 @media (max-width: 768px) {
-  .section {
+  .frame {
     min-height: 420px;
   }
 }

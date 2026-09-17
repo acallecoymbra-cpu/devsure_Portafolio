@@ -63,18 +63,19 @@ export default function CulturePage() {
         up after only a little scroll, not after clearing a tall header.
 
         The hero copy below is `CultureWaterSection`'s children (user
-        request): the background photo now uses `object-fit: contain` (its
-        full original composition, letterboxed, never cropped) instead of
-        the site's usual full-bleed `cover` treatment — which only makes
-        sense scoped to the hero itself, so the manifesto quote is back to
-        being its own plain section rather than sharing that image (an
-        earlier version stretched the shared photo across both, which relied
-        on `cover` cropping to fill the extra height). The old side-by-side
+        request), but it renders *after* that component's `.frame` (the
+        photo + wordmarks), not inside it — the photo's box is pinned to its
+        own aspect ratio there specifically so this copy, whatever its
+        length, can never stretch it taller and force `object-fit: cover`
+        to crop in hard and lose one of the two stones. The manifesto quote
+        is its own plain section rather than sharing that image (an earlier
+        version stretched the shared photo across both, which relied on
+        `cover` cropping to fill the extra height). The old side-by-side
         conference-room photo stays gone; the shared background already
         carries the hero block visually.
       */}
       <CultureWaterSection>
-        <div className={`shell ${styles.heroLayout}`}>
+        <div className={`shell ${styles.hero} ${styles.heroLayout}`}>
           <div className={styles.heroCopy}>
             <p className="eyebrow">Cultura DevSure</p>
             <h1 id="culture-title">Personas curiosas. Trabajo claro. Software que se sostiene.</h1>
