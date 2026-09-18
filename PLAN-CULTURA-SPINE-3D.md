@@ -1211,6 +1211,83 @@ también, sí sería un bug de código real a investigar de nuevo.**
 
 No se hizo commit (regla general del repo).
 
+## 2.24 Adición del Slice 18: hueco vacío entre "Nuestra medida" y la columna (distinto del ya resuelto en el Slice 13.9)
+
+El usuario, mostrando una captura, pidió que el texto ("la letra") y la
+columna vayan "uno después del otro", sin la distancia visible entre
+ambos que mostraba la captura — es decir, un hueco vacío nuevo, no el
+mismo que ya se había resuelto en el Slice 13.9 (ese era un problema de
+`padding`/`min-height` en `.manifestoSection`, ya corregido y confirmado
+sin regresión: medido en esta sesión, el DOM no tiene ningún hueco —
+`spineBackgroundRegion` empieza exactamente en el mismo píxel donde
+termina `.manifestoSection`).
+
+**Diagnóstico (medido con cálculo, no adivinado):** el hueco está *dentro*
+del propio canvas WebGL, no en el CSS. Justo cuando `spineBackgroundRegion`
+llega al tope del viewport (`storyProgress = 0`), la cámara está en el
+extremo superior de su recorrido (`y = +STATION_TRAVEL_HALF_HEIGHT ≈
+2.415` unidades, ver Slice 12) y mira *nivelada* (sin inclinación) — pero
+la nube de partículas de la columna solo llega hasta
+`±spineHeight·0.94/2 ≈ ±2.70` unidades, y a la distancia de encuadre
+calibrada para las cards (`fitDistanceForScene`, Slice 12) el cono
+vertical de visión de la cámara cubre unas `±2.19` unidades desde donde
+mira. Con la cámara mirando nivelada en `y ≈ 2.415`, el borde superior de
+cuadro apunta a `y ≈ 4.6` — muy por encima de donde termina la nube de
+partículas (`≈2.70`) — así que toda esa franja superior del encuadre
+renderiza directamente el fondo vacío. Confirmado navegando exactamente a
+`storyProgress = 0` (`spineBackgroundRegion.top = 0` vía scroll calculado
+por JS) y viendo la columna ocupando solo la mitad inferior del canvas,
+con la mitad superior completamente negra.
+
+**Por qué no se había notado antes:** el Slice 12 (que introdujo la
+cámara descendiendo por estaciones, con encuadre "local" mucho más cerca
+que el encuadre original de toda la columna) es lo que abrió esta
+brecha — antes de eso la cámara no viajaba en altura, así que este
+problema geométrico no podía existir. Ninguna verificación visual
+posterior a ese slice llegó a scrollear exactamente hasta el borde
+superior del rango y comparar contra el borde real de las partículas con
+esta precisión.
+
+**Corrección — inclinar la mirada hacia el centro cerca de los extremos,
+sin tocar geometría/densidad de partículas ni el espaciado de las
+estaciones:** se evaluaron tres alternativas — (a) agrandar la nube de
+partículas/columna para que llegue más lejos que el alcance de la cámara
+(cambia la densidad visual y separa los segmentos de la columna, un
+rediseño real del cuerpo vertebral), (b) reducir
+`STATION_TRAVEL_HALF_HEIGHT` (comprime el espaciado entre estaciones ya
+calibrado en el Slice 12, y aun reduciéndolo bastante no alcanza a cerrar
+el hueco del todo), (c) inclinar hacia dónde mira la cámara cerca de los
+extremos del recorrido, sin tocar nada más. Se eligió (c) por ser la más
+quirúrgica: en `three/spine-camera.ts::applyAt()`, nueva constante
+`LOOK_CENTER_BIAS = 0.75` — el objetivo vertical de `camera.lookAt(...)`
+ahora resta `here.y * LOOK_CENTER_BIAS` al valor anterior, así que cerca
+del centro del recorrido (`here.y ≈ 0`) el comportamiento es
+*exactamente* el de antes (sin cambio), y solo cerca de los dos extremos
+la mirada se inclina hacia el centro de la columna en vez de quedar
+nivelada apuntando más allá del borde de las partículas.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck` y
+`eslint src/features/culture/three/spine-camera.ts` limpios. **No se pudo
+confirmar visualmente en esta sesión** — al intentar reverificar en el
+navegador (extensión de Chrome), `/cultura` volvió a quedar en el fallback
+CSS, esta vez de forma más persistente que la del Slice 17 (ni siquiera se
+intentaba pedir el chunk del motor 3D, en pestañas completamente nuevas,
+tras navegaciones frescas repetidas) — sin ningún error nuevo en el
+propio rastreador de errores de Next (segía apareciendo solo el
+hydration-mismatch preexistente). Se descartó seguir gastando presupuesto
+en depurar el entorno del navegador automatizado dado que no hay ninguna
+señal de que sea un problema de código (typecheck/eslint limpios, y el
+mismo pipeline de render ya se había verificado funcionando en vivo antes,
+en esta misma sesión, para los Slices 17 anteriores).
+
+**Pendiente: el usuario debe confirmar en su propio navegador (pestaña
+normal) si el hueco entre "Nuestra medida" y la columna desapareció.** Si
+`LOOK_CENTER_BIAS = 0.75` resulta insuficiente o excesivo (la cámara se
+inclina demasiado/poco cerca de los extremos), es una constante de una
+línea para recalibrar a ojo, no un cambio estructural.
+
+No se hizo commit (regla general del repo).
+
 ## 3. Estado actual / progreso
 
 **Actualizar esta tabla antes de terminar cualquier sesión de trabajo.**
@@ -1251,11 +1328,30 @@ No se hizo commit (regla general del repo).
 | 15 | El roster de "Nuestro equipo" pasa a gestionarse desde `/admin/cultura` (`CultureTeamManager` inline) | ✅ Hecho | 2026-09-17 | Antes era un array fijo en `culture-content.ts`; retomado tras un corte de contexto (el lado del navegador ya estaba escrito, faltaba todo el lado de la API) — ver bitácora |
 | 16 | Bug real: imagen subida por admin no aparecía en la columna 3D (falta de CORS en `/storage`) | ✅ Hecho | 2026-09-17 | `enableCors()` se registraba después del middleware de `/storage`; reordenado — ver bitácora |
 | 17 | La imagen de una card se estiraba/veía "rayada" si no compartía el aspect ratio fijo de la columna | ✅ Hecho | 2026-09-17 | Cover-fit en el shader (recorta, nunca estira) calculado desde las dimensiones reales de cada imagen subida — ver bitácora |
+| 18 | Hueco vacío entre "Nuestra medida" y la columna (distinto del CSS del Slice 13.9 — este es de encuadre de cámara) | 🚧 Diagnosticado y corregido, sin confirmar visualmente | 2026-09-17 | Cámara inclinada hacia el centro cerca de los extremos del recorrido (`LOOK_CENTER_BIAS`); no se pudo re-verificar en el navegador automatizado esta sesión — pendiente confirmación del usuario — ver bitácora |
 
 Estados posibles: ⏳ Pendiente · 🚧 En progreso · ✅ Hecho · 🔴 Bloqueado (anota
 por qué y qué se necesita para desbloquear).
 
 ### Bitácora (agregar una entrada nueva arriba cada vez que se trabaja algo)
+
+- **2026-09-17 — Slice 18: hueco vacío entre "Nuestra medida" y la columna
+  (ver §2.24 para el detalle completo).** El usuario mostró una captura
+  pidiendo que el texto y la columna vayan pegados, sin distancia. Medido
+  con cálculo (no a ojo): a `storyProgress=0` la cámara está en el extremo
+  superior de su recorrido y mira nivelada, apuntando su borde superior de
+  cuadro (~y=4.6) muy por encima de donde termina la nube de partículas
+  (~y=2.70) — de ahí la mitad superior del canvas vacía. Corregido
+  inclinando la mirada hacia el centro de la columna cerca de los extremos
+  del recorrido (`LOOK_CENTER_BIAS=0.75` en `spine-camera.ts`), sin tocar
+  geometría, densidad de partículas ni el espaciado de estaciones.
+  Typecheck/eslint limpios. **No confirmado visualmente**: al reverificar,
+  el navegador automatizado (con la extensión de Chrome) quedó en el
+  fallback CSS de forma persistente (ni intentaba pedir el chunk del motor
+  3D, en pestañas nuevas y navegaciones frescas repetidas), sin ningún
+  error de código nuevo en el propio rastreador de Next — se descartó
+  seguir depurando el entorno del navegador y se dejó pendiente que el
+  usuario confirme en su propio navegador.
 
 - **2026-09-17 — Slice 17 completado (ver §2.23 para el detalle
   completo).** Tras confirmar el fix de CORS (Slice 16), el usuario reportó

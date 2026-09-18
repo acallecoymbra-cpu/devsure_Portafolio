@@ -54,6 +54,19 @@ export function buildCameraPath(distance: number, travelHalfHeight: number): THR
   return new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
 }
 
+// Real gap the user reported: right after "Nuestra medida" ends, a big
+// blank area before the column visually fills the frame. Cause: at the
+// very top of the camera's travel path (t=0), it looks dead level — its
+// upper field of view runs past the particle cloud's own vertical extent
+// (which only reaches a bit beyond the travel range itself) into empty
+// space. The middle of the path never has this problem (there's column on
+// both sides), only the two ends. Fix: bias the look target toward the
+// column's own vertical center (y=0) proportionally to how far the camera
+// already is from center — strongest right at the two ends, ~0 in the
+// middle, so this never affects framing where there was no gap to begin
+// with.
+const LOOK_CENTER_BIAS = 0.75;
+
 export interface CameraRig {
   camera: THREE.PerspectiveCamera;
   /** Rebuilds the internal path for the camera's current aspect — call after changing `camera.aspect`. */
@@ -91,8 +104,12 @@ export function createCameraRig(
       // Look level at the column, at the camera's *own* current height (so
       // it keeps panning down the column as it descends, not fixed on the
       // origin), biased slightly toward where the path heads next so turns
-      // read as steering rather than just sliding sideways.
-      camera.lookAt(2 * (ahead.x - here.x), here.y + (ahead.y - here.y), 0);
+      // read as steering rather than just sliding sideways — and toward the
+      // column's vertical center near either end of the path (see
+      // `LOOK_CENTER_BIAS`) so the frame never points past the particle
+      // cloud's own edge into empty space.
+      const lookY = here.y + (ahead.y - here.y) - here.y * LOOK_CENTER_BIAS;
+      camera.lookAt(2 * (ahead.x - here.x), lookY, 0);
     },
   };
 }
