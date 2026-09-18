@@ -8,6 +8,8 @@ import { Profile } from '../profile/entities/profile.entity';
 import { Experience } from '../experiences/entities/experience.entity';
 import { Project } from '../projects/entities/project.entity';
 import { Study } from '../studies/entities/study.entity';
+import { CultureStory } from '../culture-stories/entities/culture-story.entity';
+import { CultureTeamMember } from '../culture-team/entities/culture-team-member.entity';
 import { Service } from '../services/entities/service.entity';
 import { Strength } from '../strengths/entities/strength.entity';
 import { WorkStyleItem } from '../work-style-items/entities/work-style-item.entity';
@@ -26,5 +28,5 @@ export default new DataSource({
   synchronize: false,
   migrationsRun: false,
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
-  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo, SocialLink],
+  entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, CultureStory, CultureTeamMember, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo, SocialLink],
 });

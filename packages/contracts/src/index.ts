@@ -188,6 +188,8 @@ export type UploadFolder =
   | 'projects-covers'
   | 'projects-gallery'
   | 'studies-logos'
+  | 'culture-stories'
+  | 'culture-team'
   | 'testimonials'
   | 'posts-covers'
   | 'network-icons'
@@ -306,6 +308,64 @@ export interface StudyInput {
   endDate?: string | null;
   inProgress?: boolean;
   logo?: string;
+  sortOrder?: number;
+}
+
+/**
+ * One card of the `/cultura` narrative 3D column (see
+ * apps/web/PLAN-CULTURA-SPINE-3D.md) — `kicker`/`title`/`description` are
+ * the same narrative copy the column's cards and the accessible story list
+ * both read from; `imageSrc`/`imageAlt` back the card's texture and the
+ * CSS/JS fallback's `<Image>`. No `width`/`height`: the 3D layer renders
+ * every card at one fixed aspect ratio regardless of the source image's
+ * own dimensions, so they'd be unused metadata.
+ */
+export interface CultureStory {
+  id: string;
+  kicker: TranslatableString;
+  title: TranslatableString;
+  description: TranslatableString;
+  imageSrc: string;
+  imageAlt: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CultureStoryInput {
+  kicker: TranslatableString;
+  title: TranslatableString;
+  description: TranslatableString;
+  imageSrc: string;
+  imageAlt: string;
+  sortOrder?: number;
+}
+
+/**
+ * One person in the "Nuestro equipo" grayscale-to-color reveal on
+ * `/cultura` (`TeamRevealSection`). `name`/`role` are plain strings, not
+ * `TranslatableString`, matching the rest of this content today. Two
+ * portraits, same person/framing/aspect ratio: `neutralImage` renders in
+ * grayscale until revealed, `smilingImage` is the color reveal.
+ */
+export interface CultureTeamMember {
+  id: string;
+  name: string;
+  role: string;
+  neutralImage: string;
+  smilingImage: string;
+  alt?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CultureTeamMemberInput {
+  name: string;
+  role: string;
+  neutralImage: string;
+  smilingImage: string;
+  alt?: string;
   sortOrder?: number;
 }
 
@@ -521,6 +581,8 @@ export interface PublicPortfolio {
   experiences: Experience[];
   projects: Project[];
   studies: Study[];
+  cultureStories: CultureStory[];
+  cultureTeam: CultureTeamMember[];
   services: Service[];
   strengths: Strength[];
   workStyleItems: WorkStyleItem[];

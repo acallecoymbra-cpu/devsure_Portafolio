@@ -7,6 +7,8 @@ import { SocialLink } from '../social-links/entities/social-link.entity';
 import { Experience } from '../experiences/entities/experience.entity';
 import { Project } from '../projects/entities/project.entity';
 import { Study } from '../studies/entities/study.entity';
+import { CultureStory } from '../culture-stories/entities/culture-story.entity';
+import { CultureTeamMember } from '../culture-team/entities/culture-team-member.entity';
 import { Service } from '../services/entities/service.entity';
 import { Strength } from '../strengths/entities/strength.entity';
 import { WorkStyleItem } from '../work-style-items/entities/work-style-item.entity';
@@ -23,6 +25,8 @@ import { SocialLinksService } from '../social-links/social-links.service';
 import { ExperiencesService } from '../experiences/experiences.service';
 import { ProjectsService } from '../projects/projects.service';
 import { StudiesService } from '../studies/studies.service';
+import { CultureStoriesService } from '../culture-stories/culture-stories.service';
+import { CultureTeamService } from '../culture-team/culture-team.service';
 import { ServicesService } from '../services/services.service';
 import { StrengthsService } from '../strengths/strengths.service';
 import { WorkStyleItemsService } from '../work-style-items/work-style-items.service';
@@ -47,6 +51,8 @@ import { PostsService } from '../posts/posts.service';
       Experience,
       Project,
       Study,
+      CultureStory,
+      CultureTeamMember,
       Service,
       Strength,
       WorkStyleItem,
@@ -66,6 +72,8 @@ import { PostsService } from '../posts/posts.service';
     ExperiencesService,
     ProjectsService,
     StudiesService,
+    CultureStoriesService,
+    CultureTeamService,
     ServicesService,
     StrengthsService,
     WorkStyleItemsService,

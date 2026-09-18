@@ -23,7 +23,9 @@
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:show": "npm run typeorm -- migration:show",
     "seed:technologies": "ts-node src/database/seeds/seed-technologies.ts",
-    "seed:admin": "ts-node src/database/seeds/seed-admin.ts"
+    "seed:admin": "ts-node src/database/seeds/seed-admin.ts",
+    "seed:culture-stories": "ts-node src/database/seeds/seed-culture-stories.ts",
+    "seed:culture-team": "ts-node src/database/seeds/seed-culture-team.ts"
   },
   "dependencies": {
     "@devsure/contracts": "workspace:*",

@@ -21,6 +21,19 @@ test('the culture route has local content, accessible carousels, and metadata', 
     'public/culture/collaboration.png',
     'public/culture/quality.png',
     'public/culture/growth.png',
+    // Slice 14 (PLAN-CULTURA-SPINE-3D.md): the column's cards moved from a
+    // hardcoded array to admin-managed content, same pattern as every other
+    // list content on the site (studies, testimonials, etc.).
+    'src/features/admin/components/culture-story-list.tsx',
+    'src/features/admin/components/culture-story-form.tsx',
+    'src/app/admin/(protected)/culture-stories/page.tsx',
+    'src/app/admin/(protected)/culture-stories/new/page.tsx',
+    'src/app/admin/(protected)/culture-stories/[id]/edit/page.tsx',
+    // Same migration, applied to the "Nuestro equipo" roster: an inline
+    // admin manager (no routed pages, unlike the cards above) embedded in
+    // /admin/cultura, replacing the hardcoded `teamMembers` placeholder.
+    'src/features/admin/components/culture-team-manager.tsx',
+    'src/features/culture/team-image.ts',
   ];
 
   await Promise.all(requiredFiles.map((file) => access(new URL(file, root))));
@@ -57,7 +70,18 @@ test('the culture route has local content, accessible carousels, and metadata', 
   assert.match(page, /'@type': 'AboutPage'/);
   assert.match(page, /CultureSpineScene/);
   assert.match(page, /CompanyCarousel/);
-  assert.equal((content.match(/id: '(listen|quality|evolve)'/g) ?? []).length, 3);
+  // Slice 14: the column's cards are admin-managed (/admin/culture-stories,
+  // same PublicPortfolio aggregate every other list content already uses),
+  // not a hardcoded array — translated here into the plain-string shape the
+  // 3D engine and its CSS/JS fallback already expect, so neither needed to
+  // change for the migration.
+  assert.match(page, /getPortfolio\(\)/);
+  assert.match(page, /cultureStories:\s*adminCultureStories/);
+  assert.match(page, /translateValue\(story\.kicker, locale\)/);
+  // Same migration applied to teamMembers: sourced from getPortfolio()'s
+  // cultureTeam, not the hardcoded array culture-content.ts used to export.
+  assert.match(page, /cultureTeam/);
+  assert.doesNotMatch(content, /export const teamMembers/);
   assert.doesNotMatch(content, /https?:\/\//);
   assert.match(carousels, /aria-roledescription="carrusel"/);
   assert.match(carousels, /prefers-reduced-motion: reduce/);

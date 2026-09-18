@@ -440,7 +440,14 @@
 }
 
 .spineMedia img {
+  /* A plain `<img>`, not `next/image`'s `fill` prop (see culture-spine.tsx
+     for why) — replicates the same "cover its positioned parent" sizing
+     `fill` used to apply automatically via inline styles. */
+  height: 100%;
+  inset: 0;
   object-fit: cover;
+  position: absolute;
+  width: 100%;
 }
 
 .spineCopy {
@@ -580,12 +587,18 @@
   margin-bottom: 0;
 }
 
+/* User request: the column's own background region (CultureSpineScene,
+   right after this section) used to only begin after almost a full
+   viewport of empty space — this section's own `min-height`/`padding-block`
+   kept holding scroll distance even once the pull-quote had already
+   scrolled off-screen. Trimmed so the column starts appearing right as
+   this section ends, not after a dead gap. */
 .manifestoSection {
   align-items: center;
   display: flex;
-  min-height: 75vh;
+  min-height: 45vh;
   overflow: hidden;
-  padding-block: 6rem;
+  padding-block: 3rem;
   position: relative;
 }
 

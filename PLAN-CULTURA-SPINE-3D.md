@@ -857,6 +857,360 @@ errores de consola nuevos.
 
 No se hizo commit (regla general del repo).
 
+## 2.19 Adición del Slice 13.9: la columna arranca justo al terminar "Nuestra medida"
+
+Segunda mejora pedida en la misma sesión (punto 2 de "ahora quiero hacer
+algunas mejoras", implementado primero porque el usuario lo pidió así —
+el punto 1, gestión de las cards desde `/admin`, queda pendiente). El
+usuario pidió: **"la columna la podrías y sus elementos la podrías subir
+más arriba que pueda comenzar terminando la sección 'Nuestra Medida'."**
+
+**Diagnóstico (navegando la página real, no a ojo):** después de que el
+texto de "Nuestra medida" terminaba de scrollear, había un tramo de casi
+una pantalla completa completamente vacío (sin columna, sin partículas,
+solo fondo negro) antes de que `CultureSpineScene` (la región de fondo de
+la columna) empezara siquiera a aparecer. Causa: `.manifestoSection` en
+`culture.module.css` tenía `min-height: 75vh` + `padding-block: 6rem`
+(top y bottom) — combinados, cerca de un viewport completo de alto mínimo,
+mucho más que lo que ocupa el texto centrado en sí. Ese espacio seguía
+consumiendo distancia de scroll incluso después de que la frase ya había
+scrolleado fuera de pantalla.
+
+**Corrección:** se redujo a `min-height: 45vh` + `padding-block: 3rem` —
+sigue dejando aire alrededor del texto (no quedó pegado a los bordes),
+pero sin el sobrante que antes generaba casi una pantalla de vacío antes
+de que la columna apareciera.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck`,
+`eslint src/features/culture` y `node --test tests/*.test.mjs` (18/18)
+limpios. Verificado visualmente contra el `pnpm dev` del usuario (hard
+refresh incluido): ahora la columna (partículas + vértebras) ya es visible
+mientras la última línea del texto de "Nuestra medida" todavía está
+saliendo de pantalla — sin el hueco vacío intermedio. Cero errores de
+consola nuevos.
+
+No se hizo commit (regla general del repo).
+
+## 2.20 Adición del Slice 14: las cards de la columna pasan a `/admin/culture-stories`
+
+Primera mejora del pedido "ahora quiero hacer algunas mejoras" (punto 1 —
+"las cards de la columna tienen que poder ser gestionadas, en la sección
+cultura de /admin"). El usuario confirmó el plan (DB + API + admin CRUD,
+mismo patrón que el resto del admin) antes de que se implementara.
+
+**Antes:** `cultureStories` (las 7 historias) era un array fijo hardcodeado
+en `culture-content.ts` — no venía de ninguna base de datos. El admin de
+"Cultura" que ya existía (`/admin/cultura`) solo editaba la frase de
+"Nuestra medida", nunca las cards.
+
+**Implementado, siguiendo exactamente el patrón ya establecido para
+`studies`/`testimonials`/etc. (nunca un patrón nuevo):**
+- **Contrato** (`packages/contracts`): nuevas `CultureStory`/
+  `CultureStoryInput` (`kicker`/`title`/`description` traducibles como el
+  resto del contenido del sitio; `imageSrc`/`imageAlt` planos, como
+  `Study.logo`; sin `width`/`height` — el motor 3D ya renderiza toda card
+  al mismo aspect ratio fijo, así que hubiese sido metadata sin uso real).
+  `cultureStories: CultureStory[]` agregado a `PublicPortfolio`. Nuevo
+  folder de upload `'culture-stories'`.
+- **API** (`apps/api/src/culture-stories`): entidad + migración
+  (`culture_stories`, con FK a `admin_users` e índice por
+  `owner_id, sort_order, id`, igual que `studies`), DTOs con
+  `IsTranslatableString`, servicio (list/get/create/update/remove,
+  scopeado por owner), controlador admin (`AdminGuard`+`SessionGuard`+
+  `OriginGuard`, igual que el resto), módulo, y wiring en
+  `PortfolioService`/`PortfolioModule` para que `GET /portfolio` (el mismo
+  endpoint que ya agrega studies/testimonials/etc.) también devuelva
+  `cultureStories`. Test de servicio dedicado (`culture-stories.service.spec.ts`,
+  5 casos: creación con defaults, orden por `sortOrder`, scoping por owner,
+  update parcial, delete) — igual que `studies.service.spec.ts`.
+- **Admin** (`apps/web/src/features/admin`): `CultureStoryList`/
+  `CultureStoryForm` (mirror de `StudyList`/`StudyForm`: `FileUploadField`
+  para la imagen, `LocaleTabs` para kicker/título/descripción, orden
+  numérico), páginas `/admin/culture-stories` (lista/nueva/editar), y un
+  nuevo link en el menú lateral del admin, justo debajo de "Cultura".
+- **Página pública** (`apps/web/src/app/cultura/page.tsx`): en vez de
+  importar el array estático, ahora trae `cultureStories` de
+  `getPortfolio()` (el mismo fetch que ya usaba para `translations`) y las
+  traduce al mismo shape plano (`CultureStory` de `culture-content.ts`,
+  con `kicker`/`title`/`description` ya resueltos por `translateValue` y
+  `image.width`/`height` con un valor de relleno fijo) que
+  `CultureSpineScene`/`spine-cards.ts`/etc. ya esperaban — **ninguno de
+  esos archivos del motor 3D se tocó**, solo cambió de dónde viene el
+  array. El array hardcodeado se eliminó de `culture-content.ts` (el tipo
+  `CultureStory` se mantuvo, sigue siendo el shape que usa la capa 3D/CSS).
+- **Datos existentes:** para no perder las 7 historias que ya estaban en
+  producción visual, se agregó `seed-culture-stories.ts` (mismo patrón que
+  `seed-technologies.ts` — script standalone, idempotente por `imageSrc`,
+  corrido una vez contra la base de dev: `npm run seed:culture-stories`
+  dentro de `apps/api`) con el texto exacto que tenía el array original.
+
+**Verificación:** `tsc --noEmit`, `eslint` y la suite de tests, tanto en
+`apps/api` (43 suites / 157 tests, incluyendo el nuevo spec) como en
+`apps/web` (18/18 — se actualizó `culture-structure.test.mjs`, que
+verificaba 3 ids hardcodeados en `culture-content.ts`, para en cambio
+verificar que la página trae `cultureStories` de `getPortfolio()` y las
+traduce). Corrida real: migración ejecutada contra la base de dev, seed
+corrido (7 insertadas), `GET /portfolio` devolviendo las 7 historias, y
+`/cultura` verificado visualmente en el navegador — se ve idéntico a antes
+de la migración, cero errores de consola nuevos.
+
+**Pendiente de confirmar por el usuario:** el flujo de alta/edición desde
+el navegador (`/admin/culture-stories`) no se pudo probar clickeando en
+vivo porque requiere iniciar sesión de admin, y no corresponde adivinar ni
+buscar esa contraseña — queda cubierto por el test de servicio (5 casos) y
+por typecheck/eslint, pero un click-through real del formulario (subida de
+imagen incluida) lo tiene que hacer el usuario o pasar las credenciales.
+
+No se hizo commit (regla general del repo).
+
+## 2.21 Adición del Slice 15: el roster de "Nuestro equipo" pasa a gestionarse desde `/admin/cultura`
+
+Segundo punto de la misma sesión del Slice 14 ("ahora quiero hacer algunas
+mejoras"), retomado tras un corte de contexto — al reanudar la sesión
+(`continua con lo que estabas haciendo`), el estado de `git status` mostraba
+trabajo a medias: `apps/web/src/app/cultura/page.tsx` ya leía un
+`cultureTeam` inexistente de `getPortfolio()`, `admin-api.ts`/`types.ts` ya
+tenían las funciones/tipos `CultureTeamMember*` apuntando a un contrato que
+no existía todavía, y `/admin/cultura/page.tsx` ya importaba un
+`CultureTeamManager` que no se había escrito — es decir, el contrato del
+lado del navegador ya estaba decidido (nombre de tipo, forma del manager
+embebido, no rutas propias) antes del corte; lo que faltaba era todo el
+lado del servidor (contrato compartido, entidad/migración/servicio/
+controlador/módulo de la API, wiring en `PortfolioService`, seed) y el
+propio componente `CultureTeamManager`.
+
+**Antes:** `teamMembers` (el roster de 11 personas de `TeamRevealSection`)
+era un array fijo hardcodeado en `culture-content.ts`, igual que
+`cultureStories` antes del Slice 14.
+
+**Implementado, siguiendo exactamente el mismo patrón que el Slice 14 (nunca
+uno nuevo), con una diferencia deliberada:**
+- **Contrato** (`packages/contracts`): nuevas `CultureTeamMember`/
+  `CultureTeamMemberInput` (`name`/`role` como `string` plano, no
+  `TranslatableString` — mismo criterio que el array original, que nunca
+  tuvo variantes por idioma; `neutralImage`/`smilingImage` planos, `alt`
+  opcional). `cultureTeam: CultureTeamMember[]` agregado a
+  `PublicPortfolio`. Nuevo folder de upload `'culture-team'`.
+- **API** (`apps/api/src/culture-team`): entidad + migración
+  (`culture_team_members`, FK a `admin_users` + índice por
+  `owner_id, sort_order, id`, igual que `culture_stories`), DTOs, servicio
+  (list/get/create/update/remove, scopeado por owner), controlador admin
+  (mismos guards), módulo, wiring en `PortfolioService`/`PortfolioModule`.
+  Test de servicio dedicado (`culture-team.service.spec.ts`, 5 casos, mismo
+  esqueleto que `culture-stories.service.spec.ts`).
+- **Admin — diferencia deliberada frente al Slice 14:** en vez de páginas
+  de lista/nueva/editar propias (`/admin/culture-team/...`), un único
+  `CultureTeamManager` (`apps/web/src/features/admin/components/culture-team-manager.tsx`)
+  que hace todo inline (listar, agregar, editar, eliminar) embebido
+  directamente en `/admin/cultura`, junto a `CultureForm`. Esta forma ya
+  estaba decidida en el código que sobrevivió al corte de contexto
+  (`admin/cultura/page.tsx` ya importaba `CultureTeamManager` así); se
+  mantuvo esa decisión en vez de reabrirla, seguía el espíritu de "es un
+  roster chico de un único dueño, no contenido con su propia sección de
+  navegación" — igual que `CultureForm` ya vivía ahí. Formulario con
+  `name`/`role`/`alt`/`sortOrder` como inputs de texto y dos
+  `FileUploadField` (retrato serio/sonriente). `FileUploadField` ganó
+  `onUploadingChange` (ya presente sin usar tras el corte) para deshabilitar
+  el submit mientras cualquiera de las dos imágenes está subiendo.
+- **Página pública** (`apps/web/src/app/cultura/page.tsx`, ya editado antes
+  del corte): `teamMembers` ahora sale de `cultureTeam` de `getPortfolio()`,
+  mapeado a través de `getTeamImageUrl` (nuevo,
+  `apps/web/src/features/culture/team-image.ts`, ya creado antes del
+  corte). El array hardcodeado se eliminó de `culture-content.ts` (el tipo
+  `TeamMember` se mantuvo — sigue siendo el shape que consume
+  `TeamRevealSection`).
+- **Bug real encontrado y corregido en el código heredado del corte:**
+  `getTeamImageUrl` comprobaba específicamente
+  `path.startsWith('/culture/team/')` para decidir si una imagen ya es una
+  ruta pública directa o si hay que resolverla vía `getStorageUrl`. Ese
+  prefijo nunca iba a matchear nada real: las fotos placeholder sembradas
+  son rutas `/photos/*.webp` (no `/culture/team/*`), y una subida real de
+  `FileUploadField` no lleva slash inicial (`culture/team/<uuid>.webp`).
+  Corregido para usar el mismo chequeo genérico que ya usa
+  `cultura/page.tsx` para `cultureStories.imageSrc`
+  (`path.startsWith('/')`), documentado ahí mismo como "no es una
+  adivinanza" — aquí se aplicó el mismo criterio, no uno nuevo.
+- **Datos existentes:** `seed-culture-team.ts` (mismo patrón que
+  `seed-culture-stories.ts` — idempotente, esta vez por `name` ya que no
+  hay ningún campo más parecido a una clave natural en el placeholder)
+  reproduce el roster de 11 "Persona NN" que ya existía, corrido una vez
+  contra la base de dev (`npm run seed:culture-team` dentro de `apps/api`).
+
+**Verificación:** `tsc --noEmit` limpio en `apps/api` y
+`pnpm --filter @devsure/web typecheck` limpio; `eslint` limpio en
+`apps/api/src/culture-team`, `apps/api/src/portfolio`, `apps/api/src/app.module.ts`,
+`apps/api/src/database`, y en `apps/web/src/features/culture apps/web/src/features/admin
+apps/web/src/app/cultura "apps/web/src/app/admin/(protected)/cultura"
+tests/culture-structure.test.mjs`. Test de servicio nuevo incluido: la
+suite completa de `apps/api` pasa 44/44 suites, 162/162 tests (antes
+43/157 — +1 suite, +5 tests). `apps/web`: 18/18 tests (se actualizó
+`culture-structure.test.mjs` con el mismo criterio que en el Slice 14:
+verifica que `page.tsx` usa `cultureTeam`, no el array `teamMembers`
+exportado, y que existen `culture-team-manager.tsx`/`team-image.ts`).
+
+Corrida real contra la base de dev: `npm run seed:culture-team` (migración
+aplicada + 11 insertadas), `GET /portfolio` confirmado devolviendo
+`cultureTeam` con 11 elementos (`cultureStories` intacto con 7). Servidores
+de API y web levantados temporalmente para esta verificación (no estaban
+corriendo al reanudar la sesión, a diferencia de sesiones anteriores donde
+el `pnpm dev` del usuario ya ocupaba los puertos) y detenidos al terminar:
+`curl http://localhost:3000/cultura` → 200, "Nuestro equipo" presente en el
+HTML, las fotos placeholder resueltas a sus rutas `/photos/*.webp` reales
+(confirma que el fix de `getTeamImageUrl` funciona). `/admin/cultura`
+compila y responde 200 sin errores de servidor.
+
+**Pendiente de confirmar por el usuario (mismo límite que el Slice 14):**
+el flujo de alta/edición/eliminación desde el navegador en
+`/admin/cultura` (sección "Equipo", subida de las dos imágenes incluida)
+no se probó clickeando en vivo porque requiere sesión de admin y no
+corresponde adivinar ni buscar esa contraseña — cubierto por el test de
+servicio (5 casos) y por typecheck/eslint/compilación real, pero un
+click-through real lo tiene que hacer el usuario.
+
+No se hizo commit (regla general del repo).
+
+## 2.22 Adición del Slice 16: bug real — una imagen subida por admin no aparecía como textura en la columna 3D (CORS)
+
+El usuario probó el flujo real de `/admin/culture-stories` (con credenciales
+de admin reales) y reportó: subió una imagen nueva para una card, la
+guardó, pero esa imagen no se reflejaba en la columna de `/cultura`.
+
+**Diagnóstico (confirmado con curl y lectura de código, no adivinado):**
+la imagen sí llegaba correctamente hasta el final — el archivo se guardaba
+en disco (`apps/api/.data/uploads/culture/stories/...`), `GET /portfolio`
+devolvía el `imageSrc` actualizado, y el HTML servido por `/cultura`
+(`curl`) ya traía el `src` correcto en el `<img>` — el problema no estaba
+en ninguna capa de datos, solo en el canvas WebGL. La causa: en
+`apps/api/src/bootstrap.ts`, `app.enableCors(...)` se registraba *después*
+de montar `app.use('/storage', ..., serveStatic(uploadsDir))`. Express/Nest
+ejecuta el middleware en el orden en que se registra, así que toda
+respuesta de `/storage/*` (donde vive cada imagen subida) salía sin la
+cabecera `Access-Control-Allow-Origin` — confirmado con
+`curl -D - -H "Origin: http://localhost:3000" .../storage/...`, que no
+traía esa cabecera antes del fix y sí después. Un `<img>` normal no
+necesita CORS para mostrarse (por eso el resto del sitio nunca mostró
+ningún problema), pero `THREE.TextureLoader` (`spine-cards.ts`) carga sus
+texturas con `crossOrigin: 'anonymous'`, que el navegador solo permite si
+la respuesta trae esa cabecera — sin ella, la carga de la textura falla en
+silencio (el `onError` de `spine-cards.ts` solo mantiene el color de
+respaldo, sin loguear nada) y la card se queda con el plano de color plano
+en vez de la imagen. Las 7 imágenes originales sembradas nunca mostraron
+este bug porque son archivos estáticos de Next (`/culture/*.png`,
+`/photos/*.webp`), servidos por el propio origen `localhost:3000` — nunca
+cruzan al origen de la API y por lo tanto nunca dependieron de esa cabecera.
+
+**Corrección — un reordenamiento, no una técnica nueva:** se movió
+`app.enableCors(...)` para que se registre antes que el middleware de
+`/storage`, así la política de CORS aplica a esa ruta igual que a
+cualquier otra. Nada más cambió (mismo `corsOrigins`, misma lista de
+orígenes permitidos, mismo header `Cross-Origin-Resource-Policy: cross-origin`
+que ya relajaba `helmet` para esa ruta).
+
+**Verificación:** `tsc --noEmit` y `eslint src/bootstrap.ts` limpios en
+`apps/api`; suite completa 44/44 suites, 162/162 tests sin cambios. Corrida
+real contra la base de dev del usuario (login con sus credenciales reales,
+`GET /storage/culture/stories/<uuid>.png` con `Origin: http://localhost:3000`):
+sin la cabecera `Access-Control-Allow-Origin` antes del fix, presente
+después — sin reiniciar el proceso a mano, el propio `nest start --watch`
+recompiló y aplicó el cambio. No se pudo confirmar visualmente en un
+navegador real dentro de esta sesión (la extensión de Chrome no estaba
+conectada); el usuario debería ver la imagen ya cargada en la columna con
+un refresh normal de `/cultura` (el fix vive en el servidor, no requiere
+tocar caché del navegador ni volver a subir la imagen).
+
+No se hizo commit (regla general del repo).
+
+## 2.23 Adición del Slice 17: la imagen de una card se ve estirada/"rayada" si no comparte el aspect ratio fijo de la columna
+
+Tras el fix de CORS (Slice 16), el usuario confirmó que la imagen ya se
+veía, pero reportó dos cosas relacionadas: se ve "rayada", y pidió que la
+imagen siempre se adapte al cuadro sin importar sus dimensiones.
+
+**Diagnóstico:** `spine-cards.ts`/`spine-card-material.ts` nunca tuvieron
+en cuenta el aspect ratio real de la imagen subida — el shader de la card
+muestrea la textura directamente en las UV crudas del plano (`vUv`), que
+siempre tiene el aspect ratio fijo `CARD_ASPECT` (1672/941 ≈ 1.78, el de
+las 7 imágenes originales sembradas). Cualquier imagen con otra proporción
+(como la que subió el usuario, una captura ancha) se **estira** para
+llenar ese plano sin recortar ni mantener proporción — en una imagen con
+textura granulada/con vetas (como la del mineral), estirarla de forma no
+uniforme en un eje es exactamente lo que se lee como "rayada".
+
+**Corrección — cover-fit en el shader, mismo patrón que "object-fit: cover"
+en CSS:** nueva función `coverFit(imageAspect, targetAspect)` en
+`spine-cards.ts`, calculada una vez que cada textura termina de cargar
+(`texture.image.width/height`, la dimensión real del archivo subido, no un
+valor fijo) — devuelve un `repeat`/`offset` que recorta (nunca estira) el
+eje que sobra, centrado. Dos uniforms nuevos en
+`spine-card-material.ts` (`uImageRepeat`/`uImageOffset`) aplican ese
+recorte solo al muestreo de la foto (`photoUv = vUv * uImageRepeat +
+uImageOffset`); la máscara de esquinas redondeadas (`uAspect`, la
+proporción física del plano) no cambia — sigue siendo la silueta de la
+card, no la de la imagen. El desplazamiento de glitch (bandas/RGB split)
+se aplica sobre esa misma UV ya recortada, así que sigue leyendo como un
+efecto sobre la foto visible, no sobre el recorte descartado.
+
+**Observación aparte, no tocada en este slice (posible causa adicional de
+"rayada" a confirmar con el usuario si persiste tras este fix):**
+`uIntensity` (que controla la intensidad de bandas/RGB split de cada card)
+se fija cada frame a `1 - focus` (`spine-cards.ts`, dentro de `place()`) —
+es decir, cualquier card que no sea la "hero" actual muestra ese glitch a
+intensidad casi máxima de forma continua, no solo durante una transición
+breve. Es un comportamiento heredado de varios slices atrás (Slice 9.4 en
+adelante), no algo que se tocó ahora — se deja documentado por si, una vez
+vista la imagen ya sin estirar, el usuario todavía nota "rayas" en las
+cards secundarias (no la hero) y pide recalibrar eso también.
+
+**Verificación:** `pnpm --filter @devsure/web typecheck` y
+`eslint src/features/culture` limpios; `node --test tests/*.test.mjs`
+18/18. Verificado visualmente en vivo (extensión de Chrome recién
+conectada por el usuario, login real con sus credenciales): se ubicó la
+card recién subida por el usuario ("holaTitulo") en la columna real —
+confirmado que el cover-fit ya no estira la imagen. También se confirmó en
+vivo, scrolleando 2 ticks sobre la misma card, que el "rayado" que el
+usuario reportaba después de ver la imagen corregida era principalmente
+`uIntensity` (no el estiramiento, ya resuelto): pasó de verse limpia a
+mostrar fringes de color notorios sin ningún otro cambio de estado, solo
+por dejar de ser la hero.
+
+**Adición en la misma sesión — glitch por card reducido a estado de reposo,
+consultado con el usuario antes de tocarlo (`AskUserQuestion`):** confirmó
+"bajalo bastante". En `spine-cards.ts::place()`, `uIntensity` ya no es un
+`1 - focus` plano (glitch fuerte permanente en cualquier card que no sea
+la hero) — se separa en un piso de reposo bajo (`RESTING_INTENSITY_CAP =
+0.18`, siempre escalado por `distanceFromFocus` así la hero en sí queda
+siempre perfectamente limpia) más un pulso breve que solo sube alto durante
+`TRANSITION_PULSE_DURATION` (0.6s) después de que el índice "frontal"
+realmente cambió (reutiliza `lastSwitchElapsed`, la misma variable ya
+usada para la histéresis del Slice 13.2 — no se inventó un mecanismo de
+timing nuevo). Verificado con `tsc --noEmit`/`eslint` limpios; no se pudo
+re-confirmar visualmente este ajuste puntual porque, al intentarlo, el
+dev server web quedó atascado (ver nota siguiente) — pendiente de que el
+usuario lo revise en su navegador.
+
+**Bloqueo encontrado al re-verificar (no relacionado al código):** tras el
+ajuste del glitch, `/cultura` en el navegador automatizado quedó mostrando
+el fallback CSS en vez de la columna 3D — el chunk JS del motor
+(`culture-spine-3d`) devolvía 503. Se descartó que fuera causa del código
+(`tsc`/`eslint`/tests siguen limpios) probando, en orden: recargas
+repetidas, reinicio completo del proceso `next dev` (con permiso del
+usuario), y borrado completo de `.next` + reinicio — el problema persistió
+igual en los tres casos, de forma determinística (dos requests por el
+mismo chunk con nombres distintos, uno sin el prefijo
+`_app-pages-browser_` que siempre devolvía 503). Sin una segunda entrada
+en el propio overlay de errores de Next (solo seguía apareciendo el
+hydration-mismatch preexistente), no se pudo confirmar una causa de
+código. Se dejó sin resolver dentro de esta sesión — no vale la pena
+seguir gastando presupuesto en un problema que podría ser específico del
+entorno del navegador automatizado (pestaña sin foco real, timing de
+contexto WebGL) y no reproducirse en el uso normal del usuario. **Pendiente:
+que el usuario confirme en su propio navegador (pestaña normal, no vía la
+extensión) si `/cultura` muestra la columna 3D correctamente con ambos
+ajustes (cover-fit + glitch reducido) — si el mismo problema aparece ahí
+también, sí sería un bug de código real a investigar de nuevo.**
+
+No se hizo commit (regla general del repo).
+
 ## 3. Estado actual / progreso
 
 **Actualizar esta tabla antes de terminar cualquier sesión de trabajo.**
@@ -892,11 +1246,67 @@ No se hizo commit (regla general del repo).
 | 13.6 | Split RGB localizado a los bloques/filas activos (menos lectura de "confeti") | ✅ Hecho | 2026-09-17 | El usuario preguntó si el ruido tipo píxel de antes se podía eliminar o solo disimular — causa real identificada (split parejo contra ~2200 partículas) y corregida — ver bitácora |
 | 13.7 | Regresión: las cards volvían a arrancar por la derecha | ✅ Hecho | 2026-09-17 | El fix del Slice 13.4 (ángulo relativo al enfoque propio) invirtió sin querer el signo que el Slice 13.3 había fijado — corregido negando el ángulo, sin tocar el arreglo de profundidad — ver bitácora |
 | 13.8 | La primera card (arriba de la columna) arranca a la izquierda + el giro ahora desciende | ✅ Hecho | 2026-09-17 | Bug de borde real: el índice 0 nace exactamente en su propio punto de enfoque (storyProgress=0), así que nacía centrada y nunca visitaba la izquierda; más un componente vertical nuevo para que el giro se lea como descenso — ver bitácora |
+| 13.9 | La columna arranca justo al terminar "Nuestra medida", sin hueco vacío | ✅ Hecho | 2026-09-17 | `.manifestoSection` tenía `min-height:75vh` + `padding-block:6rem` (~1 viewport de espacio muerto) después del texto, antes de que la región de fondo de la columna empezara — recortado — ver bitácora |
+| 14 | Las cards de la columna pasan a gestionarse desde `/admin/culture-stories` | ✅ Hecho | 2026-09-17 | Antes eran un array fijo en `culture-content.ts`; ahora DB + API + admin CRUD, mismo patrón que studies/testimonials/etc. — ver bitácora |
+| 15 | El roster de "Nuestro equipo" pasa a gestionarse desde `/admin/cultura` (`CultureTeamManager` inline) | ✅ Hecho | 2026-09-17 | Antes era un array fijo en `culture-content.ts`; retomado tras un corte de contexto (el lado del navegador ya estaba escrito, faltaba todo el lado de la API) — ver bitácora |
+| 16 | Bug real: imagen subida por admin no aparecía en la columna 3D (falta de CORS en `/storage`) | ✅ Hecho | 2026-09-17 | `enableCors()` se registraba después del middleware de `/storage`; reordenado — ver bitácora |
+| 17 | La imagen de una card se estiraba/veía "rayada" si no compartía el aspect ratio fijo de la columna | ✅ Hecho | 2026-09-17 | Cover-fit en el shader (recorta, nunca estira) calculado desde las dimensiones reales de cada imagen subida — ver bitácora |
 
 Estados posibles: ⏳ Pendiente · 🚧 En progreso · ✅ Hecho · 🔴 Bloqueado (anota
 por qué y qué se necesita para desbloquear).
 
 ### Bitácora (agregar una entrada nueva arriba cada vez que se trabaja algo)
+
+- **2026-09-17 — Slice 17 completado (ver §2.23 para el detalle
+  completo).** Tras confirmar el fix de CORS (Slice 16), el usuario reportó
+  que la imagen ya visible se veía "rayada" y pidió que siempre se adapte
+  al cuadro. Causa real: el shader de la card muestreaba la foto en las UV
+  crudas del plano (aspect ratio fijo `CARD_ASPECT`, el de las 7 imágenes
+  originales) sin considerar el aspect ratio real de la imagen subida —
+  cualquier imagen con otra proporción se estiraba, lo que en una textura
+  granulada se lee como "rayada". Corregido con un cover-fit calculado por
+  textura (`coverFit()` en `spine-cards.ts`, dos uniforms nuevos en
+  `spine-card-material.ts`) — recorta el eje que sobra en vez de estirar,
+  igual que `object-fit: cover` en CSS. Se dejó documentada (sin tocar) una
+  segunda causa posible de "rayas" persistentes: `uIntensity` de cada card
+  se fija a `1 - focus` cada frame, así que cualquier card que no sea la
+  hero muestra el glitch de bandas/RGB-split casi al máximo de forma
+  continua, no solo en su propia transición — a confirmar con el usuario
+  si sigue viendo rayas una vez sin el estiramiento. Verificado con
+  typecheck/eslint/tests (18/18); no confirmado en navegador real (sin
+  extensión de Chrome conectada esta sesión).
+
+- **2026-09-17 — Slice 16 completado (ver §2.22 para el detalle completo).**
+  El usuario probó el admin real (login con sus propias credenciales) y
+  reportó que una imagen subida a una card de `/admin/culture-stories` no
+  se reflejaba en la columna 3D de `/cultura`. Causa real, confirmada con
+  `curl`: `apps/api/src/bootstrap.ts` registraba `app.enableCors(...)`
+  *después* del middleware `/storage`, así que ninguna imagen subida traía
+  `Access-Control-Allow-Origin` — invisible para un `<img>` normal, pero
+  bloqueaba la carga de textura de `THREE.TextureLoader` (que pide CORS),
+  fallando en silencio a un color de respaldo. Corregido reordenando el
+  registro del middleware (CORS antes que `/storage`), sin tocar la
+  configuración de CORS en sí. Verificado con `curl` (cabecera ausente
+  antes, presente después) y con la suite completa de `apps/api`
+  (44/44 · 162/162, sin cambios). No se pudo confirmar visualmente en
+  navegador dentro de esta sesión (extensión de Chrome no conectada); el
+  usuario debería verlo resuelto con un refresh normal de `/cultura`.
+
+- **2026-09-17 — Slice 15 completado (retomado tras un corte de contexto con
+  "continua con lo que estabas haciendo"; ver §2.21 para el detalle
+  completo).** Resumen: el roster de "Nuestro equipo" (`teamMembers`,
+  hardcodeado en `culture-content.ts`) pasa a gestionarse desde
+  `/admin/cultura` vía un nuevo `CultureTeamManager` inline (no rutas
+  propias, a diferencia de `culture-stories`) — DB + API + contrato nuevos,
+  siguiendo el mismo patrón del Slice 14. Incluye un bug real corregido en
+  código heredado del corte (`getTeamImageUrl` comprobaba un prefijo que
+  nunca iba a matchear nada real). Verificado con typecheck/eslint/tests
+  (apps/api 44/44 suites · 162/162 tests; apps/web 18/18) y con los
+  servidores de dev levantados temporalmente: `GET /portfolio` devolviendo
+  `cultureTeam` (11), `/cultura` sirviendo 200 con "Nuestro equipo" y las
+  fotos placeholder resueltas correctamente, `/admin/cultura` compilando
+  sin errores. Pendiente (como en el Slice 14): que el usuario haga el
+  click-through real del formulario en su propia sesión de admin.
 
 - **2026-09-11 — Slice 9.6 completado (el usuario probó el Slice 9.5 y
   pidió que la columna esté de fondo también desde más arriba, desde el

@@ -13,6 +13,7 @@ interface FileUploadFieldProps {
   hiddenName?: string;
   /** Called with the uploaded path, for controlled forms (e.g. ExperienceForm). */
   onUploaded?: (path: string) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   value?: string;
   helpText?: string;
 }
@@ -23,7 +24,7 @@ interface FileUploadFieldProps {
  * uncontrolled `<form>` reads the path back from the rendered hidden input
  * (`hiddenName`), while a controlled form reads it from `onUploaded`.
  */
-export function FileUploadField({ label, folder, accept, hiddenName, onUploaded, value, helpText }: FileUploadFieldProps) {
+export function FileUploadField({ label, folder, accept, hiddenName, onUploaded, onUploadingChange, value, helpText }: FileUploadFieldProps) {
   const [path, setPath] = useState(value ?? '');
   const [status, setStatus] = useState<'idle' | 'uploading' | 'error'>('idle');
   const [error, setError] = useState('');
@@ -36,6 +37,7 @@ export function FileUploadField({ label, folder, accept, hiddenName, onUploaded,
     if (!file) return;
 
     setStatus('uploading');
+    onUploadingChange?.(true);
     setError('');
     try {
       const result = await uploadFile(file, folder);
@@ -51,6 +53,8 @@ export function FileUploadField({ label, folder, accept, hiddenName, onUploaded,
             ? 'Ese formato de archivo no está permitido.'
             : 'No pudimos subir el archivo. Inténtalo nuevamente.',
       );
+    } finally {
+      onUploadingChange?.(false);
     }
   }
 

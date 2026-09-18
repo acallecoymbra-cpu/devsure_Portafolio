@@ -16,19 +16,20 @@ export function configureApp(app: INestApplication): void {
   app.enableShutdownHooks();
   app.setGlobalPrefix(apiPrefix);
   app.use(helmet());
-  // Uploaded media must render on the public site's origin, so relax the
-  // Cross-Origin-Resource-Policy helmet sets by default (same-origin) for
-  // this path only; the rest of the API keeps helmet's stricter default.
-  app.use(
-    '/storage',
-    (_request: Request, response: Response, next: NextFunction) => {
-      response.header('Cross-Origin-Resource-Policy', 'cross-origin');
-      next();
-    },
-    serveStatic(uploadsDir),
-  );
-  app.use(json({ limit: bodyLimit }));
-  app.use(urlencoded({ extended: true, limit: bodyLimit }));
+  // Real bug (user report: an uploaded culture-story image saved fine and
+  // rendered in every plain `<img>`, but never appeared as a texture in the
+  // 3D column): `THREE.TextureLoader` requests images with
+  // `crossOrigin: 'anonymous'`, which the browser only honors if the
+  // response carries `Access-Control-Allow-Origin` — but `enableCors()` used
+  // to run *after* `/storage` was already mounted with `app.use()`, and
+  // Express/Nest middleware runs in registration order, so every `/storage/*`
+  // response skipped the CORS middleware entirely and never got that header.
+  // A plain `<img>` doesn't need CORS to display, so this only ever broke
+  // WebGL texture loads, silently (`spine-cards.ts`'s `onError` just keeps
+  // the fallback color) — never seeded static `/public` images, which are
+  // same-origin on the web app and never cross to the API origin at all.
+  // Registering CORS first makes it apply to every route, `/storage`
+  // included.
   app.enableCors({
     credentials: true,
     origin: (
@@ -42,6 +43,19 @@ export function configureApp(app: INestApplication): void {
       callback(null, false);
     },
   });
+  // Uploaded media must render on the public site's origin, so relax the
+  // Cross-Origin-Resource-Policy helmet sets by default (same-origin) for
+  // this path only; the rest of the API keeps helmet's stricter default.
+  app.use(
+    '/storage',
+    (_request: Request, response: Response, next: NextFunction) => {
+      response.header('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    },
+    serveStatic(uploadsDir),
+  );
+  app.use(json({ limit: bodyLimit }));
+  app.use(urlencoded({ extended: true, limit: bodyLimit }));
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

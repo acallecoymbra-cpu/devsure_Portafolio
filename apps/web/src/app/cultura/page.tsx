@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Bodoni_Moda } from 'next/font/google';
 import { translateValue } from '@devsure/contracts';
+import type { CultureStory } from '@/features/culture/culture-content';
 import {
   companyStories,
   culturePrinciples,
-  cultureStories,
-  teamMembers,
 } from '@/features/culture/culture-content';
 import { CompanyCarousel } from '@/features/culture/components/culture-carousels';
 import { CultureFlowPath } from '@/features/culture/components/culture-flow-path';
@@ -15,6 +14,8 @@ import { CultureWaterSection } from '@/features/culture/components/culture-water
 import { TeamRevealSection } from '@/features/culture/components/team-reveal-section';
 import { SectionErrorBoundary } from '@/components/section-error-boundary';
 import { getPortfolio } from '@/features/portfolio/api/get-portfolio';
+import { getStorageUrl } from '@/lib/config';
+import { getTeamImageUrl } from '@/features/culture/team-image';
 import styles from '@/features/culture/culture.module.css';
 
 // Same didone serif already chosen for this page's parked wordmark
@@ -59,10 +60,50 @@ const cultureJsonLd = {
   description: 'Cómo colaboramos y qué principios orientan el trabajo del equipo de DevSure.',
 };
 
+// The 3D column always renders every card at this one fixed aspect ratio
+// (see spine-cards.ts's CARD_ASPECT) regardless of the source image's own
+// dimensions — these are only here because `CultureStory.image` (the
+// view-model the 3D/CSS layers already consume, unchanged by the
+// Slice 14 admin migration below) still requires *some* width/height.
+const FALLBACK_IMAGE_WIDTH = 1600;
+const FALLBACK_IMAGE_HEIGHT = 900;
+
 export default async function CulturePage() {
-  const { profile, translations } = await getPortfolio();
+  const { profile, translations, cultureStories: adminCultureStories, cultureTeam } = await getPortfolio();
+  const teamMembers = cultureTeam.map((member) => ({
+    ...member,
+    neutralImage: getTeamImageUrl(member.neutralImage),
+    smilingImage: getTeamImageUrl(member.smilingImage),
+  }));
   const locale = profile.defaultLocale || 'es';
   const manifesto = translateValue(translations.cultureManifesto, locale) ?? DEFAULT_MANIFESTO;
+
+  // Slice 14 (PLAN-CULTURA-SPINE-3D.md): the column's cards used to be a
+  // hardcoded array in culture-content.ts — now admin-managed
+  // (/admin/culture-stories), same as every other list content on the
+  // site. Translated here, once, into the same plain-string `CultureStory`
+  // shape the 3D engine and its CSS/JS fallback already expect, so neither
+  // of them needed to change for this.
+  const cultureStories: CultureStory[] = adminCultureStories.map((story) => ({
+    id: story.id,
+    kicker: translateValue(story.kicker, locale) ?? '',
+    title: translateValue(story.title, locale) ?? '',
+    description: translateValue(story.description, locale) ?? '',
+    image: {
+      // A real bug the user caught: `FileUploadField` returns a path with
+      // no leading slash (e.g. `culture/stories/<uuid>.png`, resolved
+      // through the API's storage server — see `getStorageUrl`, the same
+      // helper every other admin-uploaded image on the site already goes
+      // through), which is *not* directly servable the way the 7 seeded
+      // rows' literal `/culture/*.png` web-app `/public` paths are. The
+      // seed script never has a leading slash on a real upload path, so
+      // this check is unambiguous, not a guess.
+      src: story.imageSrc.startsWith('/') ? story.imageSrc : getStorageUrl(story.imageSrc),
+      alt: story.imageAlt,
+      width: FALLBACK_IMAGE_WIDTH,
+      height: FALLBACK_IMAGE_HEIGHT,
+    },
+  }));
 
   return (
     <>
@@ -164,7 +205,7 @@ export default async function CulturePage() {
             </div>
           }
         >
-          <TeamRevealSection members={teamMembers} eyebrow="Nuestro equipo" title="Las personas detrás de DevSure" />
+          {teamMembers.length > 0 ? <TeamRevealSection members={teamMembers} eyebrow="Nuestro equipo" title="Las personas detrás de DevSure" /> : null}
         </SectionErrorBoundary>
 
         <section className={styles.companiesSection} aria-labelledby="companies-title">

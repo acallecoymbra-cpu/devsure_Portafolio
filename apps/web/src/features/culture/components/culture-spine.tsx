@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import type { CultureStory } from '@/features/culture/culture-content';
 import { useInView } from '@/lib/use-in-view';
@@ -33,11 +32,18 @@ function SpineItem({ story, align }: SpineItemProps) {
               <span>Imagen editorial no disponible</span>
             </div>
           ) : (
-            <Image
+            // Plain `<img>`, not `next/image`: this can be a `/public` asset
+            // *or* an admin-uploaded file resolved through the API's storage
+            // server (see cultura/page.tsx's `getStorageUrl` mapping) —
+            // `next/image` requires every remote host it ever renders to be
+            // allow-listed in next.config.ts, and throws (not just an
+            // `onError`-catchable broken image) for one that isn't. Matches
+            // every other admin-uploaded image on the site (studies logos,
+            // client logos, etc.), all plain `<img>` for the same reason.
+            <img
               src={story.image.src}
               alt={story.image.alt}
-              fill
-              sizes="(min-width: 64rem) 32vw, 90vw"
+              loading="lazy"
               onError={() => setFailedImage(true)}
             />
           )}

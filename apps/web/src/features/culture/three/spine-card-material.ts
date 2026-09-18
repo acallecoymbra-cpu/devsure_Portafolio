@@ -44,6 +44,8 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform float uSeed;
   uniform float uFocus;
   uniform float uAspect;
+  uniform vec2 uImageRepeat;
+  uniform vec2 uImageOffset;
   varying vec2 vUv;
   varying vec3 vViewPosition;
   varying vec3 vNormal;
@@ -77,9 +79,17 @@ const FRAGMENT_SHADER = /* glsl */ `
     float bandNoise = hash(band * 12.9898 + uSeed) - 0.5;
     float displace = bandNoise * 0.12 * uIntensity;
     float split = 0.01 * uIntensity;
-    float r = texture2D(map, vec2(vUv.x + displace + split, vUv.y)).r;
-    float g = texture2D(map, vec2(vUv.x + displace, vUv.y)).g;
-    float b = texture2D(map, vec2(vUv.x + displace - split, vUv.y)).b;
+    // Cover-fit (like CSS object-fit: cover): uImageRepeat/uImageOffset
+    // (set once per texture from its real pixel size — see spine-cards.ts)
+    // crop the source image to the card's own fixed aspect ratio instead of
+    // stretching it, so any upload (any dimensions) fills the card without
+    // distortion. The glitch band/RGB-split displacement is applied in this
+    // same cropped space, after the cover transform, so it still reads as a
+    // displacement of the visible photo, not of the untrimmed source.
+    vec2 photoUv = vUv * uImageRepeat + uImageOffset;
+    float r = texture2D(map, vec2(photoUv.x + displace + split, photoUv.y)).r;
+    float g = texture2D(map, vec2(photoUv.x + displace, photoUv.y)).g;
+    float b = texture2D(map, vec2(photoUv.x + displace - split, photoUv.y)).b;
     vec3 photo = vec3(r, g, b);
 
     // Frosted backdrop: a cheap 8-tap circular blur of the column/particles
@@ -130,6 +140,8 @@ export interface SpineCardMaterial extends THREE.ShaderMaterial {
     uTime: { value: number };
     uFocus: { value: number };
     uAspect: { value: number };
+    uImageRepeat: { value: THREE.Vector2 };
+    uImageOffset: { value: THREE.Vector2 };
   };
 }
 
@@ -161,6 +173,8 @@ export function createSpineCardMaterial(
       uTime: { value: 0 },
       uFocus: { value: 0 },
       uAspect: { value: aspect },
+      uImageRepeat: { value: new THREE.Vector2(1, 1) },
+      uImageOffset: { value: new THREE.Vector2(0, 0) },
     },
     vertexShader: VERTEX_SHADER,
     fragmentShader: FRAGMENT_SHADER,

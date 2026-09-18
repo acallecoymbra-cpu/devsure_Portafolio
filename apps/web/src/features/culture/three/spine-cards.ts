@@ -71,6 +71,22 @@ const LOCAL_ORBIT_PHASE_BIAS = 0.35;
 // purely horizontal circle (which is all `ORBIT_RADIUS` alone produces).
 const VERTICAL_ARC_DROP = 0.4;
 
+// Real report from the user: a card's own photo read as permanently
+// "rayada" (streaky) almost any time it wasn't the current hero — because
+// `uIntensity` (band displacement + RGB split, see spine-card-material.ts)
+// used to be set to a flat `1 - focus` every frame, so any card sitting
+// away from its own station showed near-maximum glitch continuously, not
+// just while actually becoming or ceasing to be the hero. Confirmed live
+// (scrolling 2 ticks turned a clean card visibly streaky with no other
+// state change). Fix: split into a low, capped resting texture
+// (`RESTING_INTENSITY_CAP`, still scaled by distance-from-focus so the
+// hero itself is always exactly clean) plus a brief pulse that only rides
+// high for `TRANSITION_PULSE_DURATION` after the hero index last actually
+// switched (`lastSwitchElapsed`, the same debounced switch this file
+// already tracks for the hysteresis below) — see its use in `place()`.
+const RESTING_INTENSITY_CAP = 0.18;
+const TRANSITION_PULSE_DURATION = 0.6; // seconds — matches MIN_SWITCH_INTERVAL below
+
 // Real bug the user caught (screenshot showing the full-screen transition
 // glitch stuck at maximum intensity instead of a brief flash): right at the
 // halfway point between two stations, `focus` for both cards is nearly
@@ -96,6 +112,21 @@ const CARD_FLOAT_SPEED = 0.35;
 /** Half-width of the whole scene the local orbit rings need — used by the camera rig's auto-fit. */
 export const CARDS_SCENE_HALF_WIDTH = ORBIT_RADIUS + CARD_WIDTH / 2;
 export { CARD_HEIGHT };
+
+/**
+ * CSS `object-fit: cover` equivalent for a UV `repeat`/`offset` pair:
+ * narrows whichever axis of the source image overflows the target aspect
+ * ratio, centered, so the image always fills the frame without stretching
+ * or letterboxing regardless of its own dimensions.
+ */
+function coverFit(imageAspect: number, targetAspect: number): { repeat: THREE.Vector2; offset: THREE.Vector2 } {
+  if (imageAspect > targetAspect) {
+    const repeatX = targetAspect / imageAspect;
+    return { repeat: new THREE.Vector2(repeatX, 1), offset: new THREE.Vector2((1 - repeatX) / 2, 0) };
+  }
+  const repeatY = imageAspect / targetAspect;
+  return { repeat: new THREE.Vector2(1, repeatY), offset: new THREE.Vector2(0, (1 - repeatY) / 2) };
+}
 
 export interface SpineCards {
   group: THREE.Group;
@@ -161,6 +192,17 @@ export function createSpineCards(
         }
         textures.push(texture);
         material.uniforms.map.value = texture;
+        // Real report: an admin-uploaded image (arbitrary dimensions, unlike
+        // the 7 seeded images which all happened to share CARD_ASPECT) came
+        // out visibly stretched — the shader was sampling the photo at the
+        // plane's raw UV with no regard for the source image's own aspect
+        // ratio. Cover-fit it instead (crop to fill, like CSS
+        // `object-fit: cover`, never stretch): compare the *loaded* image's
+        // real pixel aspect against the card's fixed aspect and narrow
+        // whichever axis overflows, centered.
+        const { repeat, offset } = coverFit(texture.image.width / texture.image.height, CARD_ASPECT);
+        material.uniforms.uImageRepeat.value.copy(repeat);
+        material.uniforms.uImageOffset.value.copy(offset);
         onTextureLoaded();
       },
       undefined,
@@ -268,7 +310,10 @@ export function createSpineCards(
 
       const material = materials[index];
       material.uniforms.uFocus.value = focus;
-      material.uniforms.uIntensity.value = 1 - focus;
+      const distanceFromFocus = 1 - focus;
+      const sinceSwitch = elapsed - lastSwitchElapsed;
+      const transitionPulse = sinceSwitch < TRANSITION_PULSE_DURATION ? 1 - sinceSwitch / TRANSITION_PULSE_DURATION : 0;
+      material.uniforms.uIntensity.value = distanceFromFocus * Math.max(RESTING_INTENSITY_CAP, transitionPulse);
     });
 
     // Debounced front index (see `SWITCH_MARGIN`/`MIN_SWITCH_INTERVAL`

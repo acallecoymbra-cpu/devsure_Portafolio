@@ -1,6 +1,8 @@
 ﻿import type {
   AdminTechnology,
   ClientLogo,
+  CultureStory,
+  CultureTeamMember,
   Experience,
   Faq,
   PaginatedResponse,
@@ -38,6 +40,10 @@ export type {
   ProjectInput,
   Study,
   StudyInput,
+  CultureStory,
+  CultureStoryInput,
+  CultureTeamMember,
+  CultureTeamMemberInput,
   Service as ServiceContent,
   ServiceInput,
   Strength,
@@ -69,6 +75,8 @@ export type AdminTechnologyPage = PaginatedResponse<AdminTechnology>;
 export type ExperiencePage = PaginatedResponse<Experience>;
 export type ProjectPage = PaginatedResponse<Project>;
 export type StudyPage = PaginatedResponse<Study>;
+export type CultureStoryPage = PaginatedResponse<CultureStory>;
+export type CultureTeamPage = PaginatedResponse<CultureTeamMember>;
 export type ServicePage = PaginatedResponse<Service>;
 export type StrengthPage = PaginatedResponse<Strength>;
 export type WorkStyleItemPage = PaginatedResponse<WorkStyleItem>;

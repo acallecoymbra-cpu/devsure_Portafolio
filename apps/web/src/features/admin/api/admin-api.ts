@@ -16,6 +16,12 @@ import type {
   Study,
   StudyInput,
   StudyPage,
+  CultureStory,
+  CultureStoryInput,
+  CultureStoryPage,
+  CultureTeamMember,
+  CultureTeamMemberInput,
+  CultureTeamPage,
   ServiceContent,
   ServiceInput,
   ServicePage,
@@ -249,6 +255,50 @@ export function updateStudy(id: string, input: Partial<StudyInput>): Promise<Stu
 
 export function deleteStudy(id: string): Promise<void> {
   return request<void>(`/admin/studies/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function listCultureStories(page = 1, limit = 50): Promise<CultureStoryPage> {
+  return request<CultureStoryPage>(`/admin/culture-stories?page=${page}&limit=${limit}`);
+}
+
+export function listCultureTeam(page = 1): Promise<CultureTeamPage> {
+  return request<CultureTeamPage>(`/admin/culture-team?page=${page}&limit=50`);
+}
+
+export function createCultureTeamMember(input: CultureTeamMemberInput): Promise<CultureTeamMember> {
+  return request<CultureTeamMember>('/admin/culture-team', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function updateCultureTeamMember(id: string, input: CultureTeamMemberInput): Promise<CultureTeamMember> {
+  return request<CultureTeamMember>(`/admin/culture-team/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function deleteCultureTeamMember(id: string): Promise<void> {
+  return request<void>(`/admin/culture-team/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export function getCultureStory(id: string): Promise<CultureStory> {
+  return request<CultureStory>(`/admin/culture-stories/${encodeURIComponent(id)}`);
+}
+
+export function createCultureStory(input: CultureStoryInput): Promise<CultureStory> {
+  return request<CultureStory>('/admin/culture-stories', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateCultureStory(id: string, input: Partial<CultureStoryInput>): Promise<CultureStory> {
+  return request<CultureStory>(`/admin/culture-stories/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteCultureStory(id: string): Promise<void> {
+  return request<void>(`/admin/culture-stories/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

@@ -8,6 +8,8 @@ import { SocialLinksService } from '../social-links/social-links.service';
 import { ExperiencesService } from '../experiences/experiences.service';
 import { ProjectsService } from '../projects/projects.service';
 import { StudiesService } from '../studies/studies.service';
+import { CultureStoriesService } from '../culture-stories/culture-stories.service';
+import { CultureTeamService } from '../culture-team/culture-team.service';
 import { ServicesService } from '../services/services.service';
 import { StrengthsService } from '../strengths/strengths.service';
 import { WorkStyleItemsService } from '../work-style-items/work-style-items.service';
@@ -30,6 +32,8 @@ export class PortfolioService {
     private readonly experiences: ExperiencesService,
     private readonly projects: ProjectsService,
     private readonly studies: StudiesService,
+    private readonly cultureStories: CultureStoriesService,
+    private readonly cultureTeam: CultureTeamService,
     private readonly services: ServicesService,
     private readonly strengths: StrengthsService,
     private readonly workStyleItems: WorkStyleItemsService,
@@ -55,6 +59,8 @@ export class PortfolioService {
       experiences,
       projects,
       studies,
+      cultureStories,
+      cultureTeam,
       services,
       strengths,
       workStyleItems,
@@ -68,6 +74,8 @@ export class PortfolioService {
       this.experiences.list(ownerId, LIST_ALL).then((page) => page.items),
       this.projects.list(ownerId, { ...LIST_ALL, featured: true, published: 'published' }).then((page) => page.items),
       this.studies.list(ownerId, LIST_ALL).then((page) => page.items),
+      this.cultureStories.list(ownerId, LIST_ALL).then((page) => page.items),
+      this.cultureTeam.list(ownerId, LIST_ALL).then((page) => page.items),
       this.services.list(ownerId, LIST_ALL).then((page) => page.items),
       this.strengths.list(ownerId, LIST_ALL).then((page) => page.items),
       this.workStyleItems.list(ownerId, LIST_ALL).then((page) => page.items),
@@ -86,6 +94,8 @@ export class PortfolioService {
       experiences,
       projects,
       studies,
+      cultureStories,
+      cultureTeam,
       services,
       strengths,
       workStyleItems,
