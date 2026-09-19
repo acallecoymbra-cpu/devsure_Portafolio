@@ -53,13 +53,6 @@
   object-position: center top;
 }
 
-/* Sits above `.backgroundImage` (unpositioned, paints below any positioned
-   sibling) but below `.headingWrap`'s z-index: 2 — visible over the photo,
-   never over the wordmark. */
-.flowLine {
-  z-index: 1;
-}
-
 .headingWrap {
   position: relative;
   z-index: 2;
@@ -75,6 +68,11 @@
    * still resolves there as long as it renders inside this element.
    */
   --wordmark-size: clamp(6rem, 30vw, 27rem);
+
+  /* Width of the "DevSure" wordmark; "Culture" is a fraction of it (see
+     `.cultureWordmark`) and the gap between the two scales with it too, so
+     the pair keeps the same proportions at every viewport width. */
+  --wm-w: clamp(340px, 68vw, 1500px);
 }
 
 .headingTitle {
@@ -87,7 +85,11 @@
 .subtitle {
   max-width: 1800px;
   width: 100%;
-  margin: clamp(0.5rem, 2vw, 1.5rem) auto 0;
+  /* Negative on purpose: both wordmark images carry a lot of transparent
+     padding (~8% of their width above/below the letters), so the visible
+     gap was far larger than the margin. This pulls "DevSure" up close under
+     "Culture", proportional to the wordmark width. */
+  margin: calc(var(--wm-w) * -0.075) auto 0;
   text-align: center;
   line-height: 0;
 }
@@ -98,7 +100,12 @@
   max-width: 100%;
   /* Source art is 2172x724 (~3:1) — matches the size the live-text version
      read at (`--wordmark-size` above), not a smaller logo-in-the-corner. */
-  width: clamp(340px, 68vw, 1500px);
+  width: var(--wm-w);
+}
+
+/* "Culture" reads smaller than "DevSure" (75% of its width). */
+.cultureWordmark {
+  width: calc(var(--wm-w) * 0.75);
 }
 
 /*

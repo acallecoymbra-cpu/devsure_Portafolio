@@ -39,7 +39,9 @@ const environmentSchema = Joi.object<AppEnvironment>({
 export function validateEnvironment(input: Record<string, unknown>): AppEnvironment {
   const values = {
     NODE_ENV: input.NODE_ENV,
-    API_PORT: input.API_PORT,
+    // Railway injects the port to bind as `PORT`. Keep `API_PORT` for local
+    // development, where it is the explicit DevSure setting.
+    API_PORT: input.API_PORT ?? input.PORT,
     API_PREFIX: input.API_PREFIX,
     CORS_ORIGINS: input.CORS_ORIGINS,
     DATABASE_TYPE: input.DATABASE_TYPE,

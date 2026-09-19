@@ -1,3 +1,5 @@
+import type { CulturePillarVisual } from '@devsure/contracts';
+
 export type CultureStory = {
   id: string;
   kicker: string;
@@ -48,20 +50,17 @@ export const companyStories: readonly CompanyStory[] = [
   },
 ];
 
-export const culturePrinciples = [
-  {
-    number: '01',
-    title: 'Claridad desde el inicio',
-    description: 'Nombramos objetivos, riesgos y decisiones para que el trabajo conserve contexto.',
-  },
-  {
-    number: '02',
-    title: 'Responsabilidad compartida',
-    description: 'Cada persona aporta criterio, pregunta a tiempo y cuida el resultado completo.',
-  },
-  {
-    number: '03',
-    title: 'Mejora con evidencia',
-    description: 'Aprendemos de pruebas, resultados y conversaciones, no de suposiciones.',
-  },
-] as const;
+/**
+ * View-model for one pillar of the "What we value" showcase. The rows
+ * themselves are admin-managed (`/admin/cultura`, `CulturePillar` in
+ * @devsure/contracts) — the seed script holds the original six.
+ */
+export type CulturePillar = {
+  id: string;
+  number: string;
+  title: string;
+  /** Short keyword line shown under the title in the list. */
+  keywords: string;
+  description: string;
+  visual: CulturePillarVisual;
+};

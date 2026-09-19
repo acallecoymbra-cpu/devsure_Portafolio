@@ -19,6 +19,15 @@ type RevealStyle = CSSProperties & {
 };
 
 /**
+ * Admin uploads resolve to an absolute URL on the API's storage server (see
+ * `getTeamImageUrl`). `next/image` refuses any host not listed in
+ * `images.remotePatterns` — and throws, taking the whole section down — so
+ * those are served as-is, exactly like every other uploaded image on the
+ * site. Bundled `/photos/*` placeholders still go through the optimizer.
+ */
+const isUploadedImage = (src: string) => /^https?:\/\//.test(src);
+
+/**
  * Editorial team section: desktop pins the section and drives all the
  * cards past horizontally as the viewer scrolls vertically (GSAP
  * ScrollTrigger, distance derived from the track's real scrollWidth — never
@@ -174,6 +183,7 @@ export function TeamRevealSection({
                   <Image
                     src={member.neutralImage}
                     alt={member.alt ?? member.name}
+                    unoptimized={isUploadedImage(member.neutralImage)}
                     fill
                     sizes="(max-width: 768px) 82vw, 30vw"
                     className={styles.neutralImage}
@@ -183,6 +193,7 @@ export function TeamRevealSection({
                     src={member.smilingImage}
                     alt=""
                     aria-hidden="true"
+                    unoptimized={isUploadedImage(member.smilingImage)}
                     fill
                     sizes="(max-width: 768px) 82vw, 30vw"
                     className={styles.smilingImage}

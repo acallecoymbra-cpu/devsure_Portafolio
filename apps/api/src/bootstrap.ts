@@ -14,6 +14,10 @@ export function configureApp(app: INestApplication): void {
   const uploadsDir = resolve(configService.getOrThrow<string>('storage.uploadsDir'));
 
   app.enableShutdownHooks();
+  // Production traffic reaches the application through exactly one reverse
+  // proxy (Railway or Nginx). This preserves the client IP for rate limiting
+  // and the original HTTPS scheme when generating uploaded-file URLs.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.setGlobalPrefix(apiPrefix);
   app.use(helmet());
   // Real bug (user report: an uploaded culture-story image saved fine and

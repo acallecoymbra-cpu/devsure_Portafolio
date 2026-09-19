@@ -8,6 +8,7 @@ import { Experience } from '../experiences/entities/experience.entity';
 import { Project } from '../projects/entities/project.entity';
 import { Study } from '../studies/entities/study.entity';
 import { CultureStory } from '../culture-stories/entities/culture-story.entity';
+import { CulturePillar } from '../culture-pillars/entities/culture-pillar.entity';
 import { CultureTeamMember } from '../culture-team/entities/culture-team-member.entity';
 import { Service } from '../services/entities/service.entity';
 import { Strength } from '../strengths/entities/strength.entity';
@@ -26,6 +27,7 @@ import { ExperiencesService } from '../experiences/experiences.service';
 import { ProjectsService } from '../projects/projects.service';
 import { StudiesService } from '../studies/studies.service';
 import { CultureStoriesService } from '../culture-stories/culture-stories.service';
+import { CulturePillarsService } from '../culture-pillars/culture-pillars.service';
 import { CultureTeamService } from '../culture-team/culture-team.service';
 import { ServicesService } from '../services/services.service';
 import { StrengthsService } from '../strengths/strengths.service';
@@ -53,6 +55,7 @@ import { PostsService } from '../posts/posts.service';
       Study,
       CultureStory,
       CultureTeamMember,
+      CulturePillar,
       Service,
       Strength,
       WorkStyleItem,
@@ -74,6 +77,7 @@ import { PostsService } from '../posts/posts.service';
     StudiesService,
     CultureStoriesService,
     CultureTeamService,
+    CulturePillarsService,
     ServicesService,
     StrengthsService,
     WorkStyleItemsService,

@@ -19,6 +19,9 @@ import type {
   CultureStory,
   CultureStoryInput,
   CultureStoryPage,
+  CulturePillar,
+  CulturePillarInput,
+  CulturePillarPage,
   CultureTeamMember,
   CultureTeamMemberInput,
   CultureTeamPage,
@@ -277,6 +280,22 @@ export function updateCultureTeamMember(id: string, input: CultureTeamMemberInpu
 
 export function deleteCultureTeamMember(id: string): Promise<void> {
   return request<void>(`/admin/culture-team/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export function listCulturePillars(page = 1): Promise<CulturePillarPage> {
+  return request<CulturePillarPage>(`/admin/culture-pillars?page=${page}&limit=50`);
+}
+
+export function createCulturePillar(input: CulturePillarInput): Promise<CulturePillar> {
+  return request<CulturePillar>('/admin/culture-pillars', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function updateCulturePillar(id: string, input: CulturePillarInput): Promise<CulturePillar> {
+  return request<CulturePillar>(`/admin/culture-pillars/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function deleteCulturePillar(id: string): Promise<void> {
+  return request<void>(`/admin/culture-pillars/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 export function getCultureStory(id: string): Promise<CultureStory> {

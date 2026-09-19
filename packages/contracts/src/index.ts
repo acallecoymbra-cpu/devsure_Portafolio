@@ -369,6 +369,44 @@ export interface CultureTeamMemberInput {
   sortOrder?: number;
 }
 
+/**
+ * Which of the six hand-built blueprint scenes (and matching icon) a pillar
+ * shows on `/cultura`'s "What we value" showcase. Decoupled from `sortOrder`
+ * so re-ordering or renaming a pillar never swaps its artwork.
+ */
+export type CulturePillarVisual =
+  | 'integrity'
+  | 'honesty'
+  | 'respect'
+  | 'teamwork'
+  | 'humility'
+  | 'commitment';
+
+/**
+ * One value of the "What we value" showcase on `/cultura` (`CulturePillars`).
+ * Plain strings, not `TranslatableString`, matching `CultureTeamMember` and
+ * the rest of this page's Spanish-only content today.
+ */
+export interface CulturePillar {
+  id: string;
+  title: string;
+  /** Short "A · B" keyword line shown under the title in the list. */
+  keywords: string;
+  description: string;
+  visual: CulturePillarVisual;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CulturePillarInput {
+  title: string;
+  keywords?: string;
+  description: string;
+  visual: CulturePillarVisual;
+  sortOrder?: number;
+}
+
 export interface Service {
   id: string;
   title: TranslatableString;
@@ -583,6 +621,7 @@ export interface PublicPortfolio {
   studies: Study[];
   cultureStories: CultureStory[];
   cultureTeam: CultureTeamMember[];
+  culturePillars: CulturePillar[];
   services: Service[];
   strengths: Strength[];
   workStyleItems: WorkStyleItem[];

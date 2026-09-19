@@ -1,0 +1,26 @@
+/* Covers the whole `position: relative` page wrapper it is rendered in.
+   No z-index on purpose: as a positioned element that comes right after the
+   hero in the DOM it paints above the hero photo and every earlier block, and
+   below every later positioned section and the 3D column (see the component
+   doc). */
+.root {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
+.svg {
+  display: block;
+}
+
+.line {
+  opacity: 0.92;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

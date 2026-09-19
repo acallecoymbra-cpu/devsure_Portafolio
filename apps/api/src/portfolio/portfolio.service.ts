@@ -9,6 +9,7 @@ import { ExperiencesService } from '../experiences/experiences.service';
 import { ProjectsService } from '../projects/projects.service';
 import { StudiesService } from '../studies/studies.service';
 import { CultureStoriesService } from '../culture-stories/culture-stories.service';
+import { CulturePillarsService } from '../culture-pillars/culture-pillars.service';
 import { CultureTeamService } from '../culture-team/culture-team.service';
 import { ServicesService } from '../services/services.service';
 import { StrengthsService } from '../strengths/strengths.service';
@@ -34,6 +35,7 @@ export class PortfolioService {
     private readonly studies: StudiesService,
     private readonly cultureStories: CultureStoriesService,
     private readonly cultureTeam: CultureTeamService,
+    private readonly culturePillars: CulturePillarsService,
     private readonly services: ServicesService,
     private readonly strengths: StrengthsService,
     private readonly workStyleItems: WorkStyleItemsService,
@@ -61,6 +63,7 @@ export class PortfolioService {
       studies,
       cultureStories,
       cultureTeam,
+      culturePillars,
       services,
       strengths,
       workStyleItems,
@@ -76,6 +79,7 @@ export class PortfolioService {
       this.studies.list(ownerId, LIST_ALL).then((page) => page.items),
       this.cultureStories.list(ownerId, LIST_ALL).then((page) => page.items),
       this.cultureTeam.list(ownerId, LIST_ALL).then((page) => page.items),
+      this.culturePillars.list(ownerId, LIST_ALL).then((page) => page.items),
       this.services.list(ownerId, LIST_ALL).then((page) => page.items),
       this.strengths.list(ownerId, LIST_ALL).then((page) => page.items),
       this.workStyleItems.list(ownerId, LIST_ALL).then((page) => page.items),
@@ -96,6 +100,7 @@ export class PortfolioService {
       studies,
       cultureStories,
       cultureTeam,
+      culturePillars,
       services,
       strengths,
       workStyleItems,

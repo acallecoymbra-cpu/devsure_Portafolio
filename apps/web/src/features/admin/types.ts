@@ -2,6 +2,7 @@
   AdminTechnology,
   ClientLogo,
   CultureStory,
+  CulturePillar,
   CultureTeamMember,
   Experience,
   Faq,
@@ -42,6 +43,9 @@ export type {
   StudyInput,
   CultureStory,
   CultureStoryInput,
+  CulturePillar,
+  CulturePillarInput,
+  CulturePillarVisual,
   CultureTeamMember,
   CultureTeamMemberInput,
   Service as ServiceContent,
@@ -77,6 +81,7 @@ export type ProjectPage = PaginatedResponse<Project>;
 export type StudyPage = PaginatedResponse<Study>;
 export type CultureStoryPage = PaginatedResponse<CultureStory>;
 export type CultureTeamPage = PaginatedResponse<CultureTeamMember>;
+export type CulturePillarPage = PaginatedResponse<CulturePillar>;
 export type ServicePage = PaginatedResponse<Service>;
 export type StrengthPage = PaginatedResponse<Strength>;
 export type WorkStyleItemPage = PaginatedResponse<WorkStyleItem>;

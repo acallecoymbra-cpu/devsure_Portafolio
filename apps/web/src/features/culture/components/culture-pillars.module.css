@@ -1,0 +1,799 @@
+/*
+ * "What we value" pillar showcase. Sits over the pinned 3D column like every
+ * other foreground section on /cultura, so the list items and the stage are
+ * opaque-ish dark panels with literal (theme-independent) colors — the same
+ * rule culture.module.css documents for its photo cards. Only the section
+ * heading sits directly on the page backdrop and follows the page theme.
+ *
+ * DevSure blues (same stops the page's flow lines already use):
+ *   deep #123EB7 · core #315CF4 · soft #6F8FFF
+ */
+
+.section {
+  --blue-deep: #123eb7;
+  --blue: #315cf4;
+  --blue-soft: #6f8fff;
+  --blue-glow: rgba(49, 92, 244, 0.32);
+  --ink-0: #070c1c;
+  --ink-1: #0c1329;
+  --ink-2: #111a36;
+  --edge: rgba(111, 143, 255, 0.2);
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --display: var(--font-pillar-display), 'Segoe UI', Arial, sans-serif;
+  --mono: var(--font-pillar-mono), ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  background: transparent;
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+}
+
+/* Pixel-stepped corners: the reference demo's notched panels, kept as
+   DevSure's own shape language. Declared per element (not on .section)
+   because a custom property holding var() is resolved where it is declared,
+   so each panel needs to see its own --n. */
+.item,
+.stage {
+  --notch: polygon(
+    0 var(--n),
+    var(--n) var(--n),
+    var(--n) 0,
+    calc(100% - var(--n)) 0,
+    calc(100% - var(--n)) var(--n),
+    100% var(--n),
+    100% calc(100% - var(--n)),
+    calc(100% - var(--n)) calc(100% - var(--n)),
+    calc(100% - var(--n)) 100%,
+    var(--n) 100%,
+    var(--n) calc(100% - var(--n)),
+    0 calc(100% - var(--n))
+  );
+}
+
+/* ---------- Heading ---------- */
+
+.header {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  justify-content: space-between;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.title {
+  color: var(--text);
+  font-family: var(--display);
+  font-size: clamp(2rem, 5.2vw, 3.75rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  align-items: center;
+  color: var(--blue-soft);
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  gap: 0.6rem;
+  letter-spacing: 0.18em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.eyebrowDot {
+  background: var(--blue);
+  box-shadow: 0 0 0 4px rgba(49, 92, 244, 0.22);
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+/* ---------- Layout ---------- */
+
+.showcase {
+  align-items: stretch;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.3fr);
+}
+
+.list {
+  display: grid;
+  gap: 0.5rem;
+  grid-auto-rows: minmax(0, 1fr);
+  min-width: 0;
+}
+
+/* ---------- List items ---------- */
+
+/* Border layer = the button itself (clip-path would eat a real border);
+   fill layer = ::before inset by 1px with the same notched path. */
+.item {
+  --edge-now: var(--edge);
+  --n: 8px;
+  align-items: center;
+  appearance: none;
+  background: var(--edge-now);
+  border: 0;
+  clip-path: var(--notch);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 1.1rem;
+  isolation: isolate;
+  margin: 0;
+  min-height: 4.6rem;
+  overflow: hidden;
+  padding: 0.85rem 1.4rem 0.85rem 1.25rem;
+  position: relative;
+  text-align: left;
+  transition:
+    transform 0.55s var(--ease),
+    background-color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item::before {
+  background: linear-gradient(90deg, rgba(12, 19, 41, 0.92), rgba(9, 14, 32, 0.9));
+  clip-path: var(--notch);
+  content: '';
+  inset: 1px;
+  position: absolute;
+  transition: background 0.5s ease;
+  z-index: -1;
+}
+
+.item:hover {
+  --edge-now: rgba(111, 143, 255, 0.36);
+}
+
+.item:focus-visible {
+  --edge-now: #a9bcff;
+  outline: none;
+}
+
+.itemActive {
+  --edge-now: rgba(111, 143, 255, 0.55);
+  transform: translateX(0.6rem);
+}
+
+.itemActive::before {
+  background:
+    linear-gradient(90deg, rgba(49, 92, 244, 0.34), rgba(17, 26, 54, 0.94) 72%),
+    var(--ink-1);
+}
+
+.itemNumber {
+  color: rgba(169, 188, 255, 0.4);
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  transition: color 0.4s ease;
+}
+
+.itemText {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.itemName {
+  color: rgba(214, 222, 255, 0.42);
+  font-family: var(--display);
+  font-size: clamp(1.05rem, 1.55vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  transition: color 0.4s ease;
+}
+
+.itemKeywords {
+  color: rgba(169, 188, 255, 0.26);
+  font-size: 0.8rem;
+  line-height: 1.3;
+  transition: color 0.4s ease;
+}
+
+.item:hover .itemName {
+  color: rgba(226, 232, 255, 0.78);
+}
+
+.itemActive .itemName,
+.itemActive:hover .itemName {
+  color: #ffffff;
+}
+
+.itemActive .itemNumber {
+  color: var(--blue-soft);
+}
+
+.itemActive .itemKeywords {
+  color: rgba(199, 212, 255, 0.72);
+}
+
+/* Autoplay progress: a hairline that fills across the active item. */
+.progress {
+  animation: progress linear both;
+  background: linear-gradient(90deg, var(--blue), var(--blue-soft));
+  bottom: 1px;
+  height: 2px;
+  left: 0;
+  position: absolute;
+  transform-origin: left;
+  width: 100%;
+}
+
+.showcase[data-running='false'] .progress {
+  animation-play-state: paused;
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Stage ---------- */
+
+.stage {
+  --mx: 72%;
+  --my: 24%;
+  background: var(--edge);
+  clip-path: var(--notch);
+  --n: 14px;
+  isolation: isolate;
+  min-height: 34rem;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  touch-action: pan-y;
+}
+
+.stage::before {
+  background:
+    radial-gradient(120% 90% at 85% 0%, rgba(18, 62, 183, 0.34), transparent 60%),
+    linear-gradient(165deg, #0e1733 0%, var(--ink-0) 70%);
+  clip-path: var(--notch);
+  content: '';
+  inset: 1px;
+  position: absolute;
+  z-index: -3;
+}
+
+.stageGrid {
+  background-image: radial-gradient(rgba(111, 143, 255, 0.2) 1px, transparent 1.3px);
+  background-size: 22px 22px;
+  inset: 0;
+  mask-image: radial-gradient(90% 80% at 62% 32%, #000 12%, transparent 72%);
+  -webkit-mask-image: radial-gradient(90% 80% at 62% 32%, #000 12%, transparent 72%);
+  pointer-events: none;
+  position: absolute;
+  z-index: -2;
+}
+
+.stageGlow {
+  background: radial-gradient(420px circle at var(--mx) var(--my), rgba(49, 92, 244, 0.26), transparent 62%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+/* One-shot light pass across the stage each time the pillar changes. */
+.sweep {
+  animation: sweep 0.95s var(--ease) both;
+  background: linear-gradient(100deg, transparent 0%, rgba(111, 143, 255, 0.16) 50%, transparent 100%);
+  inset: 0 auto 0 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-100%);
+  width: 60%;
+  z-index: 3;
+}
+
+@keyframes sweep {
+  from {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(260%);
+  }
+}
+
+.hud {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  left: 1.6rem;
+  position: absolute;
+  right: 1.6rem;
+  top: 1.35rem;
+  z-index: 2;
+}
+
+.hudCount {
+  color: rgba(169, 188, 255, 0.7);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+}
+
+.pips {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.pip,
+.pipActive {
+  background: rgba(111, 143, 255, 0.28);
+  height: 3px;
+  transition:
+    width 0.5s var(--ease),
+    background-color 0.4s ease;
+  width: 0.7rem;
+}
+
+.pipActive {
+  background: var(--blue-soft);
+  box-shadow: 0 0 10px var(--blue-glow);
+  width: 1.7rem;
+}
+
+/* ---------- Slides ---------- */
+
+.slide {
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition:
+    opacity 0.55s ease,
+    visibility 0s linear 0.55s;
+  visibility: hidden;
+}
+
+.slideActive {
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity 0.7s ease 0.12s,
+    visibility 0s;
+  visibility: visible;
+}
+
+.ghost {
+  -webkit-text-stroke: 1px rgba(111, 143, 255, 0.14);
+  color: transparent;
+  font-family: var(--display);
+  font-size: clamp(7rem, 15vw, 12rem);
+  font-weight: 700;
+  left: 1.2rem;
+  letter-spacing: -0.04em;
+  line-height: 0.8;
+  position: absolute;
+  top: 3.6rem;
+  user-select: none;
+}
+
+.scene {
+  height: 56%;
+  inset: 2.6rem 0 auto auto;
+  overflow: visible;
+  position: absolute;
+  width: 100%;
+}
+
+.copy {
+  background: linear-gradient(180deg, transparent, rgba(7, 12, 28, 0.86) 34%);
+  bottom: 0;
+  display: grid;
+  gap: 0.85rem;
+  left: 0;
+  padding: 3.5rem clamp(1.5rem, 3vw, 2.4rem) clamp(1.5rem, 3vw, 2.2rem);
+  position: absolute;
+  right: 0;
+}
+
+.kickerRow {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.badge {
+  align-items: center;
+  background: rgba(49, 92, 244, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(111, 143, 255, 0.45);
+  color: #c7d4ff;
+  display: inline-flex;
+  height: 2.4rem;
+  justify-content: center;
+  width: 2.4rem;
+}
+
+.kicker {
+  color: var(--blue-soft);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.name {
+  color: #ffffff;
+  font-family: var(--display);
+  font-size: clamp(1.9rem, 3.6vw, 3rem);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.02;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.description {
+  color: rgba(214, 222, 255, 0.84);
+  font-size: clamp(0.98rem, 1.25vw, 1.08rem);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 36rem;
+  text-wrap: pretty;
+}
+
+/* Copy re-staggers in every time its pillar becomes active. */
+.slideActive .badge,
+.slideActive .kicker,
+.slideActive .name,
+.slideActive .description {
+  animation: copy-in 0.8s var(--ease) both;
+}
+
+.slideActive .kicker {
+  animation-delay: 0.06s;
+}
+
+.slideActive .name {
+  animation-delay: 0.12s;
+}
+
+.slideActive .description {
+  animation-delay: 0.22s;
+}
+
+.slideActive .ghost {
+  animation: ghost-in 1s var(--ease) both;
+}
+
+@keyframes copy-in {
+  from {
+    filter: blur(6px);
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ghost-in {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Scene primitives (used by culture-pillar-scenes.tsx) ---------- */
+
+.draw {
+  fill: none;
+  stroke: var(--blue-soft);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.dashed {
+  stroke: rgba(111, 143, 255, 0.7);
+  stroke-dasharray: 0.018 0.026;
+}
+
+.arc {
+  stroke: var(--blue);
+  stroke-dasharray: 0.92 1;
+  stroke-width: 3;
+}
+
+.track {
+  fill: none;
+  stroke: rgba(111, 143, 255, 0.16);
+  stroke-width: 3;
+}
+
+.node {
+  fill: var(--blue-soft);
+  filter: drop-shadow(0 0 6px rgba(111, 143, 255, 0.85));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.nodeHollow {
+  fill: var(--ink-0);
+  filter: none;
+  stroke: var(--blue-soft);
+  stroke-width: 1.5;
+}
+
+.glass {
+  fill: rgba(49, 92, 244, 0.14);
+  stroke: none;
+}
+
+.seal {
+  fill: rgba(49, 92, 244, 0.32);
+  stroke: var(--blue-soft);
+  stroke-width: 1.5;
+}
+
+.ring {
+  fill: none;
+  stroke: rgba(111, 143, 255, 0.5);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.orbit {
+  transform-origin: 0 0;
+}
+
+.slideActive .draw {
+  animation: draw 1.15s var(--ease) calc(var(--i, 0) * 0.14s + 0.15s) both;
+}
+
+.slideActive .dashed {
+  animation:
+    fade-in 0.7s ease calc(var(--i, 0) * 0.14s + 0.15s) both,
+    flow 2.4s linear infinite;
+}
+
+.slideActive .arc {
+  animation: draw-arc 1.6s var(--ease) calc(var(--i, 0) * 0.14s + 0.15s) both;
+}
+
+.slideActive .node {
+  animation: pop 0.7s var(--ease) calc(var(--i, 0) * 0.14s + 0.3s) both;
+}
+
+.slideActive .glass,
+.slideActive .seal {
+  animation: fade-in 0.9s ease calc(var(--i, 0) * 0.14s + 0.1s) both;
+}
+
+.slideActive .orbit {
+  animation: spin linear infinite;
+}
+
+.slideActive .ring {
+  animation: pulse 3.2s ease-out 1s infinite;
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-arc {
+  from {
+    stroke-dashoffset: 0.92;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -0.088;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* ---------- Entrance when the section first scrolls into view ---------- */
+
+.section[data-revealed='false'] .item,
+.section[data-revealed='false'] .stage {
+  opacity: 0;
+}
+
+.section[data-revealed='true'] .item {
+  animation: item-in 0.8s var(--ease) calc(var(--enter, 0) * 70ms) both;
+}
+
+.section[data-revealed='true'] .stage {
+  animation: stage-in 1s var(--ease) 0.1s both;
+}
+
+@keyframes item-in {
+  from {
+    opacity: 0;
+    translate: -1.25rem 0;
+  }
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+}
+
+/* ---------- Tablet / mobile ---------- */
+
+@media (max-width: 900px) {
+  .showcase {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Six compact chips, all visible, tap to switch. */
+  .list {
+    gap: 0.4rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+  }
+
+  .item {
+    --n: 6px;
+    gap: 0.7rem;
+    min-height: 3.6rem;
+    padding: 0.6rem 0.9rem;
+  }
+
+  .itemActive {
+    transform: none;
+  }
+
+  .itemKeywords {
+    display: none;
+  }
+
+  .itemName {
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+  }
+
+  .stage {
+    --n: 10px;
+    min-height: 33rem;
+  }
+
+  .scene {
+    height: 46%;
+    top: 2.4rem;
+  }
+
+  .hud {
+    left: 1.2rem;
+    right: 1.2rem;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Still two columns (so the stage stays near the fold when a chip is
+     tapped); long names wrap and the number moves to the stage HUD. */
+  .item {
+    min-height: 3.4rem;
+    padding: 0.5rem 0.7rem;
+  }
+
+  .itemNumber {
+    display: none;
+  }
+
+  .itemName {
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+  }
+
+  .stage {
+    min-height: 35rem;
+  }
+}
+
+/* ---------- Reduced motion: no drawing, no sweeping, no autoplay ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .item::before,
+  .itemName,
+  .itemNumber,
+  .itemKeywords,
+  .pip,
+  .pipActive,
+  .slide,
+  .slideActive {
+    transition-duration: 0.01ms;
+    transition-delay: 0s;
+  }
+
+  .itemActive {
+    transform: none;
+  }
+
+  .sweep {
+    display: none;
+  }
+
+  .section[data-revealed] .item,
+  .section[data-revealed] .stage,
+  .slideActive .badge,
+  .slideActive .kicker,
+  .slideActive .name,
+  .slideActive .description,
+  .slideActive .ghost,
+  .slideActive .draw,
+  .slideActive .dashed,
+  .slideActive .arc,
+  .slideActive .node,
+  .slideActive .glass,
+  .slideActive .seal,
+  .slideActive .orbit,
+  .slideActive .ring {
+    animation: none;
+  }
+
+  .section[data-revealed='false'] .item,
+  .section[data-revealed='false'] .stage {
+    opacity: 1;
+  }
+}

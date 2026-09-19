@@ -25,7 +25,8 @@
     "seed:technologies": "ts-node src/database/seeds/seed-technologies.ts",
     "seed:admin": "ts-node src/database/seeds/seed-admin.ts",
     "seed:culture-stories": "ts-node src/database/seeds/seed-culture-stories.ts",
-    "seed:culture-team": "ts-node src/database/seeds/seed-culture-team.ts"
+    "seed:culture-team": "ts-node src/database/seeds/seed-culture-team.ts",
+    "seed:culture-pillars": "ts-node src/database/seeds/seed-culture-pillars.ts"
   },
   "dependencies": {
     "@devsure/contracts": "workspace:*",

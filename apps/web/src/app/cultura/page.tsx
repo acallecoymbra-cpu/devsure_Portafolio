@@ -2,13 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Bodoni_Moda } from 'next/font/google';
 import { translateValue } from '@devsure/contracts';
-import type { CultureStory } from '@/features/culture/culture-content';
-import {
-  companyStories,
-  culturePrinciples,
-} from '@/features/culture/culture-content';
+import type { CulturePillar, CultureStory } from '@/features/culture/culture-content';
+import { companyStories } from '@/features/culture/culture-content';
 import { CompanyCarousel } from '@/features/culture/components/culture-carousels';
-import { CultureFlowPath } from '@/features/culture/components/culture-flow-path';
+import { CulturePillars } from '@/features/culture/components/culture-pillars';
+import { CultureFlowLines } from '@/features/culture/components/culture-flow-lines';
 import { CultureSpineScene } from '@/features/culture/components/culture-spine-scene';
 import { CultureWaterSection } from '@/features/culture/components/culture-water-section';
 import { TeamRevealSection } from '@/features/culture/components/team-reveal-section';
@@ -69,11 +67,26 @@ const FALLBACK_IMAGE_WIDTH = 1600;
 const FALLBACK_IMAGE_HEIGHT = 900;
 
 export default async function CulturePage() {
-  const { profile, translations, cultureStories: adminCultureStories, cultureTeam } = await getPortfolio();
+  const {
+    profile,
+    translations,
+    cultureStories: adminCultureStories,
+    cultureTeam,
+    culturePillars: adminCulturePillars,
+  } = await getPortfolio();
   const teamMembers = cultureTeam.map((member) => ({
     ...member,
     neutralImage: getTeamImageUrl(member.neutralImage),
     smilingImage: getTeamImageUrl(member.smilingImage),
+  }));
+  // Admin-managed (/admin/cultura → Pilares); the number is just the list position.
+  const culturePillars: CulturePillar[] = adminCulturePillars.map((pillar, index) => ({
+    id: pillar.id,
+    number: String(index + 1).padStart(2, '0'),
+    title: pillar.title,
+    keywords: pillar.keywords,
+    description: pillar.description,
+    visual: pillar.visual,
   }));
   const locale = profile.defaultLocale || 'es';
   const manifesto = translateValue(translations.cultureManifesto, locale) ?? DEFAULT_MANIFESTO;
@@ -132,22 +145,13 @@ export default async function CulturePage() {
         photo + wordmarks), and `.manifestoSection` ("Nuestra medida")
         follows it directly, no `children` in between.
       */}
+      <div className={styles.flowScope}>
       <CultureWaterSection />
 
+      {/* Three page-long lines — placed right after the hero on purpose, see CultureFlowLines. */}
+      <CultureFlowLines />
+
       <section className={styles.manifestoSection} aria-labelledby="manifesto-title">
-        <CultureFlowPath
-          anchor="top"
-          desktopViewBox="0 0 1600 1000"
-          mobileViewBox="0 0 500 1100"
-          desktopPath="M 1150 20 C 950 140, 1320 280, 1020 420 C 780 540, 1150 580, 850 720 C 620 830, 450 860, 280 960"
-          mobilePath="M 380 20 C 300 140, 460 260, 340 420 C 220 540, 400 620, 300 780 C 220 880, 160 920, 90 1040"
-          stops={[
-            { offset: '0%', color: '#123EB7' },
-            { offset: '55%', color: '#315CF4' },
-            { offset: '100%', color: '#6F8FFF' },
-          ]}
-          className={styles.manifestoFlowLine}
-        />
         <div className="shell">
           <p className="eyebrow">Nuestra medida</p>
           <blockquote className={styles.manifestoQuote}>
@@ -159,34 +163,7 @@ export default async function CulturePage() {
       </section>
 
       <CultureSpineScene stories={cultureStories}>
-        {/* Placeholder — content to be defined. */}
-        <section className={styles.cardSection} aria-labelledby="card-section-title">
-          <div className="shell">
-            <p className="eyebrow">Próximamente</p>
-            <h2 id="card-section-title">Un espacio más para contar quiénes somos.</h2>
-            <div className={styles.placeholderCard}>
-              <p>Aquí va el contenido que definamos juntos.</p>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.principlesSection} aria-labelledby="principles-title">
-          <div className="shell">
-            <div className={styles.principlesIntro}>
-              <p className="eyebrow">Valores</p>
-              <h2 id="principles-title">Cómo se siente trabajar con nosotros.</h2>
-            </div>
-            <ol className={styles.principlesGrid}>
-              {culturePrinciples.map((principle) => (
-                <li key={principle.number}>
-                  <span>{principle.number}</span>
-                  <h3>{principle.title}</h3>
-                  <p>{principle.description}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+        {culturePillars.length > 0 ? <CulturePillars pillars={culturePillars} /> : null}
 
         {/*
           Rendered as CultureSpineScene's `children` (foreground content),
@@ -226,19 +203,6 @@ export default async function CulturePage() {
       </CultureSpineScene>
 
       <section className={styles.closingSection} aria-labelledby="closing-title">
-        <CultureFlowPath
-          anchor="top"
-          desktopViewBox="0 0 1600 700"
-          mobileViewBox="0 0 500 700"
-          desktopPath="M -60 40 C 260 140, 420 300, 620 380 C 820 460, 560 520, 700 580 C 820 630, 900 600, 800 660"
-          mobilePath="M -40 30 C 140 110, 220 240, 300 320 C 380 400, 260 440, 320 520 C 380 580, 420 560, 380 620"
-          stops={[
-            { offset: '0%', color: '#6F8FFF' },
-            { offset: '55%', color: '#7370FF' },
-            { offset: '100%', color: '#B1A5FF' },
-          ]}
-          className={styles.closingFlowLine}
-        />
         <div className={`shell ${styles.closingPanel}`}>
           <div>
             <p className="eyebrow">Conoce nuestro trabajo</p>
@@ -249,6 +213,7 @@ export default async function CulturePage() {
           </Link>
         </div>
       </section>
+      </div>
     </>
   );
 }

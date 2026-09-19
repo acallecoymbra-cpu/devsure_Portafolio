@@ -14,33 +14,17 @@
  * keep their own dark translucent fill in both themes by design, so their
  * text can't follow the page theme without breaking contrast.
  */
+/* Positioned scope for the page-long flow lines (CultureFlowLines), which fill it. */
+.flowScope {
+  position: relative;
+}
+
 .pageBackdrop {
   background-color: var(--background);
   inset: 0;
   pointer-events: none;
   position: fixed;
   z-index: -2;
-}
-
-.cardSection h2 {
-  color: var(--text);
-  margin: 0.75rem 0 2rem;
-  max-width: 24ch;
-}
-
-.placeholderCard {
-  background: var(--surface);
-  border: 1px dashed var(--line-strong);
-  border-radius: 1.1rem;
-  margin: 0 auto;
-  max-width: 40rem;
-  padding: clamp(2.5rem, 8vw, 4rem);
-  text-align: center;
-}
-
-.placeholderCard p {
-  color: var(--muted);
-  margin: 0;
 }
 
 /* closingPanel keeps its own fixed violet/navy gradient regardless of theme
@@ -57,13 +41,10 @@
 }
 
 /* Inside always-dark photo cards (see the top-of-file note) — pinned regardless of theme. */
-.principlesGrid p,
 .companyCopy > p:last-child {
   color: #94a3b8;
 }
 
-.cardSection,
-.principlesSection,
 .companiesSection,
 .closingSection {
   padding-block: clamp(5rem, 10vw, 8rem);
@@ -75,8 +56,7 @@
   margin-bottom: 2.5rem;
 }
 
-.sectionHeading h2,
-.principlesIntro h2 {
+.sectionHeading h2 {
   color: var(--text);
   margin-bottom: 0;
 }
@@ -544,49 +524,6 @@
   animation: spineTextGlitch 550ms steps(1, end) 1;
 }
 
-.principlesSection {
-  /* Transparent so the pinned 3D column (spineBackgroundRegion) is the
-     page's only background here — no CSS floor competing with it. */
-  background: transparent;
-}
-
-.principlesIntro {
-  margin-bottom: 2.5rem;
-}
-
-.principlesGrid {
-  display: grid;
-  gap: 0.85rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.principlesGrid li {
-  background: rgba(16, 24, 43, 0.82);
-  border: 1px solid var(--line);
-  border-radius: 0.9rem;
-  min-height: 18rem;
-  padding: 1.5rem;
-}
-
-.principlesGrid li > span {
-  color: #86e9db;
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-bottom: 5rem;
-}
-
-.principlesGrid h3 {
-  color: #ffffff;
-  font-size: 1.55rem;
-}
-
-.principlesGrid p {
-  margin-bottom: 0;
-}
-
 /* User request: the column's own background region (CultureSpineScene,
    right after this section) used to only begin after almost a full
    viewport of empty space — this section's own `min-height`/`padding-block`
@@ -604,10 +541,6 @@
 
 /* Decorative flow line tramo — behind the quote (unpositioned, so it
    already paints above any negative z-index sibling) without touching it. */
-.manifestoFlowLine {
-  z-index: -1;
-}
-
 .manifestoSection :global(.eyebrow) {
   text-align: center;
 }
@@ -652,7 +585,7 @@
 }
 
 .companiesSection {
-  /* Transparent, like .principlesSection — .pageBackdrop is the floor now,
+  /* Transparent — .pageBackdrop is the floor now,
      so this section doesn't need its own tint. (It used to have a faint
      dark-purple gradient here for the dark-theme-only column; that read as
      a visible blue-ish layer once .pageBackdrop could actually go light.) */
@@ -730,10 +663,6 @@
   position: relative;
 }
 
-.closingFlowLine {
-  z-index: -1;
-}
-
 .closingPanel {
   align-items: center;
   background: linear-gradient(120deg, rgba(86, 70, 190, 0.55), rgba(20, 32, 65, 0.94));
@@ -758,10 +687,6 @@
   .sectionHeading,
   .closingPanel {
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.68fr);
-  }
-
-  .principlesGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .companyCard {

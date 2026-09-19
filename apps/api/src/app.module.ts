@@ -20,6 +20,8 @@ import { StudiesModule } from './studies/studies.module';
 import { Study } from './studies/entities/study.entity';
 import { CultureStoriesModule } from './culture-stories/culture-stories.module';
 import { CultureStory } from './culture-stories/entities/culture-story.entity';
+import { CulturePillarsModule } from './culture-pillars/culture-pillars.module';
+import { CulturePillar } from './culture-pillars/entities/culture-pillar.entity';
 import { CultureTeamModule } from './culture-team/culture-team.module';
 import { CultureTeamMember } from './culture-team/entities/culture-team-member.entity';
 import { ServicesModule } from './services/services.module';
@@ -57,7 +59,7 @@ import { PortfolioModule } from './portfolio/portfolio.module';
         synchronize: false,
         migrationsRun: true,
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, CultureStory, CultureTeamMember, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo, SocialLink],
+        entities: [Technology, AdminUser, AdminSession, Profile, Experience, Project, Study, CultureStory, CultureTeamMember, CulturePillar, Service, Strength, WorkStyleItem, Faq, Testimonial, Post, ClientLogo, SocialLink],
       }),
     }),
     HealthModule,
@@ -70,6 +72,7 @@ import { PortfolioModule } from './portfolio/portfolio.module';
     StudiesModule,
     CultureStoriesModule,
     CultureTeamModule,
+    CulturePillarsModule,
     ServicesModule,
     StrengthsModule,
     WorkStyleItemsModule,

@@ -136,13 +136,13 @@ export function mountSpineEngine(
    * sections in the DOM — see culture-spine-3d.tsx) has scrolled enough
    * that its *bottom* edge reaches the viewport's bottom — i.e. the instant
    * before any pixel of the real foreground content (starting with
-   * `principlesSection`'s heading) could possibly appear on screen, entering
+   * the pillars section's heading) could possibly appear on screen, entering
    * from below. Deliberately **not** "the spacer has fully scrolled past
    * the viewport's top" (`rect.bottom <= 0`, a first cut at this that
    * still had a bug): that leaves a whole viewport-height's worth of
    * scroll distance during which the spacer's bottom is still inside the
    * viewport (so this progress hadn't reached 1 yet, and the story caption
-   * was still showing) while `principlesSection`'s heading had *already*
+   * was still showing) while the pillars section's heading had *already*
    * scrolled up into view from below — caught overlapping the caption on a
    * 360px-wide screenshot. Measured fresh every call (same "no cached
    * layout" rule as `progressFromLayout`), directly from the spacer's own
